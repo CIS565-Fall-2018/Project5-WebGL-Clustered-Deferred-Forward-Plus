@@ -7,9 +7,9 @@ import toTextureFrag from '../shaders/deferredToTexture.frag.glsl';
 import QuadVertSource from '../shaders/quad.vert.glsl';
 import fsSource from '../shaders/deferred.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
-import BaseRenderer from './base';
+import BaseRenderer, {MAX_LIGHTS_PER_CLUSTER} from './base';
 
-export const NUM_GBUFFERS = 4;
+export const NUM_GBUFFERS = 2;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -28,9 +28,14 @@ export default class ClusteredRenderer extends BaseRenderer {
     this._progShade = loadShaderProgram(QuadVertSource, fsSource({
       numLights: NUM_LIGHTS,
       numGBuffers: NUM_GBUFFERS,
+      xSlices: xSlices,
+      ySlices: ySlices,
+      zSlices: zSlices,
+      maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER, width:canvas.width, height:canvas.height
     }), {
-      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]'],
-      attribs: ['a_uv'],
+      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]','u_lightbuffer', 'u_clusterbuffer',
+          'u_viewMatrix', 'u_cameraNear','u_cameraFar', 'u_cameraPos'],
+      attribs: ['a_position', 'a_uv'],
     });
 
     this._projectionMatrix = mat4.create();
@@ -123,6 +128,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._progCopy.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
+    gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
@@ -154,6 +160,9 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.useProgram(this._progShade.glShaderProgram);
 
     // TODO: Bind any other shader inputs
+    gl.uniform1f(this._progShade.u_cameraFar, camera.far);
+    gl.uniform1f(this._progShade.u_cameraNear, camera.near);
+    gl.uniform3f(this._progShade.u_cameraPos, camera.position);
 
     // Bind g-buffers
     const firstGBufferBinding = 0; // You may have to change this if you use other texture slots

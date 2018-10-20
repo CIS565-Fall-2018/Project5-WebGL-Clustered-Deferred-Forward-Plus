@@ -11,6 +11,10 @@ export default function(params) {
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
+  
+  uniform mat4 u_viewMatrix;
+  uniform float u_cameraNear;
+  uniform float u_cameraFar;
 
   varying vec3 v_position;
   varying vec3 v_normal;
@@ -78,11 +82,41 @@ export default function(params) {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
-
     vec3 fragColor = vec3(0.0);
-
+    
+    vec4 pos = u_viewMatrix * vec4(v_position, 1.0);
+    int x_cluster = int(gl_FragCoord.x * float(${params.xSlices}) / float(${params.width}));
+    int y_cluster = int(gl_FragCoord.y * float(${params.ySlices}) / float(${params.height}));
+    int z_cluster = 0;
+    if (-pos.z > u_cameraNear){
+      z_clutser = int((-pos.z -u_cameraNear)* float(${params.zSlices}) / float(u_cameraFar - u_cameraNear));
+    }
+    
+    int index = x_cluster + y_cluster * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices};
+    float u = float(index + 1)/float(${params.xSlices} * ${params.ySlices} * ${params.zSlices} + 1);
+    int num_clustered = int (texture2D(u_clusterbuffer, vec2(u, 0.0))[0]);
+    
     for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+    // a lot of offset of 1 errors !!
+      if (i >= num_clustered) break;
+      int V = int((${params.maxLightPerCluster} + 1)/4 + 1);
+      int vi = int((i+1)/4);
+      // only this way can get the correct fraction
+      float v = float(vi)/ float(V);
+      vec4 pixel = texture2D(u_clusterbuffer, vec2(u,v));
+      int offset = i + 1 - idx;
+      int idx;
+      if (offset == 0){
+        idx = int(pixel[0]);
+      }else if (offset == 1){
+        idx = int(pixel[1]);
+      }else if (offset == 2){
+        idx = int(pixel[2]);
+      }else if (offset == 3){
+        idx = int(pixel[3]);
+      }
+      
+      Light light = UnpackLight(idx);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
