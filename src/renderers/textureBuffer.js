@@ -6,6 +6,7 @@ export default class TextureBuffer {
    * @param {Number} elementCount The number of items in the buffer
    * @param {Number} elementSize The number of values in each item of the buffer
    */
+
   constructor(elementCount, elementSize) {
     // Initialize the texture. We use gl.NEAREST for texture filtering because we don't want to blend between values in the buffer. We want the exact value
     this._glTexture = gl.createTexture();

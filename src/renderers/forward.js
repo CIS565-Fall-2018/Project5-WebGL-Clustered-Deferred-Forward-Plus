@@ -13,9 +13,13 @@ export default class ForwardRenderer {
 
     // Initialize a shader program. The fragment shader source is compiled based on the number of lights
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
+      // this one is used in fs shader
+      // ${params.numLights}
       numLights: NUM_LIGHTS,
     }), {
+      // IMPT: Uniforms here, used in pass uniform
       uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer'],
+      // IMPT: Attrs here
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -27,15 +31,19 @@ export default class ForwardRenderer {
   render(camera, scene) {
     // Update the camera matrices
     camera.updateMatrixWorld();
+    // from-to format functions, the first one is the container
     mat4.invert(this._viewMatrix, camera.matrixWorld.elements);
     mat4.copy(this._projectionMatrix, camera.projectionMatrix.elements);
     mat4.multiply(this._viewProjectionMatrix, this._projectionMatrix, this._viewMatrix);
 
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
+
+      // light information: pos[3], radius[1] color[3]
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0] = scene.lights[i].position[0];
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 1] = scene.lights[i].position[1];
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 2] = scene.lights[i].position[2];
+      
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 3] = scene.lights[i].radius;
 
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 0] = scene.lights[i].color[0];

@@ -37,10 +37,12 @@ function linkShader(vs, fs) {
   return prog;
 };
 
+// assign uniforms and attrs to shader
 function addShaderLocations(result, shaderLocations) {
   if (shaderLocations && shaderLocations.uniforms && shaderLocations.uniforms.length) {
     for (let i = 0; i < shaderLocations.uniforms.length; ++i) {
       result = Object.assign(result, {
+        // IMPT: getUniformLocation is here!!!!
         [shaderLocations.uniforms[i]]: gl.getUniformLocation(result.glShaderProgram, shaderLocations.uniforms[i]),
       });
     }
@@ -48,6 +50,7 @@ function addShaderLocations(result, shaderLocations) {
   if (shaderLocations && shaderLocations.attribs && shaderLocations.attribs.length) {
     for (let i = 0; i < shaderLocations.attribs.length; ++i) {
       result = Object.assign(result, {
+        // IMPT: getAttribLocation is here!!!!
         [shaderLocations.attribs[i]]: gl.getAttribLocation(result.glShaderProgram, shaderLocations.attribs[i]),
       });
     }
@@ -55,12 +58,15 @@ function addShaderLocations(result, shaderLocations) {
   return result;
 }
 
+// shaderLocations means uniforms and attrs
 export function loadShaderProgram(vsSource, fsSource, shaderLocations) {
   const vs = compileShader(vsSource, gl.VERTEX_SHADER);
   const fs = compileShader(fsSource, gl.FRAGMENT_SHADER);
+  // linkShader is the combine of vs and fs
   return addShaderLocations({
     glShaderProgram: linkShader(vs, fs),
   }, shaderLocations);
+  // HERE
 }
 
 const quadPositions = new Float32Array([
