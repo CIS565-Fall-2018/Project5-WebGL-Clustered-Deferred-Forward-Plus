@@ -21,6 +21,23 @@ export default function(params) {
     vec3 color;
   };
   
+  float ExtractFloat(sampler2D texture, int textureWidth, int textureHeight, int index, int component) {
+    float u = float(index + 1) / float(textureWidth + 1);
+    int pixel = component / 4;
+    float v = float(pixel + 1) / float(textureHeight + 1);
+    vec4 texel = texture2D(texture, vec2(u, v));
+    int pixelComponent = component - pixel * 4;
+    if (pixelComponent == 0) {
+      return texel[0];
+    } else if (pixelComponent == 1) {
+      return texel[1];
+    } else if (pixelComponent == 2) {
+      return texel[2];
+    } else if (pixelComponent == 3) {
+      return texel[3];
+    }
+  }
+  
   Light UnpackLight(int index) {
     Light light;
     float u = float(index + 1) / float(${params.numLights + 1});
@@ -53,7 +70,7 @@ export default function(params) {
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
     
-    vec3 v_pos = gb0.xyz;
+    vec3 v_position = gb0.xyz;
     vec3 albedo = gb1.rgb;
     float theta = gb0[3];
     float phi = gb1[3];
@@ -64,24 +81,25 @@ export default function(params) {
     int y_cluster = int(gl_FragCoord.y * float(${params.ySlices}) / float(${params.height}));
     int z_cluster = 0;
     if (-pos.z > u_cameraNear){
-      z_clutser = int((-pos.z -u_cameraNear)* float(${params.zSlices}) / float(u_cameraFar - u_cameraNear));
+      z_cluster = int((-pos.z -u_cameraNear)* float(${params.zSlices}) / float(u_cameraFar - u_cameraNear));
     }
     
-    int index = x_cluster + y_cluster * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices};
+    int index = x_cluster + y_cluster * ${params.xSlices} + z_cluster * ${params.xSlices} * ${params.ySlices};
     float u = float(index + 1)/float(${params.xSlices} * ${params.ySlices} * ${params.zSlices} + 1);
     int num_clustered = int (texture2D(u_clusterbuffer, vec2(u, 0.0))[0]);
     vec3 specular = vec3(1.0);
     vec3 ambientColor = vec3(0.9);
+    vec3 fragColor = vec3(0.0);
    
     for (int i = 0; i < ${params.numLights}; ++i) {
     // a lot of offset of 1 errors !!
       if (i >= num_clustered) break;
-      int V = int((${params.maxLightPerCluster} + 1)/4 + 1);
+      int V = int((${params.maxLightPerCluster} + 1) / 4) + 1;
       int vi = int((i+1)/4);
       // only this way can get the correct fraction
       float v = float(vi)/ float(V);
       vec4 pixel = texture2D(u_clusterbuffer, vec2(u,v));
-      int offset = i + 1 - idx;
+      int offset = i + 1 - 4 * vi;
       int idx;
       if (offset == 0){
         idx = int(pixel[0]);
@@ -92,21 +110,21 @@ export default function(params) {
       }else if (offset == 3){
         idx = int(pixel[3]);
       }
-      
+
       Light light = UnpackLight(idx);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
       vec3 eyeDir = normalize(u_cameraPos - v_position);
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
-      
-      specular *= pow(max(dot(normalize(L + eyeDir), norm), 0), 16.0);
-      
-      fragColor += pow(vec3(lightIntensity) * ambientColor * light.color(0.1 + albedo * lambertian + specular), 1.0/2.2);
+      float lambertTerm = max(dot(L, norm), 0.0);
 
-             
-      //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      specular *= pow(max(dot(normalize(L + eyeDir), norm), 0.0), 16.0);
+
+      //fragColor += vec3(lightIntensity) * ambientColor * light.color * (0.1 + albedo * lambertTerm + specular);
+
+
+      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
     
     gl_FragColor = vec4(fragColor, 1.0);

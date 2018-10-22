@@ -9,7 +9,7 @@ const FORWARD_PLUS = 'Forward+';
 const CLUSTERED = 'Clustered';
 
 const params = {
-  renderer: FORWARD_PLUS,
+  renderer: CLUSTERED,
   _renderer: null,
 };
 

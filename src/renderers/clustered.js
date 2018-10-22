@@ -1,5 +1,5 @@
 import { gl, WEBGL_draw_buffers, canvas } from '../init';
-import { mat4, vec4 } from 'gl-matrix';
+import { mat4, vec4, vec3 } from 'gl-matrix';
 import { loadShaderProgram, renderFullscreenQuad } from '../utils';
 import { NUM_LIGHTS } from '../scene';
 import toTextureVert from '../shaders/deferredToTexture.vert.glsl';
@@ -31,7 +31,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       xSlices: xSlices,
       ySlices: ySlices,
       zSlices: zSlices,
-      maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER, width:canvas.width, height:canvas.height
+      maxLightPerCluster: MAX_LIGHTS_PER_CLUSTER, width:canvas.width, height:canvas.height
     }), {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]','u_lightbuffer', 'u_clusterbuffer',
           'u_viewMatrix', 'u_cameraNear','u_cameraFar', 'u_cameraPos'],
@@ -128,7 +128,6 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._progCopy.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
-    gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
@@ -162,10 +161,21 @@ export default class ClusteredRenderer extends BaseRenderer {
     // TODO: Bind any other shader inputs
     gl.uniform1f(this._progShade.u_cameraFar, camera.far);
     gl.uniform1f(this._progShade.u_cameraNear, camera.near);
-    gl.uniform3f(this._progShade.u_cameraPos, camera.position);
+    gl.uniform3f(this._progShade.u_cameraPos, camera.position.x, camera.position.y, camera.position.z);
+    gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
+
+    // Set the light texture as a uniform input to the shader
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
+    gl.uniform1i(this._progShade.u_lightbuffer, 0);
+
+    // Set the cluster texture as a uniform input to the shader
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
+    gl.uniform1i(this._progShade.u_clusterbuffer, 1);
 
     // Bind g-buffers
-    const firstGBufferBinding = 0; // You may have to change this if you use other texture slots
+    const firstGBufferBinding = 2; // You may have to change this if you use other texture slots
     for (let i = 0; i < NUM_GBUFFERS; i++) {
       gl.activeTexture(gl[`TEXTURE${i + firstGBufferBinding}`]);
       gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);

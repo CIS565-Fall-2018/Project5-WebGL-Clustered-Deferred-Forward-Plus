@@ -89,10 +89,10 @@ export default function(params) {
     int y_cluster = int(gl_FragCoord.y * float(${params.ySlices}) / float(${params.height}));
     int z_cluster = 0;
     if (-pos.z > u_cameraNear){
-      z_clutser = int((-pos.z -u_cameraNear)* float(${params.zSlices}) / float(u_cameraFar - u_cameraNear));
+      z_cluster = int((-pos.z -u_cameraNear)* float(${params.zSlices}) / float(u_cameraFar - u_cameraNear));
     }
     
-    int index = x_cluster + y_cluster * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices};
+    int index = x_cluster + y_cluster * ${params.xSlices} + z_cluster * ${params.xSlices} * ${params.ySlices};
     float u = float(index + 1)/float(${params.xSlices} * ${params.ySlices} * ${params.zSlices} + 1);
     int num_clustered = int (texture2D(u_clusterbuffer, vec2(u, 0.0))[0]);
     
@@ -104,7 +104,7 @@ export default function(params) {
       // only this way can get the correct fraction
       float v = float(vi)/ float(V);
       vec4 pixel = texture2D(u_clusterbuffer, vec2(u,v));
-      int offset = i + 1 - idx;
+      int offset = i + 1 - 4 * vi;
       int idx;
       if (offset == 0){
         idx = int(pixel[0]);

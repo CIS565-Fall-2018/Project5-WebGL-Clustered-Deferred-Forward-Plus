@@ -24,7 +24,7 @@ void main() {
     norm = normalize(norm);
     float theta = atan(norm.y, norm.x);
     float phi = asin(norm.z);
-    gl_FragData[0] = vec4(v_pos, theta);
+    gl_FragData[0] = vec4(v_position, theta);
     gl_FragData[1] = vec4(col, phi);
 
     // TODO: populate your g buffer
