@@ -10,6 +10,8 @@ export default class BaseRenderer {
     this._xSlices = xSlices;
     this._ySlices = ySlices;
     this._zSlices = zSlices;
+
+    //this._lightData = 
   }
 
   updateClusters(camera, viewMatrix, scene) {
@@ -24,7 +26,7 @@ export default class BaseRenderer {
           this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = 0;
 
           for(let lightIndex = 0; lightIndex < scene.lights.length; lightIndex++) {
-            let aabb = AABB.getAABBForLight(scene, camera, viewMatrix, lightIndex);
+            //let aabb = AABB.getAABBForLight(scene, camera, viewMatrix, lightIndex);
           }
         }
       }

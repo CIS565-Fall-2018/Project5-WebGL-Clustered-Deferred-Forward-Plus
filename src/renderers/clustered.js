@@ -51,28 +51,28 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._depthTex, 0);
 
     // Create, bind, and store "color" target textures for the FBO
-    this._gbuffers = new Array(NUM_GBUFFERS);
-    let attachments = new Array(NUM_GBUFFERS);
-    for (let i = 0; i < NUM_GBUFFERS; i++) {
-      attachments[i] = WEBGL_draw_buffers[`COLOR_ATTACHMENT${i}_WEBGL`];
-      this._gbuffers[i] = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, null);
-      gl.bindTexture(gl.TEXTURE_2D, null);
+    // this._gbuffers = new Array(NUM_GBUFFERS);
+    // let attachments = new Array(NUM_GBUFFERS);
+    // for (let i = 0; i < NUM_GBUFFERS; i++) {
+    //   attachments[i] = gl.COLOR_ATTACHMENT0 + i;
+    //   this._gbuffers[i] = gl.createTexture();
+    //   gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
+    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    //   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null);
+    //   gl.bindTexture(gl.TEXTURE_2D, null);
 
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, attachments[i], gl.TEXTURE_2D, this._gbuffers[i], 0);      
-    }
+    //   gl.framebufferTexture2D(gl.FRAMEBUFFER, attachments[i], gl.TEXTURE_2D, this._gbuffers[i], 0);      
+    // }
 
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
       throw "Framebuffer incomplete";
@@ -80,7 +80,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Tell the WEBGL_draw_buffers extension which FBO attachments are
     // being used. (This extension allows for multiple render targets.)
-    WEBGL_draw_buffers.drawBuffersWEBGL(attachments);
+    //gl.drawBuffers(attachments);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
@@ -157,11 +157,11 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Bind g-buffers
     const firstGBufferBinding = 0; // You may have to change this if you use other texture slots
-    for (let i = 0; i < NUM_GBUFFERS; i++) {
-      gl.activeTexture(gl[`TEXTURE${i + firstGBufferBinding}`]);
-      gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
-      gl.uniform1i(this._progShade[`u_gbuffers[${i}]`], i + firstGBufferBinding);
-    }
+    // for (let i = 0; i < NUM_GBUFFERS; i++) {
+    //   gl.activeTexture(gl[`TEXTURE${i + firstGBufferBinding}`]);
+    //   gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
+    //   gl.uniform1i(this._progShade[`u_gbuffers[${i}]`], i + firstGBufferBinding);
+    // }
 
     renderFullscreenQuad(this._progShade);
   }
