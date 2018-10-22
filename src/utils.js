@@ -1,5 +1,6 @@
 import { gl, canvas, abort } from './init';
 import QuadVertSource from './shaders/quad.vert.glsl';
+import { mat4, vec4, vec3 } from 'gl-matrix';
 
 function downloadURI(uri, name) {
   var link = document.createElement('a');
@@ -98,3 +99,42 @@ export function renderFullscreenQuad(program) {
   // Unbind the array buffer.
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
 }
+
+export class AABB {
+  static getAABBForLight(scene, camera, viewMatrix, lightIndex) {
+    let aabb = new AABB();
+
+    let lightPosition = scene.lights[lightIndex].position;
+    let lightRadius = scene.lights[lightIndex].radius;
+    
+    let coords = []
+    coords.push(
+      lightPosition[0] - lightRadius, lightPosition[0] + lightRadius,
+      lightPosition[1] - lightRadius, lightPosition[1] + lightRadius,
+      lightPosition[2] - lightRadius, lightPosition[2] + lightRadius
+    );
+    for(let i = 0; i < coords.length; i++) {
+      let newVector = vec4.create();
+      vec4.transformMat4(newVector, newVector, viewMatrix);
+      coords[i] = newVector;
+    }
+
+    // aabb.min = vec3.fromValues(
+    //   Math.min(coords[0], coords[1]),
+    //   Math.min(coords[2], coords[3]),
+    //   Math.min(coords[4], coords[5])
+    // );
+
+    // aabb.max = vec3.fromValues(
+    //   Math.max(coords[0], coords[1]),
+    //   Math.max(coords[2], coords[3]),
+    //   Math.max(coords[4], coords[5])
+    // );
+
+    return aabb;
+  }
+}
+
+export function frustrumAABBIntersect() {
+
+};

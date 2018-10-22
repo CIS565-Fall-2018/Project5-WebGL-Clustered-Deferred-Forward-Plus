@@ -1,4 +1,5 @@
 import TextureBuffer from './textureBuffer';
+import { AABB } from "../utils"
 
 export const MAX_LIGHTS_PER_CLUSTER = 100;
 
@@ -21,10 +22,18 @@ export default class BaseRenderer {
           let i = x + y * this._xSlices + z * this._xSlices * this._ySlices;
           // Reset the light count to 0 for every cluster
           this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = 0;
+
+          for(let lightIndex = 0; lightIndex < scene.lights.length; lightIndex++) {
+            let aabb = AABB.getAABBForLight(scene, camera, viewMatrix, lightIndex);
+          }
         }
       }
     }
 
     this._clusterTexture.update();
+  }
+
+  getCellsOverlappedByLight(aabb) {
+
   }
 }
