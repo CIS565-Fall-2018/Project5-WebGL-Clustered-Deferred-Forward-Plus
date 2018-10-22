@@ -9,7 +9,7 @@ import fsSource from '../shaders/deferred.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 
-export const NUM_GBUFFERS = 4;
+export const NUM_GBUFFERS = 1;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -43,10 +43,13 @@ export default class ClusteredRenderer extends BaseRenderer {
     this._height = height;
 
     this._fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._fbo);
+
     
     //Create, bind, and store a depth target texture for the FBO
     this._depthTex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this._depthTex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -54,33 +57,33 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this._fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._depthTex, 0);
 
     // Create, bind, and store "color" target textures for the FBO
-    // this._gbuffers = new Array(NUM_GBUFFERS);
-    // let attachments = new Array(NUM_GBUFFERS);
-    // for (let i = 0; i < NUM_GBUFFERS; i++) {
-    //   attachments[i] = gl.COLOR_ATTACHMENT0 + i;
-    //   this._gbuffers[i] = gl.createTexture();
-    //   gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
-    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    //   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    //   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null);
-    //   gl.bindTexture(gl.TEXTURE_2D, null);
+    this._gbuffers = new Array(NUM_GBUFFERS);
+    let attachments = new Array(NUM_GBUFFERS);
+    for (let i = 0; i < NUM_GBUFFERS; i++) {
+      attachments[i] = gl.COLOR_ATTACHMENT0 + i;
+      this._gbuffers[i] = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG8, width, height, 0, gl.RG, gl.UNSIGNED_BYTE, null);
+      gl.bindTexture(gl.TEXTURE_2D, null);
 
-    //   gl.framebufferTexture2D(gl.FRAMEBUFFER, attachments[i], gl.TEXTURE_2D, this._gbuffers[i], 0);      
-    // }
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, attachments[i], gl.TEXTURE_2D, this._gbuffers[i], 0);      
+    }
 
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
+      console.log(gl.checkFramebufferStatus(gl.FRAMEBUFFER));
       throw "Framebuffer incomplete";
     }
 
     // Tell the WEBGL_draw_buffers extension which FBO attachments are
     // being used. (This extension allows for multiple render targets.)
-    //gl.drawBuffers(attachments);
+    gl.drawBuffers(attachments);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
