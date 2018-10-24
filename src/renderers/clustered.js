@@ -10,6 +10,7 @@ import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 
 export const NUM_GBUFFERS = 4;
+export const MAX_LIGHTS_PER_CLUSTER = 100;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
