@@ -1,7 +1,13 @@
 import TextureBuffer from './textureBuffer';
 import { AABB } from "../utils"
+import { gpu } from '../init';
+import { Vector3 } from "three"
+import { vec3, vec4, mat4 } from "gl-matrix"
+
 
 export const MAX_LIGHTS_PER_CLUSTER = 100;
+
+
 
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -11,12 +17,29 @@ export default class BaseRenderer {
     this._ySlices = ySlices;
     this._zSlices = zSlices;
 
-    //this._lightData = 
+    this.myFunc = gpu.createKernel(function(a) {
+      return this.thread.x;
+    }).setOutput([1000]);
   }
+  
 
   updateClusters(camera, viewMatrix, scene) {
     // TODO: Update the cluster texture with the count and indices of the lights in each cluster
     // This will take some time. The math is nontrivial...
+    //console.log(this.myFunc(new Float32Array(1)));
+    let leftX, leftY, leftZ, rightX, rightY, rightZ;
+
+    let tanA = Math.tan(camera.fov * 0.5 * (Math.PI / 180.0));
+
+    let threeForwardVector = new Vector3(0,0, -1);
+    threeForwardVector.applyQuaternion(camera.quaternion);
+    let threeUpVector = new Vector3(0,1,0);
+    threeUpVector.applyQuaternion(camera.quaternion);
+
+    let up = vec3.fromValues(threeUpVector.x, threeUpVector.y, threeUpVector.z);
+    let forward = vec3.fromValues(threeForwardVector.x, threeForwardVector.y, threeForwardVector.z);
+    let right = vec3.create();
+    vec3.cross(right, forward, up);
 
     for (let z = 0; z < this._zSlices; ++z) {
       for (let y = 0; y < this._ySlices; ++y) {

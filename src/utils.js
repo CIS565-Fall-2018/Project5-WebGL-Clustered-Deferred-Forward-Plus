@@ -1,4 +1,4 @@
-import { gl, canvas, abort } from './init';
+import { gl, canvas, abort, gpu } from './init';
 import QuadVertSource from './shaders/quad.vert.glsl';
 import { mat4, vec4, vec3 } from 'gl-matrix';
 
@@ -100,35 +100,44 @@ export function renderFullscreenQuad(program) {
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
 }
 
+
+
 export class AABB {
   static getAABBForLight(scene, camera, viewMatrix, lightIndex) {
     let aabb = new AABB();
 
-    let lightPosition = scene.lights[lightIndex].position;
-    let lightRadius = scene.lights[lightIndex].radius;
-    
-    let coords = []
-    coords.push(
-      lightPosition[0] - lightRadius, lightPosition[0] + lightRadius,
-      lightPosition[1] - lightRadius, lightPosition[1] + lightRadius,
-      lightPosition[2] - lightRadius, lightPosition[2] + lightRadius
-    );
-    for(let i = 0; i < coords.length; i++) {
-      let newVector = vec4.create();
-      vec4.transformMat4(newVector, newVector, viewMatrix);
-      coords[i] = newVector;
-    }
+    myFunc();
+    //console.log(myFunc);
+    // let lightPosition = scene.lights[lightIndex].position;
+    // let lightRadius = scene.lights[lightIndex].radius;
+
+    // let minVector = vec4.fromValues(
+    //   lightPosition[0] - lightRadius,
+    //   lightPosition[1] - lightRadius,
+    //   lightPosition[2] - lightRadius,
+    //   1.0
+    // );
+
+    // let maxVector = vec4.fromValues(
+    //   lightPosition[0] + lightRadius,
+    //   lightPosition[1] + lightRadius,
+    //   lightPosition[2] + lightRadius,
+    //   1.0
+    // );
+
+    // vec4.transformMat4(minVector, minVector, viewMatrix);
+    // vec4.transformMat4(maxVector, maxVector, viewMatrix);
 
     // aabb.min = vec3.fromValues(
-    //   Math.min(coords[0], coords[1]),
-    //   Math.min(coords[2], coords[3]),
-    //   Math.min(coords[4], coords[5])
+    //   Math.min(minVector[0], maxVector[0]),
+    //   Math.min(minVector[1], maxVector[1]),
+    //   Math.min(minVector[2], maxVector[2])
     // );
 
     // aabb.max = vec3.fromValues(
-    //   Math.max(coords[0], coords[1]),
-    //   Math.max(coords[2], coords[3]),
-    //   Math.max(coords[4], coords[5])
+    //   Math.max(minVector[0], maxVector[0]),
+    //   Math.max(minVector[1], maxVector[1]),
+    //   Math.max(minVector[2], maxVector[2])
     // );
 
     return aabb;
