@@ -38,9 +38,22 @@ camera.position.set(-10, 8, 0);
 cameraControls.target.set(0, 2, 0);
 gl.enable(gl.DEPTH_TEST);
 
+var count = 0;
+var time = 0;
+var prev_time = 0;
 function render() {
+  count++;
+  if (count >= 10) count = 0;
   scene.update();
   params._renderer.render(camera, scene);
+  let t1 = performance.now();
+  time += (t1 - prev_time);
+  prev_time = t1;
+  if (count === 0 ){
+      console.log("Rendering took " + time/10 + " milliseconds.");
+      time = 0;
+  }
+
 }
 
 makeRenderLoop(render)();
