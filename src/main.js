@@ -7,15 +7,33 @@ import Scene from './scene';
 const FORWARD = 'Forward';
 const FORWARD_PLUS = 'Forward+';
 const CLUSTERED = 'Clustered';
+const lambert = 'lambert';
+const blinnphong = 'blinnphong';
+const toon = 'toon';
+
+var shadingtype = 0;
 
 const params = {
-  renderer: FORWARD_PLUS,
+  renderer: FORWARD,
+    shadingmode:lambert,
   _renderer: null,
 };
 
 setRenderer(params.renderer);
 
 function setRenderer(renderer) {
+  if(params.shadingmode == 'lambert')
+  {
+    shadingtype = 0;
+  }
+  else if(params.shadingmode == 'blinnphong')
+  {
+    shadingtype = 1;
+  }
+  else if(params.shadingmode == 'toon')
+  {
+    shadingtype = 2;
+  }
   switch(renderer) {
     case FORWARD:
       params._renderer = new ForwardRenderer();
@@ -24,12 +42,14 @@ function setRenderer(renderer) {
       params._renderer = new ForwardPlusRenderer(15, 15, 15);
       break;
     case CLUSTERED:
-      params._renderer = new ClusteredRenderer(15, 15, 15);
+      params._renderer = new ClusteredRenderer(15, 15, 15,shadingtype);
       break;
   }
 }
 
 gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
+
+gui.add(params, 'shadingmode', [blinnphong, lambert,toon]).onChange(function (x) {setRenderer(params.renderer);});
 
 const scene = new Scene();
 scene.loadGLTF('models/sponza/sponza.gltf');

@@ -4,11 +4,11 @@ import { gl } from './init';
 // TODO: Edit if you want to change the light initial positions 
 export const LIGHT_MIN = [-14, 0, -6];
 export const LIGHT_MAX = [14, 20, 6];
-export const LIGHT_RADIUS = 5.0;
-export const LIGHT_DT = -0.03;
+export const LIGHT_RADIUS = 4.0;
+export const LIGHT_DT = -0.07;
 
 // TODO: This controls the number of lights
-export const NUM_LIGHTS = 100;
+export const NUM_LIGHTS = 600;
 
 class Scene {
   constructor() {
@@ -23,9 +23,9 @@ class Scene {
           Math.random() * (LIGHT_MAX[2] - LIGHT_MIN[2]) + LIGHT_MIN[2],
         ]),
         color: new Float32Array([
-          0.5 + 0.5 * Math.random(),
-          0.5 + 0.5 * Math.random(),
-          0.5 + Math.random(),
+          0.1 + 0.9 * Math.random(),
+          0.1 + 0.9 * Math.random(),
+          0.1 + 0.9 * Math.random(),
         ]),
         radius: LIGHT_RADIUS,
       });

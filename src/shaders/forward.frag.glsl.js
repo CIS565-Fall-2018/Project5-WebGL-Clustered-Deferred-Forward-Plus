@@ -6,6 +6,7 @@ export default function(params) {
   uniform sampler2D u_colmap;
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
+  uniform int u_shadingtype;
 
   varying vec3 v_position;
   varying vec3 v_normal;
