@@ -5,13 +5,10 @@ import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 export const MAX_LIGHTS_PER_CLUSTER = 700;
 
 function getNormalComponents(angle) {
-    //normal connects from point on hypot to end of view vec, can form 4 similar triangles
-    //for the normal triangle, extend the hypot so it's 1 and we get the side lengths for a normalized normal
-    //bigSide1 is 1 // view vec
-//    let angle = xstart+xlengthPerCluster*j;
+
     let bigHypot = Math.sqrt(1 + angle*angle);
     let normSide1 = 1 / bigHypot;
-    let normSide2 = -angle*normSide1;//lhs of plane, 2nd comp needs to be pos, rhs of plane 2nd comp needs to be neg
+    let normSide2 = -angle*normSide1;
     return vec2.fromValues(normSide1, normSide2);
 }
 
