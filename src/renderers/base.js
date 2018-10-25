@@ -1,11 +1,25 @@
-import { mat4, vec4, vec3 } from 'gl-matrix';
+import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 import { NUM_LIGHTS } from '../scene';
 import { LIGHT_RADIUS } from '../scene';
 import TextureBuffer from './textureBuffer';
 
 export const MAX_LIGHTS_PER_CLUSTER = 100;
-
 const PI_DIV_360 = 0.00872664625;
+
+function sin_atan(angle) {
+  return angle / Math.sqrt(1.0 + angle * angle);
+}
+function cos_atan(angle) {
+  return 1.0 / Math.sqrt(1.0 + angle * angle);
+}
+
+function getNormalComponents(angle) {
+
+    let bigHypot = Math.sqrt(1 + angle*angle);
+    let normSide1 = 1 / bigHypot;
+    let normSide2 = -angle*normSide1;
+    return vec2.fromValues(normSide1, normSide2);
+}
 
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -32,71 +46,133 @@ export default class BaseRenderer {
     }
 
     // calculate frustum dimensions (proportional based on depth adjustment added later)
-    let frustum_height = Math.abs(2.0 * Math.tan(camera.fov * PI_DIV_360));
-    let frustum_width = Math.abs(camera.aspect * frustum_height);
-    // total depth and z stride are unaffected by depth of light
-    let frustum_total_depth = camera.far - camera.near;
-    let stride_z = this._zSlices / frustum_total_depth;
+    const half_frustum_height = Math.tan(camera.fov * PI_DIV_360);
+    const frustum_height = 2.0 * half_frustum_height;
+    const frustum_width = camera.aspect * frustum_height;
+    const half_frustum_width = 0.5 * frustum_width;
+    const frustum_depth = camera.far - camera.near;
 
-    let light_position = vec4.create();
+    const stride_x = frustum_width / this._xSlices;
+    const stride_y = frustum_height / this._ySlices;
+    const stride_z = frustum_depth / this._zSlices;
+
+    const height_starting_index = -half_frustum_height;
+    const width_starting_index = -half_frustum_width;
+
+    // predeclaring some variables to prevent javascript memory overhead
+    let light_radius = 0;  let light_position = vec4.create();
+    let found_min = false;
+
     // Loop through lights counting number of lights at each buffer index 
     // and placing light in appropr loc in buffer for calcs
     for (let on_light = 0; on_light < NUM_LIGHTS; ++on_light) {
       // create variables of light's information
-      let light = scene.lights[on_light];
-      let light_radius = light.radius;
-      let light_position = vec4.fromValues(light.position[0], light.position[1], light.position[2], 1);
+      light_radius = scene.lights[on_light].radius;
+      light_position = vec4.fromValues(scene.lights[on_light].position[0],
+                                           scene.lights[on_light].position[1],
+                                           scene.lights[on_light].position[2],
+                                           1);
       vec4.transformMat4(light_position, light_position, viewMatrix);
 
       // for calculations need (-) of curr depth value bc of coordinate system
-      light_position[2] *= -1;
+      light_position[2] *= -1.0;
 
-      // frustum dimensions and values affected by light's depth
-      let frustum_height_at_depth = frustum_height * light_position[2];
-      let frustum_width_at_depth = frustum_width * light_position[2];
-      let stride_y = this._ySlices / frustum_height_at_depth; 
-      let stride_x = this._xSlices / frustum_width_at_depth;
 
+      /*
+       * Calculate relevant z depth frustum bounds
+       */
       // check which cluster slices would actually be influenced by this light
-      let cluster_z_min = Math.floor((light_position[2] - light_radius - camera.near) * stride_z);
-      let cluster_z_max = Math.floor((light_position[2] + light_radius - camera.near) * stride_z);
-      let cluster_y_min = Math.floor((light_position[1] - light_radius + frustum_height_at_depth * 0.5) * stride_y);
-      let cluster_y_max = Math.floor((light_position[1] + light_radius + frustum_height_at_depth * 0.5) * stride_y);
-      let cluster_x_min = Math.floor((light_position[0] - light_radius + frustum_width_at_depth * 0.5) * stride_x);
-      let cluster_x_max = Math.floor((light_position[0] + light_radius + frustum_width_at_depth * 0.5) * stride_x);
-
+      // using math.floor bc these are cluster indices
+      let cluster_z_min = Math.floor((light_position[2] - light_radius - camera.near) / stride_z);
+      let cluster_z_max = Math.floor((light_position[2] + light_radius - camera.near) / stride_z) + 1;
       // check if valid index locations for cluster structure dimensions - if not, then not visible so ignore
-      if ( (cluster_x_min >= this._xSlices || cluster_x_max < 0)
-        || (cluster_y_min >= this._ySlices || cluster_y_max < 0) 
-        || (cluster_z_min >= this._zSlices || cluster_z_max < 0) ) {
+      if (cluster_z_min >= this._zSlices || cluster_z_max < 0) {
         continue;
       }
-
       // cluster ranges can go outside bounds as long as overlapping with in-bounds locations
       // clamp cluster range to 0 -> slice bounds for each dimension
-      // using sliceCount - 1, because indexing domain is [0, length - 1]
-      cluster_x_min = Math.max(cluster_x_min, 0); cluster_x_max = Math.min(cluster_x_max, this._xSlices - 1);
-      cluster_y_min = Math.max(cluster_y_min, 0); cluster_y_max = Math.min(cluster_y_max, this._ySlices - 1);
-      cluster_z_min = Math.max(cluster_z_min, 0); cluster_z_max = Math.min(cluster_z_max, this._zSlices - 1);
+      cluster_z_min = Math.max(cluster_z_min, 0); cluster_z_max = Math.min(cluster_z_max, this._zSlices);
+
+      /*
+       * Calculate relevant x width frustum bounds
+       */
+      let cluster_x_min = this._xSlices;
+      let cluster_x_max = this._xSlices;
+      for(let x = 0; x <= this._xSlices; ++x) {
+        let angle = width_starting_index + stride_x * x;
+
+        // normal here: cosatan(angle), 0, -sinatan(angle) 
+        // dot between light position and normal
+        // dot simplified below
+
+        let dot = light_position[0] * cos_atan(angle) - light_position[2] * sin_atan(angle);
+        if(dot < light_radius) {
+          cluster_x_min = Math.max(0, x - 1);
+          break;
+        } 
+      }
+      for(let x = cluster_x_min + 1; x <= this._xSlices; ++x) {
+        let angle = width_starting_index + stride_x * x;
+
+        // normal here: cosatan(angle), 0, -sinatan(angle) 
+        // dot between light position and normal
+        // dot simplified below
+        let dot = light_position[0] * cos_atan(angle) - light_position[2] * sin_atan(angle);
+        if(dot < -light_radius) {
+          cluster_x_max = Math.max(0, x - 1);
+          break;
+        } 
+      }
+
+      /*
+       * Calculate relevant y height frustum bounds
+       */
+      let cluster_y_min = this._ySlices;
+      let cluster_y_max = this._ySlices;
+      for(let y = 0; y <= this._ySlices; ++y) {
+        let angle = height_starting_index + stride_y * y;
+
+        // normal here: 0, cosatan(angle), -sinatan(angle) 
+        // dot between light position and normal
+        // dot simplified below
+        let dot = light_position[1] * cos_atan(angle) - light_position[2] * sin_atan(angle);
+        if(dot < light_radius) {
+          cluster_y_min = Math.max(0, y - 1);
+          break;
+        } 
+      }
+      for (let y = 0; y <= this._ySlices; ++y) {
+        let angle = height_starting_index + stride_y * y;
+
+        // normal here: 0, cosatan(angle), -sinatan(angle) 
+        // dot between light position and normal
+        // dot simplified below
+        let dot = light_position[1] * cos_atan(angle) - light_position[2] * sin_atan(angle);
+        if(dot < -light_radius) {
+          cluster_y_max = Math.max(0, y - 1);
+          break;
+        }
+      }
 
       // fill in buffer locations where this light's influence should be included
-      for (let z = cluster_z_min; z <= cluster_z_max; ++z) {
-        for (let y = cluster_y_min; y <= cluster_y_max; ++y) {
-          for (let x = cluster_x_min; x <= cluster_x_max; ++x) {
-            let index_1D = x + y*this._xSlices + z*this._xSlices*this._ySlices;
+      for (let z = cluster_z_min; z < cluster_z_max; ++z) {
+        for (let y = cluster_y_min; y < cluster_y_max; ++y) {
+          for (let x = cluster_x_min; x < cluster_x_max; ++x) {
+            let index_1D =  x
+                          + y * this._xSlices
+                          + z * this._xSlices * this._ySlices;
             let index_light_count = this._clusterTexture.bufferIndex(index_1D, 0);
 
             // new light count with this light added to this cluster
-            let num_lights_in_cluster = 1 + this._clusterTexture.buffer[index_light_count];
+            let num_lights_in_cluster = 1.0 + this._clusterTexture.buffer[index_light_count];
 
             // check if updating count based on this light
             if (num_lights_in_cluster <= MAX_LIGHTS_PER_CLUSTER) {
-              this._clusterTexture.buffer[index_light_count] = num_lights_in_cluster;
+              let tex_pixel = Math.floor(num_lights_in_cluster * 0.25);
+              let index_to_fill = this._clusterTexture.bufferIndex(index_1D, tex_pixel);
+              let this_index = num_lights_in_cluster - tex_pixel * 4;
 
-              let row = Math.floor(num_lights_in_cluster * 0.25);
-              let distance_to_pixel_baseline = num_lights_in_cluster - 4 * row;
-              let index_to_fill = this._clusterTexture.bufferIndex(index_1D, row) + distance_to_pixel_baseline;
-              this._clusterTexture.buffer[index_to_fill] = on_light;
+              this._clusterTexture.buffer[index_to_fill + this_index] = on_light;
               this._clusterTexture.buffer[index_light_count] = num_lights_in_cluster;
             }
 
