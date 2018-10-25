@@ -1,4 +1,6 @@
+import { mat4, vec4, vec3 } from 'gl-matrix';
 import { NUM_LIGHTS } from '../scene';
+import { LIGHT_RADIUS } from '../scene';
 import TextureBuffer from './textureBuffer';
 
 export const MAX_LIGHTS_PER_CLUSTER = 100;
@@ -34,8 +36,9 @@ export default class BaseRenderer {
     let frustum_width = Math.abs(camera.aspect * frustum_height);
     // total depth and z stride are unaffected by depth of light
     let frustum_total_depth = camera.far - camera.near;
-    let stride_step_z = frustum_total_depth / this._zSlices;
+    let stride_z = this._zSlices / frustum_total_depth;
 
+    let light_position = vec4.create();
     // Loop through lights counting number of lights at each buffer index 
     // and placing light in appropr loc in buffer for calcs
     for (let on_light = 0; on_light < NUM_LIGHTS; ++on_light) {
@@ -51,8 +54,8 @@ export default class BaseRenderer {
       // frustum dimensions and values affected by light's depth
       let frustum_height_at_depth = frustum_height * light_position[2];
       let frustum_width_at_depth = frustum_width * light_position[2];
-      let stride_step_y = frustum_height_at_depth / this._ySlices;
-      let stride_step_x = frustum_width_at_depth / this._xSlices;
+      let stride_y = this._ySlices / frustum_height_at_depth; 
+      let stride_x = this._xSlices / frustum_width_at_depth;
 
       // check which cluster slices would actually be influenced by this light
       let cluster_z_min = Math.floor((light_position[2] - light_radius - camera.near) * stride_z);
@@ -72,12 +75,9 @@ export default class BaseRenderer {
       // cluster ranges can go outside bounds as long as overlapping with in-bounds locations
       // clamp cluster range to 0 -> slice bounds for each dimension
       // using sliceCount - 1, because indexing domain is [0, length - 1]
-      cluster_x_min = Math.max(cluster_x_min, 0);
-      cluster_x_max = Math.min(cluster_x_max, this._xSlices - 1);
-      cluster_y_min = Math.max(cluster_y_min, 0);
-      cluster_y_max = Math.min(cluster_y_max, this._ySlices - 1);
-      cluster_z_min = Math.max(cluster_z_min, 0);
-      cluster_z_max = Math.min(cluster_z_max, this._zSlices - 1);
+      cluster_x_min = Math.max(cluster_x_min, 0); cluster_x_max = Math.min(cluster_x_max, this._xSlices - 1);
+      cluster_y_min = Math.max(cluster_y_min, 0); cluster_y_max = Math.min(cluster_y_max, this._ySlices - 1);
+      cluster_z_min = Math.max(cluster_z_min, 0); cluster_z_max = Math.min(cluster_z_max, this._zSlices - 1);
 
       // fill in buffer locations where this light's influence should be included
       for (let z = cluster_z_min; z <= cluster_z_max; ++z) {
@@ -95,14 +95,16 @@ export default class BaseRenderer {
 
               let row = Math.floor(num_lights_in_cluster * 0.25);
               let distance_to_pixel_baseline = num_lights_in_cluster - 4 * row;
-              let index_to_fill = this._clusterTexture.bufferIndex(index_1D, row) + distance_pixel_baseline;
+              let index_to_fill = this._clusterTexture.bufferIndex(index_1D, row) + distance_to_pixel_baseline;
               this._clusterTexture.buffer[index_to_fill] = on_light;
               this._clusterTexture.buffer[index_light_count] = num_lights_in_cluster;
             }
-          }
-        }
-      }
-    }
+
+          }//end: x iter
+        }//end: y iter
+      }//end: z iter*/
+
+    }//end: for each light
 
     this._clusterTexture.update();
   }
