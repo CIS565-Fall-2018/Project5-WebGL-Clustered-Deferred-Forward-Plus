@@ -17,8 +17,10 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      numLights_perCluster: MAX_LIGHTS_PER_CLUSTER,
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer',
+                 'u_slice_dimensions', 'u_resolution', 'u_near_clip', 'u_far_clip', 'u_camera_position'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -65,6 +67,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
+    gl.uniformMatrix4fv(this._shaderProgram.u_view_matrix, false, this._viewMatrix);
 
     // Set the light texture as a uniform input to the shader
     gl.activeTexture(gl.TEXTURE2);
@@ -76,7 +79,12 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
-    // TODO: Bind any other shader inputs
+    // Bind any other shader inputs
+    gl.uniform3f(this._shaderProgram.u_slice_dimensions, this._xSlices, this._ySlices, this._zSlices);
+    gl.uniform2f(this._shaderProgram.u_resolution, canvas.width, canvas.height); 
+    gl.uniform1f(this._shaderProgram.u_near_clip, camera.near); 
+    gl.uniform1f(this._shaderProgram.u_far_clip, camera.far);
+    gl.uniform3f(this._shaderProgram.u_camera_position, camera.position.x, camera.position.y, camera.position.z);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);

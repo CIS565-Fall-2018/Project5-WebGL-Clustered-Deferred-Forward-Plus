@@ -63,11 +63,11 @@ export default class BaseRenderer {
       let cluster_x_max = Math.floor((light_position[0] + light_radius + frustum_width_at_depth * 0.5) * stride_x);
 
       // check if valid index locations for cluster structure dimensions - if not, then not visible so ignore
-      if ( (cluster_x_min >= this._xSlices || cluster_x_max < 0)
+      /*if ( (cluster_x_min >= this._xSlices || cluster_x_max < 0)
         || (cluster_y_min >= this._ySlices || cluster_y_max < 0) 
         || (cluster_z_min >= this._zSlices || cluster_z_max < 0) ) {
         continue;
-      }
+      }*/
 
       // cluster ranges can go outside bounds as long as overlapping with in-bounds locations
       // clamp cluster range to 0 -> slice bounds for each dimension
