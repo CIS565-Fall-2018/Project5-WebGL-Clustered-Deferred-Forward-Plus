@@ -1,28 +1,31 @@
 WebGL Clustered and Forward+ Shading
 ======================
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
-
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Salaar Kohari
+  * LinkedIn ([https://www.linkedin.com/in/salaarkohari](https://www.linkedin.com/in/salaarkohari))
+  * Website ([http://salaar.kohari.com](http://salaar.kohari.com))
+  * University of Pennsylvania, CIS 565: GPU Programming and Architecture
+* Tested on: **Google Chrome** 10/25/2018
+  Windows 10, i7-8700K @ 3.7GHz 32GB, GTX 1060 6GB (Personal Computer)
+  
+![](img/forward.gif)
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[![](img/forward.gif)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
-### Demo Video/GIF
+### Description
 
-[![](img/video.png)](TODO)
+### Images
 
-### (TODO: Your README)
+![](img/forward.png)
+Forward rendering scene with 100 dynamic lights
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+![](img/forwardplus.gif)
+Forward rendering scene with 100 dynamic lights
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
-
+![](img/depth.png)
+Depth map shader
 
 ### Credits
 
