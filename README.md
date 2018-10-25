@@ -3,19 +3,25 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Lan Lou
+* Tested on: **Google Chrome 69.0.3497.100 (Official Build) (64-bit)** on
+  Windows 10, i7-6700HQ @ 2.60GHz 16GB, GTX 1070 8GB (Personal Laptop)
 
-### Live Online
+## [Live Online](https://lanlou123.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+## Click this gif for video link
 
-### Demo Video/GIF
+[![click this gif for video link](img/cluster.gif)](https://www.youtube.com/watch?v=FbcmS2m7nNE)
 
-[![](img/video.png)](TODO)
+due to gif capture sofware's limitation, the above gif which represent blinn-phong shading appear to have some ramp effects from toon.
 
-### (TODO: Your README)
+## Sample gifs
+
+blinn-phong|lambert|toon
+----|----|----
+![](img/cluster.gif)|![](img/lambert.gif)|![](img/toon.gif)
+
+# Project Features:
 
 *DO NOT* leave the README to the last minute! It is a crucial part of the
 project, and we will not be able to grade you without a good README.
