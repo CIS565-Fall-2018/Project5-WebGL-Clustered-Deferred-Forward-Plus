@@ -91,32 +91,33 @@ export default function(params) {
     // locate fragment's cluster
     vec3 loc = vec3(floor(gl_FragCoord.x * u_slice_dimensions.x / u_resolution.x),
                     floor(gl_FragCoord.y * u_slice_dimensions.y / u_resolution.y),
-                    floor(-pos.z - u_nearclip) * u_slice_dimensions.z / (u_farclip - u_nearclip));
+                    floor((-pos.z - u_near_clip) * u_slice_dimensions.z / (u_far_clip - u_near_clip))
+                    );
 
     // get rest of cluster information - left as floats for math ease
-    float index_of_cluster =
+    float index_of_cluster = 
       loc.x + loc.y * u_slice_dimensions.x + loc.z * u_slice_dimensions.x * u_slice_dimensions.y;
     float num_clusters = u_slice_dimensions.x * u_slice_dimensions.y * u_slice_dimensions.z;
 
     // offset by 1 for both bc indexing in [0, length - 1]
-    float row = (index_of_cluster + 1) / (num_clusters + 1);
+    float row = (index_of_cluster + 1.0) / (num_clusters + 1.0);
 
-    int light_count = floor(texture2D(u_clusterbuffer, vec2(row, 0))[0]);
+    int light_count = int(texture2D(u_clusterbuffer, vec2(row, 0))[0]);
 
     // begin color calculation based on cluster information
     vec3 fragColor = vec3(0.0);
-    for (int i = 0; i < ${params.numLights}; ++i) {
+    for (int i = 0; i < ${params.numLights_perCluster}; ++i) {
       // check
       if (i >= light_count) {
         break;
       }
 
       float light_index = ExtractFloat( u_clusterbuffer,
-                                       (int)num_clusters,
-                                       ${Math.floor((params.numLights_perCluster + 1) / 4)},
-                                       (int)index_of_cluster,
-                                       i + 1);
-      Light light = UnpackLight((int)light_index);
+                                          int(num_clusters),
+                                          ${Math.floor((params.numLights_perCluster + 1) / 4)},
+                                          int(index_of_cluster),
+                                          int(i + 1) );
+      Light light = UnpackLight(int(light_index));
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
@@ -124,13 +125,13 @@ export default function(params) {
       float lambertTerm = max(dot(L, normal), 0.0);
 
       // regular shading
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
 
       // blinn-phong
-      //vec3 view_dir = normalize(u_camera_position - v_position);
-      //vec3 half_vec_for_calc = normalize(L + viewDir);
-      //float specularTerm = pow(max(dot(normal, half_vec_for_calc), 0), 100);
-      //fragColor += (albedo + vec3(specularTerm)) * lambertTerm * light.color lightIntensity;
+      vec3 view_dir = normalize(u_camera_position - v_position);
+      vec3 half_vec_for_calc = normalize(L + view_dir);
+      float specularTerm = pow(max(dot(normal, half_vec_for_calc), 0.0), 50.0);
+      fragColor += (albedo + vec3(specularTerm)) * lambertTerm * light.color * lightIntensity;
     }
 
     const vec3 ambientLight = vec3(0.025);
