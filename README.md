@@ -13,7 +13,7 @@ ________________________________________________________________________________
 [//]: # ( !![Issues](https://img.shields.io/badge/issues-none-green.svg)
 
 
-IN PROGRESS.
+IN PROGRESS
 
 ### Live Online
 
