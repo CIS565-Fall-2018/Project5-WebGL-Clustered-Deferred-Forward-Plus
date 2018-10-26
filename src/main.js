@@ -20,23 +20,28 @@ setRenderer(params.renderer);
 function setRenderer(renderer) {
   switch(renderer) {
     case FORWARD:
-      params._renderer = new ForwardRenderer();
+      params._renderer = new ForwardRenderer(params.bloom);
       break;
     case FORWARD_PLUS:
-      params._renderer = new ForwardPlusRenderer(15, 15, 15);
+      params._renderer = new ForwardPlusRenderer(15, 15, 15, params.bloom);
       break;
     case CLUSTERED:
-      params._renderer = new ClusteredRenderer(15, 15, 15);
+      params._renderer = new ClusteredRenderer(15, 15, 15, params.bloom);
       break;
   }
 }
 
 function setBloomEffect(){
-  if(params.bloom){
-    console.log("bloom effect on");
-  }
-  else{
-    console.log("bloom effect off");
+  switch(params.renderer) {
+    case FORWARD:
+      params._renderer = new ForwardRenderer(params.bloom);
+      break;
+    case FORWARD_PLUS:
+      params._renderer = new ForwardPlusRenderer(15, 15, 15, params.bloom);
+      break;
+    case CLUSTERED:
+      params._renderer = new ClusteredRenderer(15, 15, 15, params.bloom);
+      break;
   }
 }
 
