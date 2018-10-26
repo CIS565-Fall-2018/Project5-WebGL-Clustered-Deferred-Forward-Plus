@@ -18,6 +18,12 @@
 
    uniform sampler2D u_gbuffers[${params.numGBuffers}];
    varying vec2 v_uv;
+
+   //logarithmic function to determine z-direction slices
+int clusterZIndex(float viewSpaceZ, float nearClipz){
+    return int(floor(log(viewSpaceZ - nearClipz + 1.0) * 2.15));
+}
+
    struct Light {
     vec3 position;
     float radius;
@@ -98,8 +104,8 @@
     //which cluster is this fragment in??
     int clusterXIdx = int(gl_FragCoord.x / u_clusterTileSize.x);
     int clusterYIdx = int(gl_FragCoord.y / u_clusterTileSize.y);
-    int clusterZIdx = int((-viewSpaceDepth - u_nearClip) / u_clusterZStride);
-
+    //int clusterZIdx = int((-viewSpaceDepth - u_nearClip) / u_clusterZStride);
+    int clusterZIdx = clusterZIndex(-viewSpaceDepth , u_nearClip);
     //cluster texture dimensions
     const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});
     const int clusterTextureHeight = int(ceil((float(${params.maxLightsPerCluster}) + 1.0) / 4.0));

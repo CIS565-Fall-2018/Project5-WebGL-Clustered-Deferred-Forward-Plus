@@ -22,6 +22,11 @@ export default function(params) {
 
 //copy useful functions from forwardPlus.frag.glsl
 
+//logarithmic function to determine z-direction slices
+int clusterZIndex(float viewSpaceZ, float nearClipz){
+    return int(floor(log(viewSpaceZ - nearClipz + 1.0) * 2.15));
+}
+
   struct Light {
     vec3 position;
     float radius;
@@ -116,7 +121,8 @@ export default function(params) {
     //which cluster is this fragment in??
     int clusterXIdx = int(gl_FragCoord.x / u_clusterTileSize.x);
     int clusterYIdx = int(gl_FragCoord.y / u_clusterTileSize.y);
-    int clusterZIdx = int((-viewSpaceDepth - u_nearClip) / u_clusterZStride);
+    //int clusterZIdx = int((-viewSpaceDepth - u_nearClip) / u_clusterZStride);
+    int clusterZIdx = clusterZIndex(-viewSpaceDepth , u_nearClip);
 
     //cluster texture dimensions
     const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});

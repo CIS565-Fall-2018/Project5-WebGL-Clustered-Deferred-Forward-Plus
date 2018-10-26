@@ -45,15 +45,6 @@ function setBloomEffect(){
   }
 }
 
-function setToonShading(){
-  if(params.toonShading){
-    console.log("Toon Shading on");
-  }
-  else{
-    console.log("Toon Shading off");
-  }
-}
-
 
 gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
 

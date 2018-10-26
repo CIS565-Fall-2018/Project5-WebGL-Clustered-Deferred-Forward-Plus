@@ -8,7 +8,7 @@ import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 //added: shaders for bloom effect
 import QuadVertSource from '../shaders/quad.vert.glsl';
 //added: read brightness filter from filter shader
-import fsSourceToTexture from '../shaders/deferredToTextureAux.frag.glsl.js';
+import fsSourceToTexture from '../shaders/forwardPlusToTextureAux.frag.glsl.js';
 import fsSourceBrightnessTexture from '../shaders/brightnessFilterToTexture.frag.glsl';
 
 //added: blur fragment & vertex shaders
