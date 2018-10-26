@@ -4,6 +4,8 @@ export default function(params) {
   precision highp float;
   
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
+
+  // Redoing the impl from ForwardPlus to get texel index
   
   varying vec2 v_uv;
   
