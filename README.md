@@ -51,7 +51,7 @@ The ad-hoc binning method also iterates through all the lights. However, for eac
 
 ![](img/3b.png)
 
-When the fov is too large, the maximum and minimum positions along x and y axes do not represent to the maximum and minimum sub-frustums. One possible fix is to move the center to the front face of the AABB and calculate the covered sub-frustums using the z value there. But this will produce even more false positive results.
+When the fov is too large, the maximum and minimum positions along x and y axes do not represent the maximum and minimum sub-frustums. One possible fix is to move the center to the front face of the AABB and calculate the covered sub-frustums using the z value there. But this will produce even more false positive results.
 
 ---
 
