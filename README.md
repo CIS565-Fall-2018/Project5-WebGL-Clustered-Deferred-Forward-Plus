@@ -100,8 +100,9 @@ as the diagram explicitly shown, when the light count increases, pure forward su
 this test is done with 3500 light sources, light radius 4, renderer is clustered deferred.
 from this image, we know that cluster size of 15X15X15 strikes the best performance, I guess this can only be aquired by fine tunning the renderer.
 
-### pack vector vs not packed:
+### compressed g buffer vs not compressed:
 
+(the axis label should be compressed and uncompressed in the bottom of the image, just ignore it)
 
 ![](img/pa.JPG)
 this test is done with 1000 light sources, renderer is clustered deferred
