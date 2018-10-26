@@ -23,7 +23,7 @@ Analysis
 
 ### analysis
 
-xxx.
+The naive binning method iterates through all the lights. For each light, the method iterate through all sub-frustums in the view frustum and check whether the light is within the boundaries of each sub-frustum. This is an expensive algorithm so the result is not good enough.
 
 ---
 
@@ -35,11 +35,27 @@ xxx.
 
 ### analysis
 
-xxx.
+The early rejection binning method also iterates through all the lights. For each light, the method iterate through all sub-frustums in the view frustum and check whether the light is within the boundaries of each sub-frustum. But only this time, when it iterates through all the sub-frustums, it will first check whether the light is within the boundary of the sub-frustums along the current axis. If it is not, then there is no point in going through all the sub-frustums within that boundary.
 
 ---
 
-## 3. Comparison between naive, early rejection and ad-hoc binning method using Clustered Forward rendering.
+## 3. Comparison between Forward, Clustered Forward and Clustered Deferred using ad-hoc binning method.
+
+### overview
+
+![](img/3a.JPG)
+
+### analysis
+
+The ad-hoc binning method also iterates through all the lights. However, for each light, the method will calculate a boundary based on the AABB of the light and bin the light into all the sub-frustums within that boundary. This method will save all the plane-sphere intersection calculation but it will also intruduce false positive results. Besides, the method will not work if fov of the camera is too drastic. The reason can be explained by the following picture. 
+
+![](img/3b.png)
+
+When the fov is too drastic, the maximum and minimum positions along x and y axes do not represent to the maximum and minimum sub-frustums. One possible fix is to move the center to the front face of the AABB and calculate the covered sub-frustums using the z value there. But this will produce even more false positive results.
+
+---
+
+## 4. Comparison between naive, early rejection and ad-hoc binning method using Clustered Forward rendering.
 
 ### overview
 
@@ -47,11 +63,11 @@ xxx.
 
 ### analysis
 
-xxx.
+According to the chart, clustered forward rendering benefits from ad-hoc binning method. 
 
 ---
 
-## 4. Comparison between naive, early rejection and ad-hoc binning method using Clustered Deferred rendering.
+## 5. Comparison between naive, early rejection and ad-hoc binning method using Clustered Deferred rendering.
 
 ### overview
 
@@ -59,19 +75,19 @@ xxx.
 
 ### analysis
 
-xxx.
+According to the chart, clustered deferred rendering benefits from ad-hoc binning method more than clustered forward rendering. 
 
 ---
 
-## 5. Summary
+## 6. Other stuff
 
 ![](img/1.JPG)
 
-* xxx.
+* Deferred Blinn-Phong shading.
 
-* xxx.
+* 2 G-buffers.
 
-* xxx.
+* 2-component normals.
 
 ---
 
