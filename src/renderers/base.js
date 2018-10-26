@@ -1,8 +1,5 @@
 import TextureBuffer from './textureBuffer';
-import { AABB } from "../utils"
-import { gpu } from '../init';
-import { Vector3 } from "three"
-import { vec3, vec4, mat4 } from "gl-matrix"
+import { vec3, vec4 } from "gl-matrix"
 
 
 export const MAX_LIGHTS_PER_CLUSTER = 100;
