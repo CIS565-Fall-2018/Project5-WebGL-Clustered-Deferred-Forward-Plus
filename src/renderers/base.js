@@ -5,7 +5,7 @@ import { Vector3 } from "three"
 import { vec3, vec4, mat4 } from "gl-matrix"
 
 
-export const MAX_LIGHTS_PER_CLUSTER = 500;
+export const MAX_LIGHTS_PER_CLUSTER = 100;
 
 
 export default class BaseRenderer {
@@ -78,11 +78,11 @@ export default class BaseRenderer {
     let lightPos = vec3.fromValues(lightPosVec4[0], lightPosVec4[1], lightPosVec4[2]);
     let lightRadius = scene.lights[lightIndex].radius;
 
-    let proportion = ( (Math.abs(lightPos[2]) - nearClip)/(1.0 * farClip - nearClip) );
+    let proportion = ( (Math.abs(lightPos[2]) - 1.0 * nearClip)/(1.0 * farClip - 1.0 * nearClip) );
 
     // Get the bounds of the slice of the frustrum that this light lies in
-    let sliceWidth = nearWidth + (farWidth - nearWidth) * proportion;
-    let sliceHeight = nearHeight + (farHeight - nearHeight) * proportion;
+    let sliceWidth = nearWidth * (1-proportion) + farWidth * proportion;
+    let sliceHeight = nearHeight * (1-proportion) + farHeight * proportion;
 
     bounds.left  = Math.floor((lightPos[0] - lightRadius + 0.5 * sliceWidth) / (sliceWidth / this._xSlices));
     bounds.right = Math.floor((lightPos[0] + lightRadius + 0.5 * sliceWidth) / (sliceWidth / this._xSlices));
