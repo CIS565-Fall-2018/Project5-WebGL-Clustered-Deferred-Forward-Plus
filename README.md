@@ -12,11 +12,22 @@ WebGL Clustered and Forward+ Shading
 _Currently having issue with making github pages (npm run build issue)_
 [![](img/demo.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
-### Demo Video/GIF
+### Demo
+
+**_Demo_**
 
 <p align="middle">
-  <img src="img/demo.gif" width="600" />
+  <img src="img/demo.gif" width="600" title="Demo"/>
 </p>
+
+**_Blinn-Phong_**
+
+<p align="middle">
+  <img src="img/blinn.gif" width="600" title="Blinn-Phong"/>
+  <img src="img/blinn.png" width="600" title="Blinn-Phong"/>
+  <img src="img/blinn2.png" width="600" title="Blinn-Phong"/>
+</p>
+
 
 ### Features
 
@@ -32,14 +43,8 @@ _Currently having issue with making github pages (npm run build issue)_
 - Effect
   - Implemented deferred Blinn-Phong shading for point lights
 - Optimization
-  - Reduce number of g-buffers from 4 to 2, reconstructing world position using camera matrice and (gl.FragCoord.x, gl.FragCoord.y, depth)
+  - Pack values into vec4, reduce number of g-buffers from 4 to 2, reconstructing world position using camera matrice and (gl.FragCoord.x, gl.FragCoord.y, depth)
   
-### Effect
-#### Blinn-Phong shading
-<p align="middle">
-  <img src="img/blinn.gif" width="600" />
-</p>
-
 ### Analysis
 
 #### Clustered deferred rending components
@@ -54,10 +59,18 @@ Camera Position
 _Those are components used to final shading in deferred rendering. Among them, albedo, normal and depth are passing through g-buffers, while world position and camera position are reconstructed from information obtained from g-buffers._
 
 #### Performace
+_(Because I have no way to turn off the VSNYC of my computer and Google Chrome, the highest fps is limited to 60 all the time. Therefore the difference between forward+, clustered deferred, and optimized clustered deferred methods.)_
 ##### Performance comparison of Forward, Foward+ and Clustered methods
+<p align="middle">
+  <img src="img/comp1.png" width="600"/>
+</p>
+From the comparison of different rendering methods' performances, we can find that as the number of lights increases, the performance of Forward rendering dramatically drops. Also, the performance of Forward rendering is worse than Forward Plus and Clustered Deferred rendering. Also, there is only slightly difference between Forward Plus and Clustered Rendering. I think this is due to what I mentioned at the beginning of this session.
 
 ##### Performace comparison of unoptimized Clustered and optimized Clustered
-
+<p align="middle">
+  <img src="img/comp2.png" width="600"/>
+</p>
+When the number of lights is large enough, performance enhancement can be seen after optimization. For this part, I used 2 g-buffers instead of initial 4 g-buffers. Also, the world position and camera space position are calculated through one depth value passed through g-buffer.
 
 ### Credits
 
