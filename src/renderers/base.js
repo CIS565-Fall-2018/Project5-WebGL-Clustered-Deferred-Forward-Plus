@@ -5,7 +5,7 @@ import { Vector3 } from "three"
 import { vec3, vec4, mat4 } from "gl-matrix"
 
 
-export const MAX_LIGHTS_PER_CLUSTER = 100;
+export const MAX_LIGHTS_PER_CLUSTER = 500;
 
 
 export default class BaseRenderer {
@@ -57,7 +57,7 @@ export default class BaseRenderer {
             if (c < MAX_LIGHTS_PER_CLUSTER)
             {
               this._clusterTexture.buffer[countIndex] = c;
-              let nextLightIndex = this._clusterTexture.bufferIndex(i, c / 4) + (c % 4);
+              let nextLightIndex = this._clusterTexture.bufferIndex(i, Math.floor(c / 4)) + (c % 4);
               this._clusterTexture.buffer[nextLightIndex] = lightIndex;
             }
           }

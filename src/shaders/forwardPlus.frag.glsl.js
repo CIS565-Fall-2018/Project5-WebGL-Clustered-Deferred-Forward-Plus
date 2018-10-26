@@ -8,7 +8,6 @@ export default function(params) {
   uniform sampler2D u_colmap;
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
-  uniform sampler2D u_clusterBuffer;
 
   uniform float u_farClip;
   uniform float u_nearClip;
@@ -104,16 +103,15 @@ export default function(params) {
 
     // Get the count from the clusterBuffer of this element index
     int colIndex = cellX + cellY * int(u_xSlices) + cellZ * int(u_xSlices) * int(u_ySlices);
-    int numLights = int(ExtractFloat(u_clusterBuffer, ${params.clusterTextureWidth}, int(${params.clusterTextureHeight}), colIndex, 0));
-
+    int numLights = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, int(${params.clusterTextureHeight}), colIndex, 0));
 
     // For loop range of count extracting one light at a time
     for (int i = 1; i < int(${params.clusterTextureHeight}) * 4 - 1; ++i) {
-      if(i > numLights) {
+      if(i >= numLights) {
         break;
       }
 
-      int lightIndex = int(ExtractFloat(u_clusterBuffer, ${params.clusterTextureWidth}, int(${params.clusterTextureHeight}), colIndex, i));
+      int lightIndex = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, int(${params.clusterTextureHeight}), colIndex, i));
 
       Light light = UnpackLight(i);
       float lightDistance = distance(light.position, v_position);
@@ -129,14 +127,6 @@ export default function(params) {
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
-
-    //gl_FragColor = vec4(colIndex, colIndex, colIndex, 1.0);
-    //gl_FragColor = vec4(abs(v_viewPosition.z) / (300.0 - u_nearClip), abs(v_viewPosition.z) / (300.0 - u_nearClip), abs(v_viewPosition.z) / (300.0 - u_nearClip), 1.0);
-    //gl_FragColor = vec4(-1.0,-1.0,-1.0,1.0);
-    //gl_FragColor = vec4(abs(v_viewPosition), 1.0);
-    gl_FragColor = vec4(numLights, numLights, numLights, 1.0);
-    //float cellCount = u_xSlices * u_ySlices * 2.0;
-    //gl_FragColor = vec4(float(colIndex) / cellCount, float(colIndex) / cellCount, float(colIndex) / cellCount, 1.0);
   }
   `;
 }
