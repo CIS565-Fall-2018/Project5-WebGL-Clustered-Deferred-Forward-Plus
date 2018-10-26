@@ -3,25 +3,44 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Ishan Ranade
+* Tested on personal computer: Gigabyte Aero 14, Windows 10, i7-7700HQ, GTX 1060
 
-### Live Online
+![](forwardplus.JPG)
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+![](deferred.JPG)
 
-### Demo Video/GIF
+## Live Online
 
-[![](img/video.png)](TODO)
+[Demo Link](https://ishanranade.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
-### (TODO: Your README)
+## Demo Video/GIF
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+![](demo.gif)
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+## Introduction
+
+The purpose of this project was to use clustering of the view frustrum to speed up the render times of both forward plus and deferred rendering schemes.
+
+![](frustrumimage.png)
+
+## Deferred
+
+![](normals.JPG)
+
+![](position.JPG)
+
+![](albedo.JPG)
+
+## Performance Analysis
+
+
+
+![](15.JPG)
+
+![](20.JPG)
+
+![](25.JPG)
 
 
 ### Credits
