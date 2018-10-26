@@ -9,7 +9,7 @@ WebGL Clustered and Forward+ Shading
 
 ## [Live Online](https://lanlou123.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
-note : I only wrote the shading selection for clustered rendering
+note : I only wrote the shading selection dropdown menu for clustered rendering
 
 ## Click this gif for video link
 
