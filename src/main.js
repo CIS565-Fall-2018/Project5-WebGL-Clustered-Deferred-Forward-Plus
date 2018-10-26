@@ -11,6 +11,8 @@ const CLUSTERED = 'Clustered';
 const params = {
   renderer: FORWARD_PLUS,
   _renderer: null,
+  bloom: false,
+  toonShading: false,
 };
 
 setRenderer(params.renderer);
@@ -29,7 +31,29 @@ function setRenderer(renderer) {
   }
 }
 
+function setBloomEffect(){
+  if(params.bloom){
+    console.log("bloom effect on");
+  }
+  else{
+    console.log("bloom effect off");
+  }
+}
+
+function setToonShading(){
+  if(params.toonShading){
+    console.log("Toon Shading on");
+  }
+  else{
+    console.log("Toon Shading off");
+  }
+}
+
+
 gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
+
+gui.add(params, 'bloom').onChange(setBloomEffect);
+gui.add(params,'toonShading').onChange(setToonShading);
 
 const scene = new Scene();
 scene.loadGLTF('models/sponza/sponza.gltf');

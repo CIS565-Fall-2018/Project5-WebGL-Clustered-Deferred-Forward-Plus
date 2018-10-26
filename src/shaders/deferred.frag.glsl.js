@@ -88,20 +88,22 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
 //read from these 2 g-vuffers, get albedo and normal
     vec3 albedo = texture2D(u_gbuffers[0], v_uv).rgb;
     vec3 normal = texture2D(u_gbuffers[1], v_uv).xyz;
-
-    normal.z = sqrt(1.0 - normal.x* normal.x - normal.y * normal.y);
+    //changed
+    vec3 v_position = texture2D(u_gbuffers[3],v_uv).xyz;
+    //changed
+    //normal.z = sqrt(1.0 - normal.x* normal.x - normal.y * normal.y);
 
     vec3 fragColor = vec3(0.0);
 
     //kinda similar to forwardPlus shading
     //but instead of reading view space positon, just read depth
-    float viewSpaceDepth = texture2D(u_gbuffers[0], v_uv).w;
-    //vec3 viewSpacePos3 = vec3(u_viewMatrix * vec4(v_position, 1.0));
+    //float viewSpaceDepth = texture2D(u_gbuffers[0], v_uv).w;
+    vec3 viewSpacePos3 = vec3(u_viewMatrix * vec4(v_position, 1.0));
     
     //which cluster is this fragment in??
     int clusterXIdx = int(gl_FragCoord.x / u_clusterTileSize.x);
     int clusterYIdx = int(gl_FragCoord.y / u_clusterTileSize.y);
-    int clusterZIdx = int((-viewSpaceDepth - u_nearClip) / u_clusterZStride);
+    int clusterZIdx = int((-viewSpacePos3.z - u_nearClip) / u_clusterZStride);
 
     //cluster texture dimensions
     const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});

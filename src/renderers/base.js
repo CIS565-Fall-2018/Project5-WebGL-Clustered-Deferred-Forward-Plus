@@ -1,6 +1,6 @@
 import TextureBuffer from './textureBuffer';
 import {mat4, vec4, vec3} from 'gl-matrix';
-import {NUM_LIGHTS} from './scene';
+import {NUM_LIGHTS} from '../scene';
 
 import {canvas} from '../init'
 

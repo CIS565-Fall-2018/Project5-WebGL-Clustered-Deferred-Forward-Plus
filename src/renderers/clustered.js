@@ -12,8 +12,9 @@ import BaseRenderer from './base';
 import {MAX_LIGHTS_PER_CLUSTER} from './base';
 
 //changed to use 2 g-buffers
-//export const NUM_GBUFFERS = 4;
-export const NUM_GBUFFERS = 2;
+export const NUM_GBUFFERS = 4;
+//2 g-buffers is buggy, switch back to 4
+//export const NUM_GBUFFERS = 2;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -170,14 +171,14 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // TODO: Bind any other shader inputs
     //light texture
-    gl.activeTexture(gl.TEXTURE2);
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
-    gl.uniform1i(this._progShade.u_lightbuffer,2);
+    gl.uniform1i(this._progShade.u_lightbuffer,0);
 
     //cluster texture
-    gl.activeTexture(gl.TEXTURE3);
+    gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
-    gl.uniform1i(this._progShade.u_clusterbuffer);
+    gl.uniform1i(this._progShade.u_clusterbuffer,1);
 
     //cluster tile size
     gl.uniform2f(this._progShade.u_clusterTileSize, canvas.width / this._xSlices, canvas.height/this._ySlices);
@@ -189,7 +190,8 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
 
     // Bind g-buffers
-    const firstGBufferBinding = 0; // You may have to change this if you use other texture slots
+    //changed: change to 2 since we used texture slot 0~1
+    const firstGBufferBinding = 2; // You may have to change this if you use other texture slots
     for (let i = 0; i < NUM_GBUFFERS; i++) {
       gl.activeTexture(gl[`TEXTURE${i + firstGBufferBinding}`]);
       gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
