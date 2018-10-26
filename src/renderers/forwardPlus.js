@@ -23,7 +23,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
       slices_z: zSlices
     }), {
       uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer',
-                 'u_view_matrix', 'u_screen_dimensions', 'u_near_clip', 'u_far_clip', 'u_slices'],
+                 'u_view_matrix', 'u_screen_dimensions', 'u_near_clip', 'u_far_clip'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 

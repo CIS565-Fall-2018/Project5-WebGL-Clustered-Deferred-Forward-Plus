@@ -5,6 +5,8 @@ precision highp float;
 uniform sampler2D u_colmap;
 uniform sampler2D u_normap;
 
+uniform mat4 u_view_matrix;
+
 varying vec3 v_position;
 varying vec3 v_normal;
 varying vec2 v_uv;
@@ -21,14 +23,10 @@ void main() {
     vec3 norm = applyNormalMap(v_normal, vec3(texture2D(u_normap, v_uv)));
     vec3 col = vec3(texture2D(u_colmap, v_uv));
 
-    // populate your g buffer
+    // below is populating the g buffer
 
     // optimization to compress the normal vector into x and y components (can just solve for z)
     // vec4(r, g, b, nor_x), vec4(x, y, z, nor_y)
-    vec3 temp_normal = normalize(vec3(u_viewMatrix * vec4(norm,0.0)));
-    gl_FragData[0] = vec4(col, temp_normal.x);
-    gl_FragData[1] = vec4(v_position, temp_normal.y);
-
-    // if not optimizing the normal then:
-    // gl_FragData[2] = vec4(v_normal, 0.0);
+    gl_FragData[0] = vec4(col, v_normal.x);
+    gl_FragData[1] = vec4(v_position, v_normal.y);
 }

@@ -140,12 +140,12 @@ export default function(params) {
       float lambertTerm = max(dot(L, normal), 0.0);
 
       // regular shading
-      // fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
 
       // blinn-phong
       vec3 half_vec_for_calc = normalize(L + camera_pos3 - v_position);
-      float specularTerm = pow(max(dot(normal, half_vec_for_calc), 0.0), 200.0);
-      fragColor += (albedo + vec3(specularTerm)) * lambertTerm * light.color * lightIntensity;
+      float specularTerm = pow(max(dot(normal, half_vec_for_calc), 0.0), 2000.0);
+       fragColor += (albedo + vec3(specularTerm)) * lambertTerm * light.color * lightIntensity;
     }
 
 

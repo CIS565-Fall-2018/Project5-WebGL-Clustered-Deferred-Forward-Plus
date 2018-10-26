@@ -13,14 +13,6 @@ function cos_atan(angle) {
   return 1.0 / Math.sqrt(1.0 + angle * angle);
 }
 
-function getNormalComponents(angle) {
-
-    let bigHypot = Math.sqrt(1 + angle*angle);
-    let normSide1 = 1 / bigHypot;
-    let normSide2 = -angle*normSide1;
-    return vec2.fromValues(normSide1, normSide2);
-}
-
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
     // Create a texture to store cluster data. Each cluster stores the number of lights followed by the light indices
