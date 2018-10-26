@@ -11,6 +11,13 @@ export default function(params) {
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
+  
+  uniform float u_screen_width;
+  uniform float u_screen_height;
+  
+  uniform float u_camera_near;
+  uniform float u_camera_far;
+  uniform mat4 u_camera_view_mat;
 
   varying vec3 v_position;
   varying vec3 v_normal;
@@ -78,18 +85,50 @@ export default function(params) {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
-
+    
+    vec4 fragment_pos = u_camera_view_mat * vec4(v_position, 1.0);
+    
+    int x = int(gl_FragCoord.x / (float(u_screen_width) / float(${params.xSlices})));
+    int y = int(gl_FragCoord.y / (float(u_screen_height) / float(${params.ySlices})));
+    int z = int((-fragment_pos.z) / (float(u_camera_far - u_camera_near) / float(${params.zSlices})));
+    
+    int cluster_index = x + y * ${params.xSlices} + z * ${params.ySlices} * ${params.zSlices};
+    int cluster_count = ${params.xSlices} * ${params.ySlices} * ${params.zSlices};
+    
+    float ratio = float(cluster_index + 1) / float(cluster_count + 1);
+    int light_count = int(texture2D(u_clusterbuffer, vec2(ratio , 0)).r);    
+    int element_size = int(float(${params.maxLightsPerCluster} + 1) / 4.0);
+    
     vec3 fragColor = vec3(0.0);
+    
 
     for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+      if(i >= light_count){
+        break;
+      }
+      int index = int((i + 1) / 4);
+      float ratio_1 = float(index + 1)/float(element_size + 1);
+      vec4 element = texture2D(u_clusterbuffer, vec2(ratio, ratio_1));
+      int pos = i + 1 - index * 4;
+      int idx;
+      if(pos == 0){
+        idx = int(element[0]);
+      }else if(pos == 1){
+        idx = int(element[1]);
+      }else if(pos == 2){
+        idx = int(element[2]);
+      }else if(pos == 3){
+        idx = int(element[3]);
+      }
+      
+      Light light = UnpackLight(idx);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
-
+      
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
       float lambertTerm = max(dot(L, normal), 0.0);
-
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      
+      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);     
     }
 
     const vec3 ambientLight = vec3(0.025);
