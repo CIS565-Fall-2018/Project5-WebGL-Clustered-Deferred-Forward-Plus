@@ -56,24 +56,19 @@ export default class BaseRenderer {
               if(numLights < (MAX_LIGHTS_PER_CLUSTER))
               {
                 this._clusterTexture.buffer[numLightsIndex] = numLights;
-
-                  let nextLightIndex = this._clusterTexture.bufferIndex(i, Math.floor(numLights / 4)) + (numLights % 4);
-                  this._clusterTexture.buffer[nextLightIndex] = lightId;
-
+                let newLightIndex = this._clusterTexture.bufferIndex(i, Math.floor(numLights / 4)) + (numLights % 4);
+                this._clusterTexture.buffer[newLightIndex] = lightId;
               }
           }
         }
       }
     }
-
     this._clusterTexture.update();
   }
 
 
   calculateSliceBounds(scene, lightId, nearWidth, nearHeight, farWidth, farHeight, nearClip, farClip, viewMatrix)
   {
-
-
     let sliceBoundary = { 'xMin' : 0, 'xMax' : 0, 'yMin' : 0, 'yMax' : 0, 'zMin' : 0, 'zMax' : 0};
 
     let lightRadius = scene.lights[lightId].radius;
@@ -98,7 +93,6 @@ export default class BaseRenderer {
     let bucketNear = Math.floor(((Math.abs(lightPosVec[2]) - nearClip - lightRadius) / (farClip - nearClip)) * this._zSlices);
     let bucketFar = Math.floor(((Math.abs(lightPosVec[2]) - nearClip + lightRadius) / (farClip - nearClip)) * this._zSlices);
 
-
     sliceBoundary.xMin = Math.max(0, Math.min(this._xSlices - 1, bucketLeft));
     sliceBoundary.xMax = Math.max(0, Math.min(this._xSlices - 1, bucketRight));
 
@@ -107,11 +101,6 @@ export default class BaseRenderer {
 
     sliceBoundary.zMin = Math.max(0, Math.min(this._zSlices - 1, bucketNear));
     sliceBoundary.zMax = Math.max(0, Math.min(this._zSlices - 1, bucketFar));
-
-    //console.log(sliceBoundary);
-
     return sliceBoundary;
   }
-
-
 }

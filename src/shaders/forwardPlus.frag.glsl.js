@@ -1,6 +1,5 @@
 export default function(params) {
   return `
-  // TODO: This is pretty much just a clone of forward.frag.glsl.js
 
   #version 100
   precision highp float;
@@ -85,44 +84,40 @@ export default function(params) {
       return 0.0;
     }
   }
-  
-  int GetNumLights(int cellx, int celly, int cellz)
-  {
-    return 0;
-  }
-  
+ 
 
-  void main() {
+  void main() 
+  {
+  
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
     
-    
     // 1. Calculate the Slice index which the fragment is in
-    float proportion = ( (abs(v_viewPosition.z) - u_nearClip)/(1.0 * u_farClip - u_nearClip) );
-    float sliceWidth = u_nearWidth + (u_farWidth - u_nearWidth) * proportion;
-    float sliceHeight = u_nearHeight + (u_farHeight - u_nearHeight) * proportion;
+    float lerp = ((abs(v_viewPosition.z) - u_nearClip)/(1.0 * u_farClip - u_nearClip));
+    float sliceWidth = u_nearWidth + (u_farWidth - u_nearWidth) * lerp;
+    float sliceHeight = u_nearHeight + (u_farHeight - u_nearHeight) * lerp;
 
-    int cellX = int((v_viewPosition.x + 0.5 * sliceWidth) / (sliceWidth / u_xSlices));
-    int cellY = int((v_viewPosition.y + 0.5 * sliceHeight) / (sliceHeight / u_ySlices));
-    int cellZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSlices));
+    int sliceX = int((v_viewPosition.x + 0.5 * sliceWidth) / (sliceWidth / u_xSlices));
+    int sliceY = int((v_viewPosition.y + 0.5 * sliceHeight) / (sliceHeight / u_ySlices));
+    int sliceZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSlices));
     
     // 2. Find out the number of lights and their indices
-    int index = cellX + cellY * int(u_xSlices) + cellZ * int(u_xSlices * u_ySlices);
-  
+    int index = sliceX + sliceY * int(u_xSlices) + sliceZ * int(u_xSlices * u_ySlices);
     int numLights = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, 0));
     
     // 3. Iterate through the lights
     for(int lightIndex = 1; lightIndex < ${params.clusterTextureHeight} * 4 - 1; ++lightIndex)
     {
-    
+      // Break when we reach the last light for the particular cell
       if(lightIndex > numLights)
       {
-      break;
+        break;
       }
-    
+      
+      // Extract the light id 
       int lightId = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, lightIndex));
       
       Light light = UnpackLight(lightId);
@@ -139,7 +134,6 @@ export default function(params) {
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
-    //gl_FragColor = vec4(numLights, 0.0, 0.0, 1.0);
   }
   `;
 }

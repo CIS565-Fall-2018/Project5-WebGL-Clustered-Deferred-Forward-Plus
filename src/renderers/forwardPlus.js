@@ -64,12 +64,13 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     // Use this shader program
     gl.useProgram(this._shaderProgram.glShaderProgram);
 
-    // Upload the camera matrix
+    // Upload the view projection matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
 
-      // Upload the camera matrix
+    // Upload the view matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_modelViewMatrix, false, this._viewMatrix);
 
+    // Upload useful constants
     gl.uniform1f(this._shaderProgram.u_nearClip, camera.near);
     gl.uniform1f(this._shaderProgram.u_farClip, camera.far);
     gl.uniform1f(this._shaderProgram.u_nearWidth, this.nearWidth);
