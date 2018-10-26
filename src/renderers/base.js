@@ -15,6 +15,11 @@ export default class BaseRenderer {
     this._xSlices = xSlices;
     this._ySlices = ySlices;
     this._zSlices = zSlices;
+
+    this.nearWidth = 0;
+    this.nearHeight = 0;
+    this.farWidth = 0;
+    this.farHeight = 0;
   }
   
   updateClusters(camera, viewMatrix, scene) {
@@ -24,11 +29,11 @@ export default class BaseRenderer {
     let ta = Math.tan(camera.fov * 0.5 * (Math.PI / 180.0));
     let tb = camera.aspect * ta;
 
-    let nearHeight = 2.0 * ta * camera.near;
-    let nearWidth = 2.0 * tb * camera.near;
+    this.nearHeight = 2.0 * ta * camera.near;
+    this.nearWidth = 2.0 * tb * camera.near;
 
-    let farHeight = 2.0 * ta * camera.far;
-    let farWidth = 2.0 * tb * camera.far;
+    this.farHeight = 2.0 * ta * camera.far;
+    this.farWidth = 2.0 * tb * camera.far;
 
     for (let z = 0; z < this._zSlices; ++z) {
       for (let y = 0; y < this._ySlices; ++y) {
@@ -41,7 +46,7 @@ export default class BaseRenderer {
     }
 
     for(let lightIndex = 0; lightIndex < scene.lights.length; lightIndex++) {
-      let bounds = this.getBounds(scene, lightIndex, camera.near, nearWidth, nearHeight, camera.far, farWidth, farHeight, viewMatrix);
+      let bounds = this.getBounds(scene, lightIndex, camera.near, this.nearWidth, this.nearHeight, camera.far, this.farWidth, this.farHeight, viewMatrix);
 
       for(let x = bounds.left; x <= bounds.right; x++) {
         for(let y = bounds.bottom; y <= bounds.top; y++) {
@@ -52,7 +57,7 @@ export default class BaseRenderer {
             if (c < MAX_LIGHTS_PER_CLUSTER)
             {
               this._clusterTexture.buffer[countIndex] = c;
-              let nextLightIndex = this._clusterTexture.bufferIndex(i, c);
+              let nextLightIndex = this._clusterTexture.bufferIndex(i, c / 4) + (c % 4);
               this._clusterTexture.buffer[nextLightIndex] = lightIndex;
             }
           }

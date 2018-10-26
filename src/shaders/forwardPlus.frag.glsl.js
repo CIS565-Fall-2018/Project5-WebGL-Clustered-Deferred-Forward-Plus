@@ -10,12 +10,23 @@ export default function(params) {
   uniform sampler2D u_lightbuffer;
   uniform sampler2D u_clusterBuffer;
 
+  uniform float u_farClip;
+  uniform float u_nearClip;
+  uniform float u_nearWidth;
+  uniform float u_nearHeight;
+  uniform float u_farWidth;
+  uniform float u_farHeight;
+  uniform float u_xSlices;
+  uniform float u_ySlices;
+  uniform float u_zSlices;
+
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
   varying vec3 v_position;
   varying vec3 v_normal;
   varying vec2 v_uv;
+  varying vec3 v_viewPosition;
 
   vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -81,6 +92,21 @@ export default function(params) {
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
+
+    // First find the cell this fragment is in
+    float proportion = 1.0 - ( (-1.0 * v_viewPosition.z - u_nearClip)/(1.0 * u_farClip - u_nearClip) );
+    float sliceWidth = u_nearWidth + (u_farWidth - u_nearWidth) * proportion;
+    float sliceHeight = u_nearHeight + (u_farHeight - u_nearHeight) * proportion;
+
+    int cellX = int((v_viewPosition.x + 0.5 * sliceWidth) / (sliceWidth / u_xSlices));
+    int cellY = int((v_viewPosition.y + 0.5 * sliceHeight) / (sliceHeight / u_ySlices));
+    int cellZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSlices));
+
+    // Get the count from the clusterBuffer of this element index
+    //int u = 
+
+
+    // For loop range of count extracting one light at a time
 
     for (int i = 0; i < ${params.numLights}; ++i) {
       Light light = UnpackLight(i);
