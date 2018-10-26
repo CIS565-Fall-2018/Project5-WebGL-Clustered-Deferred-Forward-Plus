@@ -3,25 +3,60 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Wanru Zhao
+* Tested on: Google Chrome 70.0.3538.77 on
+  Windows 10, i7-8750H @ 2.20GHz 16GB, GTX 1070 with Max-Q Design (Personal Laptop)
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+_Currently having issue with making github pages (npm run build issue)_
+[![](img/demo.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+<p align="middle">
+  <img src="img/demo.gif" width="600" />
+</p>
 
-### (TODO: Your README)
+### Features
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+- Cluster update
+  - Devide the whole frustum into **_xSclices * _ySlices * _zSlices** clusters and assign lights into overlapping clusters
+- Foward+
+  - Build a data structure (texture buffer) to keep track of how many lights are in each cluster with their indices
+  - Render the scene using only the lights that overlap a given cluster
+- Clustered
+  - Reuse clustering logic
+  - Store vertex attributes in g-buffer
+  - Read g-buffer and render scene to produce final output
+- Effect
+  - Implemented deferred Blinn-Phong shading for point lights
+- Optimization
+  - Reduce number of g-buffers from 4 to 2, reconstructing world position using camera matrice and (gl.FragCoord.x, gl.FragCoord.y, depth)
+  
+### Effect
+#### Blinn-Phong shading
+<p align="middle">
+  <img src="img/blinn.gif" width="600" />
+</p>
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+### Analysis
+
+#### Clustered deferred rending components
+Albedo | Normal
+:--:|:--:
+![](img/albedo.png)|![](img/normal.png)
+Depth | World Position
+![](img/depth.png)|![](img/wpos.png)
+Camera Position
+![](img/cpos.png)
+
+_Those are components used to final shading in deferred rendering. Among them, albedo, normal and depth are passing through g-buffers, while world position and camera position are reconstructed from information obtained from g-buffers._
+
+#### Performace
+##### Performance comparison of Forward, Foward+ and Clustered methods
+
+##### Performace comparison of unoptimized Clustered and optimized Clustered
 
 
 ### Credits
