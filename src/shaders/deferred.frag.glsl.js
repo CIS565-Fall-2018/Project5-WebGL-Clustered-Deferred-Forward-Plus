@@ -94,7 +94,11 @@ export default function(params) {
     vec4 tmp_pos = u_inverseViewProjMat * screenSpacePos;
     tmp_pos =  tmp_pos/tmp_pos.w;
     vec3 v_position = tmp_pos.xyz;
-    //normal:
+
+    //normal
+    //reconstructing normal is easy to be wrong
+    //it should be in view space to handle normals of fragments
+    //but here need to transform normal back to world space
     vec3 normal;
     normal.xy = enNor;
     normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
