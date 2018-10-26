@@ -76,17 +76,17 @@ export default class BaseRenderer {
     let proportion = 1.0 - ( (-1.0 * lightPos[2] - nearClip)/(1.0 * farClip - nearClip) );
 
     // Get the bounds of the slice of the frustrum that this light lies in
-    let xRightBound = nearWidth + (farWidth - nearWidth) * proportion;
-    let yTopBound = - nearHeight + (farHeight - nearHeight) * proportion;
+    let sliceWidth = nearWidth + (farWidth - nearWidth) * proportion;
+    let sliceHeight = nearHeight + (farHeight - nearHeight) * proportion;
 
-    bounds.left  = Math.floor((lightPos[0] - lightRadius + xRightBound) / (xRightBound / this._xSlices));
-    bounds.right = Math.floor((lightPos[0] + lightRadius + xRightBound) / (xRightBound / this._xSlices));
+    bounds.left  = Math.floor((lightPos[0] - lightRadius + 0.5 * sliceWidth) / (sliceWidth / this._xSlices));
+    bounds.right = Math.floor((lightPos[0] + lightRadius + 0.5 * sliceWidth) / (sliceWidth / this._xSlices));
 
-    bounds.bottom = Math.floor((lightPos[1] - lightRadius + yTopBound) / (yTopBound / this._ySlices));
-    bounds.top    = Math.floor((lightPos[1] + lightRadius + yTopBound) / (yTopBound / this._ySlices));
+    bounds.bottom = Math.floor((lightPos[1] - lightRadius + 0.5 * sliceHeight) / (sliceHeight / this._ySlices));
+    bounds.top    = Math.floor((lightPos[1] + lightRadius + 0.5 * sliceHeight) / (sliceHeight / this._ySlices));
 
-    bounds.close = Math.floor((-lightPos[2] - lightRadius - nearClip) / ((farClip - nearClip) / this._zSlices));
-    bounds.far = Math.floor((-lightPos[2] + lightRadius - nearClip) / ((farClip - nearClip) / this._zSlices));
+    bounds.close = Math.floor((Math.abs(lightPos[2]) - lightRadius - nearClip) / ((farClip - nearClip) / this._zSlices));
+    bounds.far = Math.floor((Math.abs(lightPos[2]) + lightRadius - nearClip) / ((farClip - nearClip) / this._zSlices));
 
     bounds.left = Math.max(0, Math.min(this._xSlices - 1, bounds.left));
     bounds.right = Math.max(0, Math.min(this._xSlices - 1, bounds.right));
