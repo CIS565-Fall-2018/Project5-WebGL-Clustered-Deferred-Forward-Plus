@@ -13,6 +13,7 @@ export default function(params) {
   uniform mat4 u_viewMatrix;
   uniform mat4 u_viewInvMatrix;
   uniform mat4 u_viewProjInvMatrix;
+  uniform int u_isBlinn;
 
   varying vec2 v_uv;
 
@@ -74,7 +75,7 @@ export default function(params) {
   
   void main() {
     
-    /*
+    
     // TODO: extract data from g buffers and do lighting
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
@@ -84,8 +85,9 @@ export default function(params) {
     vec3 pos = gb1.xyz; // world position
     vec3 normal = gb2.xyz;
     vec3 vpos = (u_viewMatrix * vec4(pos, 1.0)).xyz; // camera space position
-    */
+    
 
+    /*
     //optimization
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
@@ -100,6 +102,7 @@ export default function(params) {
     pos /= pos.w;
 
     vec4 vpos = u_viewMatrix * pos;
+    */
   
     vec3 fragColor = vec3(0.0);
 
@@ -133,17 +136,15 @@ export default function(params) {
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     
-      // Blinn-Phong shading
-      
-      /*
-      vec3 specColor = vec3(1.0);
-      vec3 V = -normalize(vpos.xyz);
-      vec3 H = normalize(L + V);
-      float specularTerm = pow(max(dot(H, normal), 0.0), 10.0);
-      fragColor += (specColor * specularTerm) * light.color * vec3(lightIntensity);
-      */
-      
-    
+      if(u_isBlinn == 1) {
+        // Blinn-Phong shading
+        vec3 specColor = vec3(2.0);
+        vec3 V = -normalize(vpos.xyz);
+        vec3 H = normalize(L + V);
+        float specularTerm = pow(max(dot(H, normal), 0.0), 150.0);
+        fragColor += (specColor * specularTerm) * light.color * vec3(lightIntensity);
+
+      }
     }
 
     const vec3 ambientLight = vec3(0.025);

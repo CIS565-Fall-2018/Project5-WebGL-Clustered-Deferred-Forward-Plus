@@ -29,7 +29,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     this._viewMatrix = mat4.create();
     this._viewProjectionMatrix = mat4.create();
 
-    console.log("light num: " + NUM_LIGHTS);
+    console.log("Forward+ rendering, light num: " + NUM_LIGHTS);
   }
 
   render(camera, scene) {

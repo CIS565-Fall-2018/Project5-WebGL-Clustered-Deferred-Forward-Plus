@@ -22,6 +22,8 @@ export default class ForwardRenderer {
     this._projectionMatrix = mat4.create();
     this._viewMatrix = mat4.create();
     this._viewProjectionMatrix = mat4.create();
+
+    console.log("forward rendering, light num = " + NUM_LIGHTS);
   }
 
   render(camera, scene) {

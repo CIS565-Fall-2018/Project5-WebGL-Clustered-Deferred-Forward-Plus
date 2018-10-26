@@ -8,8 +8,9 @@ import QuadVertSource from '../shaders/quad.vert.glsl';
 import fsSource from '../shaders/deferred.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer, {MAX_LIGHTS_PER_CLUSTER} from './base';
+import {onBlinn} from '../main';
 
-export const NUM_GBUFFERS = 2;
+export const NUM_GBUFFERS = 4;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -31,15 +32,19 @@ export default class ClusteredRenderer extends BaseRenderer {
       numXSlices: xSlices,
       numYSlices: ySlices,
       numZSlices: zSlices,
-      maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER
+      maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER,
     }), {
-      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]',  'u_screendimension', 'u_cameraclip', 'u_lightbuffer', 'u_clusterbuffer', 'u_viewMatrix', 'u_viewInvMatrix', 'u_viewProjInvMatrix'],
+      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]',  
+                 'u_screendimension', 'u_cameraclip', 'u_lightbuffer', 'u_clusterbuffer',
+                 'u_viewMatrix', 'u_viewInvMatrix', 'u_viewProjInvMatrix', 'u_isBlinn'],
       attribs: ['a_uv'],
     });
 
     this._projectionMatrix = mat4.create();
     this._viewMatrix = mat4.create();
     this._viewProjectionMatrix = mat4.create();
+
+    console.log("Clustered rendering, light num = " + NUM_LIGHTS);
   }
 
   setupDrawBuffers(width, height) {
@@ -169,6 +174,9 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.uniform2fv(this._progShade.u_cameraclip, [camera.near, camera.far]);
     gl.uniformMatrix4fv(this._progShade.u_viewInvMatrix, false, invViewMat);
     gl.uniformMatrix4fv(this._progShade.u_viewProjInvMatrix, false, invVPMat);
+    gl.uniform1i(this._progShade.u_isBlinn, onBlinn);
+
+    //console.log(onBlinn);
 
     // Bind g-buffers
     const firstGBufferBinding = 0; // You may have to change this if you use other texture slots

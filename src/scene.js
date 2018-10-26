@@ -158,9 +158,9 @@ class Scene {
   update() {
     for (let i = 0; i < NUM_LIGHTS; i++) {
       // OPTIONAL TODO: Edit if you want to change how lights move
-      this.lights[i].position[1] += LIGHT_DT;
+      // this.lights[i].position[1] += LIGHT_DT;
       // wrap lights from bottom to top
-      this.lights[i].position[1] = (this.lights[i].position[1] + LIGHT_MAX[1] - LIGHT_MIN[1]) % LIGHT_MAX[1] + LIGHT_MIN[1];
+      // this.lights[i].position[1] = (this.lights[i].position[1] + LIGHT_MAX[1] - LIGHT_MIN[1]) % LIGHT_MAX[1] + LIGHT_MIN[1];
     }
   }
 
