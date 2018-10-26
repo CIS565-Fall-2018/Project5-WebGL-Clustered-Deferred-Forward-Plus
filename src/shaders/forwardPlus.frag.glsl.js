@@ -9,6 +9,11 @@ export default function(params) {
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
 
+  uniform float u_nearClip;
+  uniform vec2 u_clusterTileSize;
+  uniform float u_clusterZStride;
+  uniform mat4 u_viewMatrix;
+
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
@@ -81,8 +86,50 @@ export default function(params) {
 
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+    //changed
+    vec3 viewSpacePos3 = vec3(u_viewMatrix * vec4(v_position, 1.0));
+    //which cluster is this fragment in??
+    int clusterXIdx = int(gl_FragCoord.x / u_clusterTileSize.x);
+    int clusterYIdx = int(gl_FragCoord.y / u_clusterTileSize.y);
+    int clusterZIdx = int((-viewSpacePos3.z - u_nearClip) / u_clusterZStride);
+
+    //cluster texture dimensions
+    const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});
+    const int clusterTextureHeight = int(ceil((float(${params.maxLightsPerCluster}) + 1.0) / 4.0));
+
+    //get light influence counts from cluster texture buffer:
+    //get cluster index
+    int clusterIdx = clusterXIdx + clusterYIdx * int(${params.numXSlices}) + clusterZIdx * int(${params.numXSlices}) * int(${params.numYSlices});
+    
+    //uv coords in cluster texture
+    float clusterTex_u = float(clusterIdx + 1) / float(clusterTextureWidth + 1);
+    float clusterTex_v = 0.0;
+    float clusterTex_v_offset = 1.0 / float(clusterTextureHeight + 1);
+    clusterTex_v += clusterTex_v_offset;
+
+    //get the texel using the uv
+    vec4 clusterTex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
+    //read influencing data from cluster texel
+    int influencingLightCount = int(cluster_Tex[0]);
+    //maximum number of light sources in cluster
+    const int numLightsMax = int(min(float(${params.maxLightsPerCluster}), float(${params.numLights})));
+
+    //shade lights
+    int clusterTexIdxToFetch = 1;
+    for(int i = 0; i < numLightsMax; i++)
+    {
+      if(i == influencingLightCount)
+      {
+        break;
+      }
+      int lightIdx;
+      if(clusterTexIdxToFetch <= 3){
+        lightIdx = int(cluster_Tex[clusterTexIdxToFetch]);
+      }
+      clusterTexIdxToFetch++;
+
+      Light light = UnpackLight(lightIdx);
+
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
@@ -90,7 +137,24 @@ export default function(params) {
       float lambertTerm = max(dot(L, normal), 0.0);
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      
+      if(clusterTexIdxToFetch == 4){
+        clusterTexIdxToFetch = 0;
+        clusterTex_v += clusterTex_v_offset;
+        cluster_Tex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
+      }
+    
     }
+//    for (int i = 0; i < ${params.numLights}; ++i) {
+//      Light light = UnpackLight(i);
+//     float lightDistance = distance(light.position, v_position);
+//      vec3 L = (light.position - v_position) / lightDistance;
+
+//      float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
+//      float lambertTerm = max(dot(L, normal), 0.0);
+
+//      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+//    }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;

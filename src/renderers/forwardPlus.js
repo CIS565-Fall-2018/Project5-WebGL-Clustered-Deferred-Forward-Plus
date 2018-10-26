@@ -7,6 +7,8 @@ import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 
+import {MAX_LIGHTS_PER_CLUSTER} from './base';
+
 export default class ForwardPlusRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
     super(xSlices, ySlices, zSlices);
@@ -16,8 +18,13 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      maxNumberLightsPerCluster: MAX_LIGHTS_PER_CLUSTER,
+      numXSlices :xSlices,
+      numYSlices :ySlices,
+      numZSlices :zSlices,
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer',
+      'u_viewMatrix', 'u_nearClip', 'u_clusterTileSize', 'u_clusterZStride'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -34,7 +41,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     mat4.multiply(this._viewProjectionMatrix, this._projectionMatrix, this._viewMatrix);
 
     // Update cluster texture which maps from cluster index to light list
-    this.updateClusters(camera, this._viewMatrix, scene);
+    this.updateClusters(camera, this._viewMatrix, scene, this._viewProjectionMatrix);
     
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
@@ -76,6 +83,15 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
     // TODO: Bind any other shader inputs
+
+    // cluster tile size
+    gl.uniform2f(this._shaderProgram.u_clusterTileSize, canvas.width/this._xSlices, canvas.height/this._ySlices);
+    // near clip plane
+    gl.uniform1f(this._shaderProgram.u_nearClip, camera.near);
+    // the stride used in cluster z-direction
+    gl.uniform1f(this._shaderProgram.u_clusterZStride, (camera.far - camera.near) / this._zSlices);
+    // the view matrix
+    gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);
