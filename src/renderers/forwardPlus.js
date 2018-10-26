@@ -6,6 +6,7 @@ import vsSource from '../shaders/forwardPlus.vert.glsl';
 import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
+import { MAX_LIGHTS_PER_CLUSTER } from './base';
 
 export default class ForwardPlusRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -16,8 +17,9 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      maxLights: MAX_LIGHTS_PER_CLUSTER
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'u_xSlices', 'u_ySlices'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -76,6 +78,8 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
     // TODO: Bind any other shader inputs
+    gl.uniform1i(this._shaderProgram.u_xSlices, this._xSlices);
+    gl.uniform1i(this._shaderProgram.u_ySlices, this._ySlices);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);

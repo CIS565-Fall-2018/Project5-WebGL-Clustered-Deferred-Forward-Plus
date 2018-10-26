@@ -8,6 +8,8 @@ export default function(params) {
   uniform sampler2D u_colmap;
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
+  uniform int u_xSlices;
+  uniform int u_ySlices;
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
@@ -75,6 +77,7 @@ export default function(params) {
   }
 
   void main() {
+      /*
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
@@ -95,7 +98,14 @@ export default function(params) {
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
-    gl_FragColor = vec4(fragColor, 1.0);
+    //gl_FragColor = vec4(fragColor, 1.0);
+    */
+    //gl_FragColor = vec4(float(u_ySlices)/30.0, float(u_ySlices)/30.0, float(u_ySlices)/30.0, 1.0);
+    
+    float num = ExtractFloat(u_clusterbuffer, u_xSlices * u_ySlices, ${params.maxLights + 1}, 0, 0);
+    float f = 200.0;
+    //gl_FragColor = vec4(num / f, num / f, num / f, 1.0);
+    gl_FragColor = vec4(gl_Position[0], gl_Position[1], 0.0, 1.0);
   }
   `;
 }
