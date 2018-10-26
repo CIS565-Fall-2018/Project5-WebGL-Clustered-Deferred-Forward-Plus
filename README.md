@@ -34,6 +34,7 @@ bandwidth since it reads from g-buffer for each light.
 
 ## Live Online
 
+Wait to be added.
 [![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
 ## Demo Video/GIF

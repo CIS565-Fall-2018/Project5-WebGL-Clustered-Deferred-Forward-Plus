@@ -56,8 +56,8 @@ export default class BaseRenderer {
             let lightRadius = scene.lights[i].radius;
             let z = lightPos[2] - camera.near;
 
-            zMin = Math.floor((z - lightRadius) / parseFloat(z_step));
-            zMax = Math.floor((z + lightRadius) / parseFloat(z_step));
+            zMin = Math.floor((z - lightRadius) / z_step);
+            zMax = Math.floor((z + lightRadius) / z_step);
 
             if (zMin >= this._zSlices || zMax < 0) continue;
             zMin = Math.max(0, zMin);
