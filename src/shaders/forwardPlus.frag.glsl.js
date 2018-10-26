@@ -94,7 +94,7 @@ export default function(params) {
     vec3 fragColor = vec3(0.0);
 
     // First find the cell this fragment is in
-    float proportion = 1.0 - ( (-1.0 * v_viewPosition.z - u_nearClip)/(1.0 * u_farClip - u_nearClip) );
+    float proportion = ( (abs(v_viewPosition.z) - u_nearClip)/(1.0 * u_farClip - u_nearClip) );
     float sliceWidth = u_nearWidth + (u_farWidth - u_nearWidth) * proportion;
     float sliceHeight = u_nearHeight + (u_farHeight - u_nearHeight) * proportion;
 
@@ -103,12 +103,18 @@ export default function(params) {
     int cellZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSlices));
 
     // Get the count from the clusterBuffer of this element index
-    //int u = 
+    int colIndex = cellX + cellY * int(u_xSlices) + cellZ * int(u_xSlices) * int(u_ySlices);
+    int numLights = int(ExtractFloat(u_clusterBuffer, ${params.clusterTextureWidth}, int(${params.clusterTextureHeight}), colIndex, 0));
 
 
     // For loop range of count extracting one light at a time
+    for (int i = 1; i < int(${params.clusterTextureHeight}) * 4 - 1; ++i) {
+      if(i > numLights) {
+        break;
+      }
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
+      int lightIndex = int(ExtractFloat(u_clusterBuffer, ${params.clusterTextureWidth}, int(${params.clusterTextureHeight}), colIndex, i));
+
       Light light = UnpackLight(i);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
@@ -123,6 +129,14 @@ export default function(params) {
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
+
+    //gl_FragColor = vec4(colIndex, colIndex, colIndex, 1.0);
+    //gl_FragColor = vec4(abs(v_viewPosition.z) / (300.0 - u_nearClip), abs(v_viewPosition.z) / (300.0 - u_nearClip), abs(v_viewPosition.z) / (300.0 - u_nearClip), 1.0);
+    //gl_FragColor = vec4(-1.0,-1.0,-1.0,1.0);
+    //gl_FragColor = vec4(abs(v_viewPosition), 1.0);
+    gl_FragColor = vec4(numLights, numLights, numLights, 1.0);
+    //float cellCount = u_xSlices * u_ySlices * 2.0;
+    //gl_FragColor = vec4(float(colIndex) / cellCount, float(colIndex) / cellCount, float(colIndex) / cellCount, 1.0);
   }
   `;
 }

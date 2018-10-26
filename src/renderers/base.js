@@ -78,7 +78,7 @@ export default class BaseRenderer {
     let lightPos = vec3.fromValues(lightPosVec4[0], lightPosVec4[1], lightPosVec4[2]);
     let lightRadius = scene.lights[lightIndex].radius;
 
-    let proportion = 1.0 - ( (-1.0 * lightPos[2] - nearClip)/(1.0 * farClip - nearClip) );
+    let proportion = ( (Math.abs(lightPos[2]) - nearClip)/(1.0 * farClip - nearClip) );
 
     // Get the bounds of the slice of the frustrum that this light lies in
     let sliceWidth = nearWidth + (farWidth - nearWidth) * proportion;
