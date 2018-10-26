@@ -27,7 +27,9 @@ export default function(params) {
 
   float ExtractFloat(sampler2D texture, int textureWidth, int textureHeight, int index, int component) {
     float u = float(index + 1) / float(textureWidth + 1);
-    int pixel = component / 4;
+    int pixel = component / 4; // pixel is 0 or 1
+    
+    // in our example, pixel will always be 0 or 1. v will therefore be: 1/3 = 0, or 2/3 =  0
     float v = float(pixel + 1) / float(textureHeight + 1);
     vec4 texel = texture2D(texture, vec2(u, v));
     int pixelComponent = component - pixel * 4;
@@ -52,6 +54,8 @@ export default function(params) {
     // LOOK: This extracts the 4th float (radius) of the (index)th light in the buffer
     // Note that this is just an example implementation to extract one float.
     // There are more efficient ways if you need adjacent values
+    
+    // extract float: given a light buffer, the width, the height, the ith light idx, and the component to extract
     light.radius = ExtractFloat(u_lightbuffer, ${params.numLights}, 2, index, 3);
 
     light.color = v2.rgb;
