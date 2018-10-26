@@ -19,7 +19,7 @@ Analysis
 
 ### overview
 
-![](img/2.jpg)
+![](img/2.JPG)
 
 ### analysis
 
@@ -31,7 +31,7 @@ xxx.
 
 ### overview
 
-![](img/3.jpg)
+![](img/3.JPG)
 
 ### analysis
 
@@ -43,7 +43,7 @@ xxx.
 
 ### overview
 
-![](img/4.jpg)
+![](img/4.JPG)
 
 ### analysis
 
@@ -55,7 +55,7 @@ xxx.
 
 ### overview
 
-![](img/5.jpg)
+![](img/5.JPG)
 
 ### analysis
 
@@ -64,6 +64,8 @@ xxx.
 ---
 
 ## 5. Summary
+
+![](img/1.JPG)
 
 * xxx.
 
