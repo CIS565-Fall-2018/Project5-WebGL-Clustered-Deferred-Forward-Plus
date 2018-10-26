@@ -3,26 +3,75 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Xiao Zhang
+  * [LinkedIn](https://www.linkedin.com/in/xiao-zhang-674bb8148/)
+* Tested on: Windows 10, i7-7700K @ 4.20GHz 16.0GB, GTX 1080 15.96GB (my own PC)
 
-### Live Online
+Analysis 
+======================
+* MAX_LIGHTS_PER_CLUSTER is always NUM_LIGHTS;
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+* Rendering time is measured in milisecond, so lower is better.
 
-### Demo Video/GIF
+---
 
-[![](img/video.png)](TODO)
+## 1. Comparison between Forward, Clustered Forward and Clustered Deffered using naive binning method. 
 
-### (TODO: Your README)
+### overview
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+![](img/2.jpg)
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+### analysis
 
+xxx.
+
+---
+
+## 2. Comparison between Forward, Clustered Forward and Clustered Deffered using early rejection binning method.
+
+### overview
+
+![](img/3.jpg)
+
+### analysis
+
+xxx.
+
+---
+
+## 3. Comparison between naive, early rejection and ad-hoc binning method using Clustered Forward rendering.
+
+### overview
+
+![](img/4.jpg)
+
+### analysis
+
+xxx.
+
+---
+
+## 4. Comparison between naive, early rejection and ad-hoc binning method using Clustered Deffered rendering.
+
+### overview
+
+![](img/5.jpg)
+
+### analysis
+
+xxx.
+
+---
+
+## 5. Summary
+
+* xxx.
+
+* xxx.
+
+* xxx.
+
+---
 
 ### Credits
 

@@ -39,7 +39,20 @@ export default class TextureBuffer {
    * @param {*} component The ith float of an element is located in the (i/4)th pixel
    */
   bufferIndex(index, component) {
-    return 4 * index + 4 * component * this._elementCount;
+    //return 4 * index + 4 * component * this._elementCount;
+
+    // the 2D float array looks like this
+    //  index          |   0   |   1   |   2   |   3   |...elementCount
+    //  component 4~7  |r|g|b|a|r|g|b|a|r|g|b|a|r|g|b|a|...4 * elementCount
+    //  component 0~3  |r|g|b|a|r|g|b|a|r|g|b|a|r|g|b|a|...4 * elementCount
+    //                 ^
+    //  this is bottom left corner of the texture
+    //  CAUTION : The component does not mean what it's supposed to mean in this function.
+    //            It means vertical pixel number in this function.
+
+    //  Below is my version of this function. This way, the definition of the component is consistent.
+    //  The use of Math.floor is because javascript does not support integer division inherently (because it's weak type language)
+    return   4 * index + 4 * Math.floor(component / 4) * this._elementCount + component % 4;
   }
 
   /**

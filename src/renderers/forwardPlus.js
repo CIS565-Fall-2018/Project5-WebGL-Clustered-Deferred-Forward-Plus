@@ -8,16 +8,19 @@ import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 
 export default class ForwardPlusRenderer extends BaseRenderer {
-  constructor(xSlices, ySlices, zSlices) {
-    super(xSlices, ySlices, zSlices);
+  constructor(xSlices, ySlices, zSlices, camera) {
+    super(xSlices, ySlices, zSlices, camera);
 
     // Create a texture to store light data
     this._lightTexture = new TextureBuffer(NUM_LIGHTS, 8);
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      clusterX: xSlices,
+      clusterY: ySlices,
+      clusterZ: zSlices
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_viewMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'nearClipPlane', 'farClipPlane', 'camX', 'camY', 'camZ'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -38,14 +41,14 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0] = scene.lights[i].position[0];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 1] = scene.lights[i].position[1];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 2] = scene.lights[i].position[2];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 3] = scene.lights[i].radius;
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0)] = scene.lights[i].position[0];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1)] = scene.lights[i].position[1];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 2)] = scene.lights[i].position[2];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 3)] = scene.lights[i].radius;
 
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 0] = scene.lights[i].color[0];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 1] = scene.lights[i].color[1];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 2] = scene.lights[i].color[2];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 4)] = scene.lights[i].color[0];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 5)] = scene.lights[i].color[1];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 6)] = scene.lights[i].color[2];
     }
     // Update the light texture
     this._lightTexture.update();
@@ -65,6 +68,14 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
 
+    //me
+      gl.uniform1f(this._shaderProgram.nearClipPlane, camera.near);
+      gl.uniform1f(this._shaderProgram.farClipPlane, camera.far);
+      gl.uniform1f(this._shaderProgram.camX, camera.position.x);
+      gl.uniform1f(this._shaderProgram.camY, camera.position.y);
+      gl.uniform1f(this._shaderProgram.camZ, camera.position.z);
+      gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
+
     // Set the light texture as a uniform input to the shader
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
@@ -80,4 +91,5 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);
   }
+
 };
