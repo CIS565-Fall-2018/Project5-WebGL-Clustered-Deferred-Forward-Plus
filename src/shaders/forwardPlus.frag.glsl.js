@@ -11,6 +11,10 @@ export default function(params) {
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
+  
+  uniform mat4 u_viewMatrix;
+  uniform float u_Near;
+  uniform float u_Far;
 
   varying vec3 v_position;
   varying vec3 v_normal;
@@ -73,6 +77,16 @@ export default function(params) {
       return 0.0;
     }
   }
+  
+  int findCluster () {
+    vec4 pos = u_viewMatrix * vec4(v_position, 1.0);
+    int y = int(float(${params.ySlices}) * gl_FragCoord.y / float(${params.height}));
+    int x = int(float(${params.xSlices}) * gl_FragCoord.x / float(${params.width}));
+    int z = 0; 
+    if (-pos.z > u_Near) z = int(float(${params.zSlices}) * (-pos.z - u_Near) / float(u_Far - u_Near));
+    
+    return (x + y * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices});
+  }
 
   void main() {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
@@ -80,9 +94,37 @@ export default function(params) {
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
+    
+    // determine fragment cluster
+    int num_clusters = ${params.xSlices} * ${params.ySlices} * ${params.zSlices};
+    int clusterIdx = findCluster();
+    
+    float u = float(clusterIdx + 1) / float(num_clusters + 1);
+    // number of lights in cluster
+    int n = int(texture2D(u_clusterbuffer, vec2(u, 0.0))[0]);
 
+    int light_idx = 0;
+    float v;
+    
     for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+      // check if within # of lights in cluster
+      if (i > n) break;
+      // Retrieve light index
+      int index = int((i + 1) / 4);
+      int offset = (i + 1) - (4 * index);
+      int elements = (int(${params.maxLights}) + 1) / 4 + 1;
+      v = float(index + 1) / float(elements);
+      
+      vec4 tVal = texture2D(u_clusterbuffer, vec2(u, v));
+      if (offset == 0) light_idx = int(tVal[0]);
+      else if (offset == 1) light_idx = int(tVal[1]);
+      else if (offset == 2) light_idx = int(tVal[2]);
+      else if (offset == 3) light_idx = int(tVal[3]);
+    
+      
+      //Light light = UnpackLight(i);
+      Light light = UnpackLight(light_idx);
+      
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
