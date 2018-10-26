@@ -15,7 +15,7 @@ Analysis
 
 ---
 
-## 1. Comparison between Forward, Clustered Forward and Clustered Deffered using naive binning method. 
+## 1. Comparison between Forward, Clustered Forward and Clustered Deferred using naive binning method. 
 
 ### overview
 
@@ -27,7 +27,7 @@ xxx.
 
 ---
 
-## 2. Comparison between Forward, Clustered Forward and Clustered Deffered using early rejection binning method.
+## 2. Comparison between Forward, Clustered Forward and Clustered Deferred using early rejection binning method.
 
 ### overview
 
@@ -51,7 +51,7 @@ xxx.
 
 ---
 
-## 4. Comparison between naive, early rejection and ad-hoc binning method using Clustered Deffered rendering.
+## 4. Comparison between naive, early rejection and ad-hoc binning method using Clustered Deferred rendering.
 
 ### overview
 
