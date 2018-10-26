@@ -16,9 +16,9 @@ export default function(params) {
   uniform float u_farWidth;
   uniform float u_farHeight;
   
-  uniform float u_xSclice;
-  uniform float u_ySclice;
-  uniform float u_zSclice;
+  uniform float u_xSlices;
+  uniform float u_ySlices;
+  uniform float u_zSlices;
   
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
@@ -105,12 +105,12 @@ export default function(params) {
     float sliceWidth = u_nearWidth + (u_farWidth - u_nearWidth) * proportion;
     float sliceHeight = u_nearHeight + (u_farHeight - u_nearHeight) * proportion;
 
-    int cellX = int((v_viewPosition.x + 0.5 * sliceWidth) / (sliceWidth / u_xSclice));
-    int cellY = int((v_viewPosition.y + 0.5 * sliceHeight) / (sliceHeight / u_ySclice));
-    int cellZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSclice));
+    int cellX = int((v_viewPosition.x + 0.5 * sliceWidth) / (sliceWidth / u_xSlices));
+    int cellY = int((v_viewPosition.y + 0.5 * sliceHeight) / (sliceHeight / u_ySlices));
+    int cellZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSlices));
     
     // 2. Find out the number of lights and their indices
-    int index = cellX + cellY * int(u_xSclice) + cellZ * int(u_xSclice * u_ySclice);
+    int index = cellX + cellY * int(u_xSlices) + cellZ * int(u_xSlices * u_ySlices);
   
     int numLights = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, 0));
     
@@ -138,7 +138,8 @@ export default function(params) {
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
-    gl_FragColor = vec4(fragColor, 1.0);//v_viewPosition;//vec4(vec3(v_viewPosition), 1.0);
+    gl_FragColor = vec4(fragColor, 1.0);
+    //gl_FragColor = vec4(numLights, 0.0, 0.0, 1.0);
   }
   `;
 }

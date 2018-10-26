@@ -20,16 +20,13 @@ export default class BaseRenderer {
 
   updateClusters(camera, viewMatrix, scene)
   {
-    // TODO: Update the cluster texture with the count and indices of the lights in each cluster
-    // This will take some time. The math is nontrivial...
-
-    let tanfov = Math.tan(camera.fov / 2);
+    let tanfov = Math.tan(camera.fov * 0.5 * (Math.PI / 180.0));
 
     this.nearHeight = 2 * camera.near * tanfov;
-    this.nearWidth = this.nearHeight * camera.aspect_ratio;
+    this.nearWidth = this.nearHeight * camera.aspect;
 
     this.farHeight = 2 * camera.far * tanfov;
-    this.farWidth = this.farHeight * camera.aspect_ratio;
+    this.farWidth = this.farHeight * camera.aspect;
 
     for (let z = 0; z < this._zSlices; ++z) {
       for (let y = 0; y < this._ySlices; ++y) {
@@ -41,10 +38,9 @@ export default class BaseRenderer {
       }
     }
 
-
     for(let lightId = 0; lightId < scene.lights.length; lightId++)
     {
-      let sliceBounds = this.calculateSliceBounds(scene, lightId, this.nearWidth, this.nearHeight, this.farWidth, this.farHeight, scene.near, scene.far, viewMatrix);
+      let sliceBounds = this.calculateSliceBounds(scene, lightId, this.nearWidth, this.nearHeight, this.farWidth, this.farHeight, camera.near, camera.far, viewMatrix);
 
       for(let x = sliceBounds.xMin; x <= sliceBounds.xMax; x++)
       {
@@ -54,19 +50,16 @@ export default class BaseRenderer {
           {
               let i = x + y * this._xSlices + z * this._xSlices * this._ySlices;
 
-              this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0];
-
               let numLightsIndex = this._clusterTexture.bufferIndex(i, 0);
-              let numLight = this._clusterTexture.buffer[numLightsIndex];
+              let numLights = this._clusterTexture.buffer[numLightsIndex] + 1;
 
-              if(numLight < (MAX_LIGHTS_PER_CLUSTER - 1))
+              if(numLights < (MAX_LIGHTS_PER_CLUSTER))
               {
-                this._clusterTexture.buffer[numLightsIndex] = numLight + 1;
+                this._clusterTexture.buffer[numLightsIndex] = numLights;
 
-                let pixelIndex = (numLight + 1) / 4;
-                let floatOffset = (numLight + 1) % 4;
+                  let nextLightIndex = this._clusterTexture.bufferIndex(i, Math.floor(numLights / 4)) + (numLights % 4);
+                  this._clusterTexture.buffer[nextLightIndex] = lightId;
 
-                this._lightTexture.buffer[this._lightTexture.bufferIndex(i, pixelIndex) + floatOffset] = lightId;
               }
           }
         }
@@ -79,6 +72,8 @@ export default class BaseRenderer {
 
   calculateSliceBounds(scene, lightId, nearWidth, nearHeight, farWidth, farHeight, nearClip, farClip, viewMatrix)
   {
+
+
     let sliceBoundary = { 'xMin' : 0, 'xMax' : 0, 'yMin' : 0, 'yMax' : 0, 'zMin' : 0, 'zMax' : 0};
 
     let lightRadius = scene.lights[lightId].radius;
@@ -86,7 +81,7 @@ export default class BaseRenderer {
     let lightPosVec = vec4.fromValues(lightPosWorld[0], lightPosWorld[1], lightPosWorld[2], 1);
     vec4.transformMat4(lightPosVec, lightPosVec, viewMatrix);
 
-    let lerp =((Math.abs( lightPosVec[2]) - nearClip) / (1.0 * farClip - nearClip));
+    let lerp =(Math.abs( lightPosVec[2]) - nearClip) / (1.0 * farClip - nearClip);
 
     let sliceWidth = nearWidth + (farWidth - nearWidth) * lerp;
     let sliceHeight = nearHeight + (farHeight - nearHeight) * lerp;
@@ -107,11 +102,13 @@ export default class BaseRenderer {
     sliceBoundary.xMin = Math.max(0, Math.min(this._xSlices - 1, bucketLeft));
     sliceBoundary.xMax = Math.max(0, Math.min(this._xSlices - 1, bucketRight));
 
-    sliceBoundary.yMin = Math.max(0, Math.min(this._xSlices - 1, bucketBottom));
-    sliceBoundary.yMax = Math.max(0, Math.min(this._xSlices - 1, bucketTop));
+    sliceBoundary.yMin = Math.max(0, Math.min(this._ySlices - 1, bucketBottom));
+    sliceBoundary.yMax = Math.max(0, Math.min(this._ySlices - 1, bucketTop));
 
-    sliceBoundary.zMin = Math.max(0, Math.min(this._xSlices - 1, bucketNear));
-    sliceBoundary.zMax = Math.max(0, Math.min(this._xSlices - 1, bucketFar));
+    sliceBoundary.zMin = Math.max(0, Math.min(this._zSlices - 1, bucketNear));
+    sliceBoundary.zMax = Math.max(0, Math.min(this._zSlices - 1, bucketFar));
+
+    //console.log(sliceBoundary);
 
     return sliceBoundary;
   }

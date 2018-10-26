@@ -6,7 +6,7 @@ import vsSource from '../shaders/forwardPlus.vert.glsl';
 import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
-import {MAX_LIGHTS_PER_CLUSTER} from "./base";
+
 
 export default class ForwardPlusRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -14,12 +14,12 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
     // Create a texture to store light data
     this._lightTexture = new TextureBuffer(NUM_LIGHTS, 8);
-    
+
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
-      numLights: NUM_LIGHTS, clusterTextureWidth : (this._clusterTexture._elementCount), clusterTextureHeight : this._clusterTexture._pixelsPerElement
+      numLights: NUM_LIGHTS, clusterTextureWidth : this._clusterTexture._elementCount, clusterTextureHeight : this._clusterTexture._pixelsPerElement
     }), {
       uniforms: ['u_viewProjectionMatrix', 'u_modelViewMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer',
-          'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farClip', 'u_farWidth', 'u_farHeight', 'u_xSclice', 'u_ySclice', 'u_zSclice'],
+          'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farClip', 'u_farWidth', 'u_farHeight', 'u_xSlices', 'u_ySlices', 'u_zSlices'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -37,7 +37,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
     // Update cluster texture which maps from cluster index to light list
     this.updateClusters(camera, this._viewMatrix, scene);
-    
+
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0] = scene.lights[i].position[0];
@@ -70,16 +70,16 @@ export default class ForwardPlusRenderer extends BaseRenderer {
       // Upload the camera matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_modelViewMatrix, false, this._viewMatrix);
 
-    gl.uniform1f(this._shaderProgram.u_nearClip, camera.nearClip);
-    gl.uniform1f(this._shaderProgram.u_farClip, camera.farClip);
-    gl.uniform1f(this._shaderProgram.u_nearWidth, scene.nearWidth);
-    gl.uniform1f(this._shaderProgram.u_nearHeight, scene.nearHeight);
-    gl.uniform1f(this._shaderProgram.u_farWidth, scene.farWidth);
-    gl.uniform1f(this._shaderProgram.u_farHeight, scene.farHeight);
+    gl.uniform1f(this._shaderProgram.u_nearClip, camera.near);
+    gl.uniform1f(this._shaderProgram.u_farClip, camera.far);
+    gl.uniform1f(this._shaderProgram.u_nearWidth, this.nearWidth);
+    gl.uniform1f(this._shaderProgram.u_nearHeight, this.nearHeight);
+    gl.uniform1f(this._shaderProgram.u_farWidth, this.farWidth);
+    gl.uniform1f(this._shaderProgram.u_farHeight, this.farHeight);
 
-    gl.uniform1f(this._shaderProgram.u_xSclice, this._xSlices);
-    gl.uniform1f(this._shaderProgram.u_ySclice, this._ySlices);
-    gl.uniform1f(this._shaderProgram.u_zSclice, this._zSlices);
+    gl.uniform1f(this._shaderProgram.u_xSlices, this._xSlices);
+    gl.uniform1f(this._shaderProgram.u_ySlices, this._ySlices);
+    gl.uniform1f(this._shaderProgram.u_zSlices, this._zSlices);
 
 
     // Set the light texture as a uniform input to the shader
