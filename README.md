@@ -14,7 +14,7 @@ Overview
 
 Analysis 
 ======================
-* MAX_LIGHTS_PER_CLUSTER is always NUM_LIGHTS;
+* MAX_LIGHTS_PER_CLUSTER is always NUM_LIGHTS.
 
 * Rendering time is measured in milisecond, so lower is better.
 
