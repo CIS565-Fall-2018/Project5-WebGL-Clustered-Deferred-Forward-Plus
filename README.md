@@ -15,7 +15,7 @@ Analysis
 
 ---
 
-## 1. Comparison between Forward, Clustered Forward and Clustered Deferred using naive binning method. 
+## 1. Naive binning method
 
 ### overview
 
@@ -27,7 +27,7 @@ The naive binning method iterates through all the lights. For each light, the me
 
 ---
 
-## 2. Comparison between Forward, Clustered Forward and Clustered Deferred using early rejection binning method.
+## 2. Early rejection binning method
 
 ### overview
 
@@ -39,7 +39,7 @@ The early rejection binning method also iterates through all the lights. For eac
 
 ---
 
-## 3. Comparison between Forward, Clustered Forward and Clustered Deferred using ad-hoc binning method.
+## 3. Ad-hoc binning method
 
 ### overview
 
@@ -55,7 +55,7 @@ When the fov is too large, the maximum and minimum positions along x and y axes 
 
 ---
 
-## 4. Comparison between naive, early rejection and ad-hoc binning method using Clustered Forward rendering.
+## 4. Clustered forward rendering
 
 ### overview
 
@@ -67,7 +67,7 @@ According to the chart, clustered forward rendering benefits from ad-hoc binning
 
 ---
 
-## 5. Comparison between naive, early rejection and ad-hoc binning method using Clustered Deferred rendering.
+## 5. Clustered deferred rendering
 
 ### overview
 
