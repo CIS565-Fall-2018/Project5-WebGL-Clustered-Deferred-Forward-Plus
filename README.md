@@ -35,6 +35,7 @@ a better solution towards the issue brought by forward rendering is to use clust
 we can further improve the performance by introducing an extra buffer:g-buffer which contains certain amounts of 2d textures(specified by user according to need), inside the textures, we will only store the geometry displacement "on the top" or in other words have the smaller depth value compared with other fragments at same NDC coordinate, apart from that, we can also store normal, depth, albedo, as long as it is required for our rendering. 
 
 a graph for typical deferred rendering.
+
 ![](img/deferred-v2.png)
 
 according to the image above, the reason this method is better is that the lighting loop will only check the 2d texture instead of checking every geometry, and the texture only store the toppest geometry, which ensures that we won't check the lighting inluence on those geometry "behind the walls" since we are not seeing it.
@@ -60,9 +61,18 @@ an example for the cluster structure would look like the above image, althogh it
 
 ### Effects
   - Implemented deferred Blinn-Phong shading (diffuse + specular) for point lights
-    - for the blinn-phong effect, I simply used the half angle method and an extra inverse viewmatrix to compute the view point position.
+    - for the blinn-phong effect, I simply used the half angle method and an extra inverse viewmatrix to compute the view point
+    position.
   - Implemented toon shading (with ramp shading + simple depth-edge detection for outlines)
     - toon is simple, just do an interpolation between the ramped value of lambert term and the original lambert term, the same goes for blinn-phong term ~
+    
+![](img/blinn.JPG)
+
+blinn-phong shading, you can notice the reflection on the floor and pillar quite clearly.
+
+![](img/toon.JPG)
+
+toon shading, the color is ramped based on the distance to the light center.
   
 
 ### Optimizations
