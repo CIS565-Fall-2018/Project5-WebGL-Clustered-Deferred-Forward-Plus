@@ -12,9 +12,9 @@ import BaseRenderer from './base';
 import {MAX_LIGHTS_PER_CLUSTER} from './base';
 
 //changed to use 2 g-buffers
-export const NUM_GBUFFERS = 4;
+//export const NUM_GBUFFERS = 4;
 //2 g-buffers is buggy, switch back to 4
-//export const NUM_GBUFFERS = 2;
+export const NUM_GBUFFERS = 2;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -40,15 +40,21 @@ export default class ClusteredRenderer extends BaseRenderer {
       numZSlices :zSlices,
     }), {
     //changed: add new uniforms
-      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 
+    //changed: delete last two gbuffers
+      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 
       'u_lightbuffer', 'u_nearClip',
-      'u_clusterTileSize','u_clusterZStride','u_viewMatrix', 'u_clusterbuffer'],
+      'u_clusterTileSize','u_clusterZStride',
+      'u_viewMatrix', 'u_clusterbuffer',
+      'u_inverseViewProjMat', 'u_inverseViewMat'],
       attribs: ['a_uv'],
     });
 
     this._projectionMatrix = mat4.create();
     this._viewMatrix = mat4.create();
     this._viewProjectionMatrix = mat4.create();
+    //changed: add new elements
+    this._inverseViewMat = mat4.create();
+    this._inverseViewProjMat = mat4.create();
   }
 
   setupDrawBuffers(width, height) {
@@ -122,6 +128,10 @@ export default class ClusteredRenderer extends BaseRenderer {
     mat4.copy(this._projectionMatrix, camera.projectionMatrix.elements);
     mat4.multiply(this._viewProjectionMatrix, this._projectionMatrix, this._viewMatrix);
 
+    //changed: add new uniforms
+    mat4.invert(this._inverseViewMat, this._viewMatrix);
+    mat4.invert(this._inverseViewProjMat, this._viewProjectionMatrix);
+
     // Render to the whole screen
     gl.viewport(0, 0, canvas.width, canvas.height);
 
@@ -139,6 +149,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     //changed: add the viewMatrix uniform
     gl.uniformMatrix4fv(this._progCopy.u_viewMatrix, false, this._viewMatrix);
+
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
@@ -189,6 +200,11 @@ export default class ClusteredRenderer extends BaseRenderer {
     //view matrix
     gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
 
+    //inverse view Matrix
+    gl.uniformMatrix4fv(this._progShade.u_inverseViewMat, false, this._inverseViewMat);
+    //inverse viewProj matrix
+    gl.uniformMatrix4fv(this._progShade.u_inverseViewProjMat, false, this._inverseViewProjMat);
+    
     // Bind g-buffers
     //changed: change to 2 since we used texture slot 0~1
     const firstGBufferBinding = 2; // You may have to change this if you use other texture slots
