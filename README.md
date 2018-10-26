@@ -47,11 +47,11 @@ The early rejection binning method also iterates through all the lights. For eac
 
 ### analysis
 
-The ad-hoc binning method also iterates through all the lights. However, for each light, the method will calculate a boundary based on the AABB of the light and bin the light into all the sub-frustums within that boundary. This method will save all the plane-sphere intersection calculation but it will also intruduce false positive results. Besides, the method will not work if fov of the camera is too drastic. The reason can be explained by the following picture. 
+The ad-hoc binning method also iterates through all the lights. However, for each light, the method will calculate a boundary based on the AABB of the light and bin the light into all the sub-frustums within that boundary. This method will save all the plane-sphere intersection calculation but it will also intruduce false positive results. Besides, the method will not work if fov of the camera is too large. The reason can be explained by the following picture. 
 
 ![](img/3b.png)
 
-When the fov is too drastic, the maximum and minimum positions along x and y axes do not represent to the maximum and minimum sub-frustums. One possible fix is to move the center to the front face of the AABB and calculate the covered sub-frustums using the z value there. But this will produce even more false positive results.
+When the fov is too large, the maximum and minimum positions along x and y axes do not represent to the maximum and minimum sub-frustums. One possible fix is to move the center to the front face of the AABB and calculate the covered sub-frustums using the z value there. But this will produce even more false positive results.
 
 ---
 
@@ -75,7 +75,7 @@ According to the chart, clustered forward rendering benefits from ad-hoc binning
 
 ### analysis
 
-According to the chart, clustered deferred rendering benefits from ad-hoc binning method more than clustered forward rendering. 
+According to the chart, clustered deferred rendering benefits more from ad-hoc binning method than clustered forward rendering or we can say clustered forward rendering suffers more from ad-hoc binning method than clustered deferred rendering. This might be because ad-hoc binning introduced false-positive results, which means there are more lights in a cluster than it should be. And deferred rendering perfroms better when the light calculation is massive. In conclusion, On CPU side, both rendering method benefits the same from ad-hoc binning but on GPU side, clustered forward suffers more than clustered deferred. 
 
 ---
 
