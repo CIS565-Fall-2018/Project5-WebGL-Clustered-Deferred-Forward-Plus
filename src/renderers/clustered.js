@@ -1,5 +1,5 @@
 import { gl, WEBGL_draw_buffers, canvas } from '../init';
-import { mat4, vec4 } from 'gl-matrix';
+import { mat4, mat3, vec4, vec3 } from 'gl-matrix';
 import { loadShaderProgram, renderFullscreenQuad } from '../utils';
 import { NUM_LIGHTS } from '../scene';
 import toTextureVert from '../shaders/deferredToTexture.vert.glsl';
@@ -9,7 +9,7 @@ import fsSource from '../shaders/deferred.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 
-export const NUM_GBUFFERS = 4;
+export const NUM_GBUFFERS = 3;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -31,7 +31,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       clusterTextureWidth: this._clusterTexture._elementCount, clusterTextureHeight: this._clusterTexture._pixelsPerElement
 
     }), {
-      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 'u_lightbuffer', 'u_clusterbuffer', 'u_lightbuffer', 'u_clusterbuffer', 'u_farClip', 'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farWidth', 'u_farHeight', 'u_xSlices', 'u_ySlices', 'u_zSlices', 'u_viewMatrix'],
+      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 'u_lightbuffer', 'u_clusterbuffer', 'u_lightbuffer', 'u_clusterbuffer', 'u_farClip', 'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farWidth', 'u_farHeight', 'u_xSlices', 'u_ySlices', 'u_zSlices', 'u_viewMatrix', 'u_eyePos'],
       attribs: ['a_uv'],
     });
 
@@ -126,6 +126,11 @@ export default class ClusteredRenderer extends BaseRenderer {
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._progCopy.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
 
+    // Upload the eye vector
+    let cameraPos = vec3.fromValues(camera.position.x, camera.position.y, camera.position.z);
+    //console.log(cameraPos);
+    gl.uniform3fv(this._progCopy.u_eyePos, cameraPos);
+
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
     
@@ -170,6 +175,11 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Upload the view matrix
     gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
+
+
+    // Upload inverse transpose of view matrix
+    gl.uniformMatrix3fv(this._progCopy.u_inverseTranspose, false, mat3.transpose(mat3.create(), mat3.invert(mat3.create(), mat3.fromMat4(mat3.create(), this._viewMatrix))));
+
 
     // Upload the far clip, nearClip, nearWidth, nearHeight, farWidth, farHeight, x slices, y slices, z slices
     gl.uniform1f(this._progShade.u_farClip, camera.far);

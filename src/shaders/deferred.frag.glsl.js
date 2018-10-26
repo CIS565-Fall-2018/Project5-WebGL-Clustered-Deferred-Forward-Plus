@@ -19,6 +19,7 @@ export default function(params) {
   uniform sampler2D u_lightbuffer;
   uniform sampler2D u_clusterbuffer;
 
+  uniform vec3 u_eyePos;
   
   varying vec2 v_uv;
 
@@ -77,16 +78,11 @@ export default function(params) {
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
     vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
-    vec4 gb3 = texture2D(u_gbuffers[3], v_uv);
 
     vec3 normal = vec3(gb0);
     vec3 albedo = vec3(gb1);
     vec3 v_position = vec3(gb2);
-    vec3 v_viewPosition = vec3(gb3);
-    // vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
-    // vec4 gb3 = texture2D(u_gbuffers[3], v_uv);
-
-    //gl_FragColor = gb0;//vec4(v_uv, 0.0, 1.0);
+    vec3 v_viewPosition = vec3(gb0[3], gb1[3], gb2[3]);
 
     vec3 fragColor = vec3(0.0);
 
@@ -114,13 +110,23 @@ export default function(params) {
       int lightId = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, lightIndex));
       
       Light light = UnpackLight(lightId);
+
+      vec3 lightDir   = normalize(light.position - u_eyePos);
+      vec3 viewDir    = normalize(u_eyePos - v_position);
+      vec3 halfwayDir = normalize(lightDir + viewDir);
+
+      
+      float spec = pow(max(dot(normal, halfwayDir), 0.0), 2.0);
+      vec3 specular = light.color * spec * 0.01;
+
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
       float lambertTerm = max(dot(L, normal), 0.0);
 
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      fragColor += albedo * lambertTerm * vec3(lightIntensity) * light.color + specular;
+      //fragColor += vec3(spec, spec, spec);
     }
     
     const vec3 ambientLight = vec3(0.025);

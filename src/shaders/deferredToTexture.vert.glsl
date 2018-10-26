@@ -3,6 +3,7 @@ precision highp float;
 
 uniform mat4 u_viewProjectionMatrix;
 uniform mat4 u_viewMatrix;
+uniform mat4 u_inverseTranspose;
 
 attribute vec3 a_position;
 attribute vec3 a_normal;
