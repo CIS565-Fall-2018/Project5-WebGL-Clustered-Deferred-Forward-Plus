@@ -7,6 +7,11 @@ WebGL Clustered and Forward+ Shading
   * [LinkedIn](https://www.linkedin.com/in/xiao-zhang-674bb8148/)
 * Tested on: Windows 10, i7-7700K @ 4.20GHz 16.0GB, GTX 1080 15.96GB (my own PC)
 
+Overview 
+======================
+
+![](img/0.gif)
+
 Analysis 
 ======================
 * MAX_LIGHTS_PER_CLUSTER is always NUM_LIGHTS;
