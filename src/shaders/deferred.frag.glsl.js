@@ -14,6 +14,7 @@ export default function(params) {
   uniform float u_xSlices;
   uniform float u_ySlices;
   uniform float u_zSlices;
+  uniform mat4 u_viewMatrix;
 
   uniform sampler2D u_lightbuffer;
   uniform sampler2D u_clusterbuffer;
@@ -76,10 +77,12 @@ export default function(params) {
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
     vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
+    vec4 gb3 = texture2D(u_gbuffers[3], v_uv);
 
     vec3 normal = vec3(gb0);
     vec3 albedo = vec3(gb1);
     vec3 v_position = vec3(gb2);
+    vec3 v_viewPosition = vec3(gb3);
     // vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
     // vec4 gb3 = texture2D(u_gbuffers[3], v_uv);
 
@@ -87,8 +90,30 @@ export default function(params) {
 
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+    float proportion = ( (abs(v_viewPosition.z) - u_nearClip)/(1.0 * u_farClip - u_nearClip) );
+    float sliceWidth = u_nearWidth + (u_farWidth - u_nearWidth) * proportion;
+    float sliceHeight = u_nearHeight + (u_farHeight - u_nearHeight) * proportion;
+
+    int cellX = int((v_viewPosition.x + 0.5 * sliceWidth) / (sliceWidth / u_xSlices));
+    int cellY = int((v_viewPosition.y + 0.5 * sliceHeight) / (sliceHeight / u_ySlices));
+    int cellZ = int((abs(v_viewPosition.z) - u_nearClip) / ((u_farClip - u_nearClip) / u_zSlices));
+
+        
+    // 2. Find out the number of lights and their indices
+    int index = cellX + cellY * int(u_xSlices) + cellZ * int(u_xSlices * u_ySlices);
+  
+    int numLights = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, 0));
+    
+
+    for(int lightIndex = 1; lightIndex < ${params.clusterTextureHeight} * 4 - 1; ++lightIndex)
+    {
+      if(lightIndex > numLights) {
+        break;
+      }
+    
+      int lightId = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, lightIndex));
+      
+      Light light = UnpackLight(lightId);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
@@ -97,7 +122,7 @@ export default function(params) {
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
-
+    
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 

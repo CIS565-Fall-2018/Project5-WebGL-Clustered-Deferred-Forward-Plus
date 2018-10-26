@@ -28,6 +28,8 @@ export default class ClusteredRenderer extends BaseRenderer {
     this._progShade = loadShaderProgram(QuadVertSource, fsSource({
       numLights: NUM_LIGHTS,
       numGBuffers: NUM_GBUFFERS,
+      clusterTextureWidth: this._clusterTexture._elementCount, clusterTextureHeight: this._clusterTexture._pixelsPerElement
+
     }), {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 'u_lightbuffer', 'u_clusterbuffer', 'u_lightbuffer', 'u_clusterbuffer', 'u_farClip', 'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farWidth', 'u_farHeight', 'u_xSlices', 'u_ySlices', 'u_zSlices', 'u_viewMatrix'],
       attribs: ['a_uv'],
