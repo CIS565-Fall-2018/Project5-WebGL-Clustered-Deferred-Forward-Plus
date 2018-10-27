@@ -10,11 +10,17 @@ export default function(params) {
   uniform sampler2D u_lightbuffer;
 
   // TODO: Read this buffer to determine the lights influencing a cluster
+  
   uniform sampler2D u_clusterbuffer;
 
   varying vec3 v_position;
   varying vec3 v_normal;
   varying vec2 v_uv;
+
+  uniform mat4 u_viewMatrix;
+  uniform mat4 u_invViewMatrix;
+  uniform vec2 u_cameraClip;
+  uniform vec2 u_canvasSize;
 
   vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -74,21 +80,58 @@ export default function(params) {
     }
   }
 
+  int xSlices = int(${params.numXSlices});
+  int ySlices = int(${params.numYSlices});
+  int zSlices = int(${params.numZSlices});
+
   void main() {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
-
+    int numClusters = xSlices * ySlices * zSlices;
+    vec4 pos_screen = vec4(gl_FragCoord.xyz, 1.0);
+    vec4 pos_camera = u_viewMatrix * vec4(v_position, 1.0);
+    pos_camera /= pos_camera[3];
+    int xIdx = int(pos_screen[0]/u_canvasSize[0] * float(xSlices));
+    int yIdx = int(pos_screen[1]/u_canvasSize[1] * float(ySlices));
+    int zIdx = int((- pos_camera.z - u_cameraClip[0]) / float(u_cameraClip[1] - u_cameraClip[0]) * float(zSlices)); 
+    int clusterIdx = xIdx + yIdx * zSlices + zIdx * xSlices * ySlices;
+    float u = float(clusterIdx + 1) / float(numClusters + 1);
+    const int maxLights = ${params.numLights};
     for (int i = 0; i < ${params.numLights}; ++i) {
+      float v = float(i / 4 + 1) / ceil((float(${params.maxLights_perCluster}) + 1.0) / 4.0 + 1.0);
+      vec4 clusterTexture = texture2D(u_clusterbuffer, vec2(u, v));
+      
+      int lightIdx;
+      int remainder = i - 4 * (i / 4);
+      if (remainder == 0) {      
+        lightIdx = int(clusterTexture[0]);
+      }      
+      else if (remainder == 1) {    
+        lightIdx = int(clusterTexture[1]);
+      }      
+      else if (remainder == 2) {      
+        lightIdx = int(clusterTexture[2]);
+      }
+      else if (remainder == 3) {
+        lightIdx = int(clusterTexture[3]);
+      }
+      else {    
+        continue;
+      }
       Light light = UnpackLight(i);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
-
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
       float lambertTerm = max(dot(L, normal), 0.0);
-
+      //Blinn-phong
+      vec4 view_pos = u_invViewMatrix[3];      
+      vec3 V = normalize(view_pos.xyz - v_position);
+      vec3 H = normalize(L + V);
+      float specular = max(dot(H, normal), 0.0);
+      float speculatTerm = pow(specular, 100.0);      
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
 

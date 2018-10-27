@@ -6,6 +6,8 @@ import vsSource from '../shaders/forwardPlus.vert.glsl';
 import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
+import { MAX_LIGHTS_PER_CLUSTER } from './base';
+import { SPECIAL } from './base';
 
 export default class ForwardPlusRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -16,13 +18,20 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      numXSlices: xSlices,
+      numYSlices: ySlices,
+      numZSlices: zSlices,
+      maxLights_perCluster: MAX_LIGHTS_PER_CLUSTER
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 
+      'u_viewMatrix', 'u_invViewMatrix', 
+      'u_cameraClip', 'u_canvasSize'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
     this._projectionMatrix = mat4.create();
     this._viewMatrix = mat4.create();
+    this._invViewMatrix = mat4.create();
     this._viewProjectionMatrix = mat4.create();
   }
 
@@ -32,7 +41,8 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     mat4.invert(this._viewMatrix, camera.matrixWorld.elements);
     mat4.copy(this._projectionMatrix, camera.projectionMatrix.elements);
     mat4.multiply(this._viewProjectionMatrix, this._projectionMatrix, this._viewMatrix);
-
+    // mat4.invert(this._invProjectionMatrix, this._projectionMatrix);
+    mat4.copy(this._invViewMatrix, camera.matrixWorld.elements);
     // Update cluster texture which maps from cluster index to light list
     this.updateClusters(camera, this._viewMatrix, scene);
     
@@ -76,6 +86,10 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
     // TODO: Bind any other shader inputs
+    gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
+    gl.uniformMatrix4fv(this._shaderProgram.u_invViewMatrix, false, this._invViewMatrix);
+    gl.uniform2f(this._shaderProgram.u_cameraClip, camera.near, camera.far);
+    gl.uniform2f(this._shaderProgram.u_canvasSize, canvas.width, canvas.height);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);

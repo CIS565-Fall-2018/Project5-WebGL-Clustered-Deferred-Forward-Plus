@@ -3,26 +3,32 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Siyu Zheng
+* Tested on: Windows 10, i7-6500 @ 2.50GHz 8GB, Intel(HD) Graphic 520
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[Online video](https://youtu.be/1D61SnjGIGU)
+
+Building up github page always throw error. Will add github page later. 
 
 ### Demo Video/GIF
+![](images/forwardPlus.gif)
+Forward Plus shading GIF
 
-[![](img/video.png)](TODO)
+![](images/defered.gif)
+Deferred shading GIF
 
-### (TODO: Your README)
+### Features
+* Create light cluster and update the TextureBuffer with a mapping from cluster index to light count and light list(indices).
+* In Forward Plus shading, determine the cluster for a fragment, read in the lights in that cluster from the populated data, and do shading for just those lights.
+* Write desired data to g-buffer, read values from the g-buffer and perform simple forward rendering. 
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+### Performance Analysis
+![](images/graph.JPG)
 
+According to the graph, we can see that clusterd deferred is much faster than forward shading and forward plus shading. Forward Plus is faster than normal forward shading. As the number of light grows, rendering time for each frame also increases.
 
 ### Credits
 
