@@ -28,7 +28,7 @@ Deferred shading GIF
 ### Performance Analysis
 ![](images/graph.JPG)
 
-According to the graph, we can see that clusterd deferred is much faster than forward shading and forward plus shading. Forward Plus is faster than normal forward shading. As the number of light grows, times for each frames also increase.
+According to the graph, we can see that clusterd deferred is much faster than forward shading and forward plus shading. Forward Plus is faster than normal forward shading. As the number of light grows, rendering time for each frame also increases.
 
 ### Credits
 
