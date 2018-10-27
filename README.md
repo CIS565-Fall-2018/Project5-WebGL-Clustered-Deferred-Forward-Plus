@@ -13,10 +13,10 @@ WebGL Clustered and Forward+ Shading
 Building up github page always throw error. Will add github page later. 
 
 ### Demo Video/GIF
-![](images/forwardPlus.jpg)
+![](images/forwardPlus.gif)
 Forward Plus shading GIF
 
-![](images/defered.jpg)
+![](images/defered.gif)
 Defered shading GIF
 
 ### Performance Analysis
