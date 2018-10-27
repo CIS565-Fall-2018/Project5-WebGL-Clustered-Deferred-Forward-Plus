@@ -99,30 +99,32 @@ export default function(params) {
 
     for (int i = 0; i < ${params.numLights}; ++i)
     {
-      if (i >= clusterLightCount)
+      int lightIndex = i;
+      if (lightIndex >= clusterLightCount)
       {
         break;
       }
-      int currentIndex = (i + 1) * 0.25;
+      int currentIndex = int((i + 1) * 0.25);
       float vFetched = float(currentIndex + 1) / float((${params.maxLightsPerCluster} + 1) * 0.25 + 1);
       vec4 texel = texture2D(u_clusterbuffer, vec2(uFetched, vFetched));
+
       if (pixelComponent == 0) 
       {
-        return texel[0];
+        lightIndex = int(texel[0]);
       }
       else if (pixelComponent == 1)
       {
-        return texel[1];
+        lightIndex = int(texel[1]);
       }
       else if (pixelComponent == 2)
       {
-        return texel[2];
+        lightIndex = int(texel[2]);
       } 
       else if (pixelComponent == 3)
       {
-        return texel[3];
+        lightIndex = int(texel[3]);
       }
-      Light light = UnpackLight(i);
+      Light light = UnpackLight(lightIndex);
 
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
