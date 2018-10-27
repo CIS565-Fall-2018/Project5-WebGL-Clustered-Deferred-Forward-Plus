@@ -31,7 +31,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       clusterTextureWidth: this._clusterTexture._elementCount, clusterTextureHeight: this._clusterTexture._pixelsPerElement
     }), {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 'u_modelViewMatrix', 'u_lightbuffer', 'u_clusterbuffer',
-          'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farClip', 'u_farWidth', 'u_farHeight', 'u_xSlices', 'u_ySlices', 'u_zSlices'],
+          'u_nearClip', 'u_nearWidth', 'u_nearHeight', 'u_farClip', 'u_farWidth', 'u_farHeight', 'u_xSlices', 'u_ySlices', 'u_zSlices', 'u_eyePos'],
       attribs: ['a_uv'],
     });
 
@@ -126,10 +126,7 @@ export default class ClusteredRenderer extends BaseRenderer {
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._progCopy.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
 
-    // Upload the eye vector
-    let cameraPos = vec3.fromValues(camera.position.x, camera.position.y, camera.position.z);
-    //console.log(cameraPos);
-    gl.uniform3fv(this._progCopy.u_eyePos, cameraPos);
+
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
@@ -185,6 +182,9 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.uniform1f(this._progShade.u_xSlices, this._xSlices);
     gl.uniform1f(this._progShade.u_ySlices, this._ySlices);
     gl.uniform1f(this._progShade.u_zSlices, this._zSlices);
+
+    let cameraPos = vec3.fromValues(camera.position.x, camera.position.y, camera.position.z);
+    gl.uniform3fv(this._progShade.u_eyePos, cameraPos);
 
     const firstGBufferBinding = 4; // You may have to change this if you use other texture slots
     for (let i = 0; i < NUM_GBUFFERS; i++) {
