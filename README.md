@@ -17,10 +17,18 @@ Building up github page always throw error. Will add github page later.
 Forward Plus shading GIF
 
 ![](images/defered.gif)
-Defered shading GIF
+Deferred shading GIF
+
+### Features
+* Create light cluster and update the TextureBuffer with a mapping from cluster index to light count and light list(indices).
+* In Forward Plus shading, determine the cluster for a fragment, read in the lights in that cluster from the populated data, and do shading for just those lights.
+* Write desired data to g-buffer, read values from the g-buffer and perform simple forward rendering. 
+
 
 ### Performance Analysis
 ![](images/graph.JPG)
+
+According to the graph, we can see that clusterd deferred is much faster than forward shading and forward plus shading. Forward Plus is faster than normal forward shading. As the number of light grows, times for each frames also increase.
 
 ### Credits
 
