@@ -16,7 +16,7 @@ WebGL Clustered and Forward+ Shading
 
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+[![](img/DemoGif.gif)](img/DemoGif.gif)
 
 ## Rendering Techniques
 
