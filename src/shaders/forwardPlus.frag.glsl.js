@@ -13,6 +13,8 @@ export default function(params) {
   uniform sampler2D u_clusterbuffer;
   
   uniform mat4 u_viewMatrix;
+  uniform mat4 u_viewProjectionMatrix;
+  
   uniform float u_Near;
   uniform float u_Far;
 
@@ -80,8 +82,8 @@ export default function(params) {
   
   int findCluster () {
     vec4 pos = u_viewMatrix * vec4(v_position, 1.0);
-    int y = int(float(${params.ySlices}) * gl_FragCoord.y / float(${params.height}));
-    int x = int(float(${params.xSlices}) * gl_FragCoord.x / float(${params.width}));
+    int y = int(gl_FragCoord.y * float(${params.ySlices} / ${params.height}));
+    int x = int(gl_FragCoord.x * float(${params.xSlices} / ${params.width}));
     int z = 0; 
     if (-pos.z > u_Near) z = int(float(${params.zSlices}) * (-pos.z - u_Near) / float(u_Far - u_Near));
     
@@ -110,16 +112,9 @@ export default function(params) {
       // check if within # of lights in cluster
       if (i > n) break;
       // Retrieve light index
-      int index = int((i + 1) / 4);
-      int offset = (i + 1) - (4 * index);
-      int elements = (int(${params.maxLights}) + 1) / 4 + 1;
-      v = float(index + 1) / float(elements);
+      int elements = (int(${params.maxLights}) + 1) / 4;
       
-      vec4 tVal = texture2D(u_clusterbuffer, vec2(u, v));
-      if (offset == 0) light_idx = int(tVal[0]);
-      else if (offset == 1) light_idx = int(tVal[1]);
-      else if (offset == 2) light_idx = int(tVal[2]);
-      else if (offset == 3) light_idx = int(tVal[3]);
+      light_idx = int(ExtractFloat(u_clusterbuffer, num_clusters, elements, clusterIdx, i+1));
     
       
       //Light light = UnpackLight(i);
