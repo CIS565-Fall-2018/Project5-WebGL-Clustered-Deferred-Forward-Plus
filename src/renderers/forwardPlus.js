@@ -20,7 +20,6 @@ export default class ForwardPlusRenderer extends BaseRenderer {
       xSlices: xSlices,
       ySlices: ySlices,
       zSlices: zSlices,
-      maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER,
     }), {
       uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'u_viewMatrix',
       'u_Width', 'u_Height', 'u_zNear', 'u_zFar'],

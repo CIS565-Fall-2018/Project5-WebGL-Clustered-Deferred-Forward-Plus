@@ -104,7 +104,7 @@ export default function(params) {
       {
         break;
       }
-      
+
       Light light = UnpackLight(lightIndex);
 
       float lightDistance = distance(light.position, v_position);
