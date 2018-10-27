@@ -117,8 +117,9 @@ The buffers are visualized as follows:
 
 The optimization is aimed at storing only the very necessary data, and other data can be reconstructed from them.
 After optimization, only two g-buffers are needed, they are organized like this:
+
 |g-buffer index| Content xyz| Content w|
-|--------------|------------|----------|
+|     -----   |    -----    |   ------  |
 |      0       | albedo (RGB) | View Space Depth|
 |      1       | normal (XYZ) | Screen Space Depth|
 
