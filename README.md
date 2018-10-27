@@ -10,7 +10,7 @@ WebGL Clustered and Forward+ Shading
 # Video Demo
   [<img src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/thumb.jpg">](https://www.youtube.com/watch?v=J1Pvi4GN62o)
 
-### Live Online
+#Live Online
 
 [![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
@@ -43,7 +43,24 @@ float spec = pow(angle, exponent);
 albedo += spec;
 ~~~~
 
-# Performance Comparison
+Adding Blinn-Phong virtually has no performance impact. It is an extra 3 instructions per lighting computation.
+
+# Performance
+## Forward vs. Forward+ vs. Clustered/Deferred
+The graph below shows performance differences for the different shading techniques. Overall, the more lights we have, the better Clustering is. However, if we have a low number of lights (say 100), then clustering does more work than needed, hurting performance.
+<p align="center"><img width="700" height="400" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/performance_diff.png"/></p>
+
+This is easily explained by the lost benefit of creating the clustering data-structure in the forward+ cases: the less lights you have, the less iterations you would have done anyways.
+
+## Packing Normals in the Position and Color G-Buffers
+To reduce the amount of G-Buffers we use, I pack the normals' x and y values in the w coordinate of the position and color vectors. I then retrieve the z coordinate since the normal vector is normalized. The sign value is not lost, since I also multiply the Red color channel by -1 if the z coordinate is negative. There are still some artifacts as showcased below:
+
+| With Packing | Without Packing |
+| ------------- | ----------- |
+| <p align="center"><img width="400" height="300" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/packed.png"/> </p>| <p align="center"><img width="400" height="300" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/unpacked.png/"></p> |
+
+As for performance, packing clearly wins because we do less global memory reads (at the expense of slightly more computation)
+<p align="center"><img width="700" height="400" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/performance_packing.png"/></p>
 
 
 ### Credits
