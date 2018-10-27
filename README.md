@@ -23,7 +23,7 @@ To implement clustering, we must be able to break up our viewing frustum into se
 
 <p align="center"><img width="700" height="500" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/test.png"/></p>
 
-We essentially represent each section of the frustum by a right triangle with sides 1 and d, d being the distance from 0. We then represent it with a normalized vector (the light blue one). Now if we dot that vector with the position vector of the sphere, we are it will result in measuring the red distance outlined in the image above. We compare that red distance with the radius to get a sense of where the sphere is with respect to our frustum.
+We essentially represent each section of the frustum by a right triangle with sides 1 and d, d being the distance from 0. We then represent it with a normalized vector (the light blue one). Now if we dot that vector with the position vector of the sphere (the brown one), it will result in measuring the red distance outlined in the image above. We compare that red distance with the radius to get a sense of where the sphere is with respect to our frustum.
 
 ## Scene
 ### Sponza
