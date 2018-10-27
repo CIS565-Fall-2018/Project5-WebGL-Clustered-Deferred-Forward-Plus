@@ -9,7 +9,7 @@ Windows 10, i7-7700HQ @ 2.5GHz 128GB, GTX 1050 Ti 8GB (personal computer)
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+https://yuruwang.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/
 
 ### Demo Video/GIF
 
