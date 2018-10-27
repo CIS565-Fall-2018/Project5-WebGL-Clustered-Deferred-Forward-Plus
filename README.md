@@ -24,9 +24,24 @@ This project is fully implemented with Javascript and WebGL. See a live demo abo
 
 ## Scene
 ### Sponza
-| Depth View | Normals View | Blinn-Phong View |
+<p align="center"><img width="1000" height="500" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/top.gif"/></p>
+
+#### Views
+| Depth View | Normals View | Non-Debug View |
 | ------------- | ----------- | ----------- |
-| <p align="center"><img width="300" height="200" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_z.png"/></p>| <p align="center"><img width="300" height="200" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_norm.png/"></p> | <p align="center"><img width="300" height="200" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_none.png/"></p> |
+| <p align="center"><img width="200" height="150" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_z.png"/> </p>| <p align="center"><img width="200" height="150" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_norm.jpg/"></p> | <p align="center"><img width="200" height="150" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_none.jpg/"></p> |
+
+#### Blinn-Phong Effect
+<p align="center"><img width="700" height="400" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/blinn.jpg"/></p>
+
+Blinn-Phong is a shading effect achieved by adding a specular component to the albedo color:
+ 
+~~~~
+vec3 halfDirection = lightDirection + viewDirection
+float angle = dot(halfDirection, normal);
+float spec = pow(angle, exponent);
+albedo += spec;
+~~~~
 
 # Performance Comparison
 
