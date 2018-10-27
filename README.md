@@ -21,6 +21,14 @@ WebGL Clustered and Forward+ Shading
 
 ## Features
 
+### Forward+
+
+Forward+ rendering is technique to speed up lighting by only looping through the tile that the fragment is in.
+
+### Deferred
+
+Deferred rendering is a technique used to store the lighting into a buffer to improve the speed of rendering multiple lights. 
+
 ### Blinn Phong
 
 Blinn phong is a technique used to simulate light realistically. This did not impact performance much as it only required a bit more calculation than lambert shading. 
