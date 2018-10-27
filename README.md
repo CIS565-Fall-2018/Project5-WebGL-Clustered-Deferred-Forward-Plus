@@ -99,17 +99,17 @@ g-buffer[3] | position (XYZ)
 
 The buffers are visualized as follows:
 
-####Albedo
+#### Albedo
 
 ![](images/albedo.gif)
 -------------------
 
-####Normal
+#### Normal
 
 ![](images/normal.gif)
 -------------------
 
-####Depth
+#### Depth
 
 ![](images/depth.gif)
 -------------------
@@ -120,7 +120,7 @@ After optimization, only two g-buffers are needed, they are organized like this:
 g-buffer[0] | albedo (RGB) | View Space Depth
 ------------|--------------|-------------------
 g-buffer[1] | normal (XYZ) | Screen Space Depth
-
+------------|---------------|-------------------
 
 
 ## Pipelines performances
