@@ -18,6 +18,8 @@ export default function(params) {
   uniform float u_ySlices;
   uniform float u_zSlices;
   
+  uniform vec3 u_eyePos;
+  
   varying vec2 v_uv;
   
   struct Light {
@@ -106,12 +108,18 @@ export default function(params) {
       int lightId = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, index, lightIndex));
       
       Light light = UnpackLight(lightId);
+      
+      vec3 lightDir  = normalize(light.position - v_position);
+      vec3 hVec  = normalize((lightDir + u_eyePos)/2.0);
+      
+      float spec = max(pow(dot(normal, hVec), 64.0), 0.0);
+
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
-
+      float lambertTerm = max(dot(L, normal), 0.0) + spec;
+      
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
     
