@@ -17,6 +17,8 @@ export default function(params) {
   
   uniform float u_Near;
   uniform float u_Far;
+  uniform float u_PlaneH;
+  uniform float u_PlaneW;
 
   varying vec3 v_position;
   varying vec3 v_normal;
@@ -82,10 +84,20 @@ export default function(params) {
   
   int findCluster () {
     vec4 pos = u_viewMatrix * vec4(v_position, 1.0);
-    int y = int(gl_FragCoord.y * float(${params.ySlices} / ${params.height}));
-    int x = int(gl_FragCoord.x * float(${params.xSlices} / ${params.width}));
-    int z = 0; 
-    if (-pos.z > u_Near) z = int(float(${params.zSlices}) * (-pos.z - u_Near) / float(u_Far - u_Near));
+    pos.z = -pos.z;
+    
+    float z_norm = (pos.z - u_Near) / (u_Far - u_Near);
+    
+    float w = (u_Near + (u_Far - u_Near) * z_norm) * u_PlaneW;
+    float h = (u_Near + (u_Far - u_Near) * z_norm) * u_PlaneH;
+    
+    float x_size = 2.0 * w / float(${params.xSlices});
+    float y_size = 2.0 * h / float(${params.ySlices});
+    
+    int x = int((pos.x - w) / x_size);
+    int y = int((pos.y - h) / y_size);
+    int z = int((pos.z - u_Near) * float(${params.zSlices}) / (u_Far - u_Near));
+    
     
     return (x + y * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices});
   }

@@ -18,7 +18,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
       numLights: NUM_LIGHTS, xSlices: xSlices, ySlices: ySlices, zSlices: zSlices,
         width: canvas.width, height: canvas.height, maxLights: MAX_LIGHTS_PER_CLUSTER,
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'u_viewMatrix', 'u_Near', 'u_Far'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'u_viewMatrix', 'u_Near', 'u_Far', 'u_PlaneH', 'u_PlaneW'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -80,6 +80,10 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
     gl.uniform1f(this._shaderProgram.u_Near, camera.near);
     gl.uniform1f(this._shaderProgram.u_Far, camera.far);
+
+    let plane_h = Math.abs( Math.tan(camera.fov * 0.5 * Math.PI/180.0) );
+    gl.uniform1f(this._shaderProgram.u_PlaneH, plane_h);
+    gl.uniform1f(this._shaderProgram.u_PlaneW, plane_h * camera.aspect);
 
     // TODO: Bind any other shader inputs
 

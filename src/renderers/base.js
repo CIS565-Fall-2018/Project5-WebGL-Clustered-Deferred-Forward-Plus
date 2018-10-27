@@ -32,15 +32,18 @@ export default class BaseRenderer {
         for (let y = 0; y < this._ySlices; ++y) {
             for (let x = 0; x < this._xSlices; ++x) {
                 let i = x + y * this._xSlices + z * this._xSlices * this._ySlices;
+                //console.log(this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)]);
+
                 // Reset the light count to 0 for every cluster
                 this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = 0;
 
-                // define frustrum as four vectors pointing to xy corners
-                // march by cluster depth and check both near and far intersections
-                // we can calculate all vectors from the bottom-left corner
+                // define frustrum as 8 vectors pointing to xyz corners
+                // check both near and far intersections
+                // we can calculate all vectors from the bottom-left-front corner
                 //let v0 = [(x * x_size - w), (y * y_size - h)];
-                let x0 = (x * x_size - w);
-                let y0 = (y * y_size - h);
+                /*
+                let x0 = x * x_size - w;
+                let y0 = y * y_size - h;
                 let z0 = z * z_size + z_near;
 
                 // loop over lights
@@ -56,37 +59,8 @@ export default class BaseRenderer {
                     // if outside z cluster planes skip light
                     if ((light_pos[2] + r < z0) || (light_pos[2] - r > z0 + z_size)) continue;
 
-                    // xy bounding rays
-                    let ray = vec4.fromValues(x0, y0, 1, 1);
-                    let pos = vec4.fromValues(light_pos[0] / light_pos[2], light_pos[0] / light_pos[2], 1, 1);
-                    let tca = vec4.dot(pos, ray);
-                    if (tca < 0) {
-                        ray[0] = x0 + x_size;
-                        tca = vec4.dot(pos, ray);
-                    }
-                    if (tca < 0) {
-                        ray[1] = y0 + y_size;
-                        tca = vec4.dot(pos, ray);
-                    }
-                    if (tca < 0) {
-                        ray[0] = x0;
-                        tca = vec4.dot(pos, ray);
-                    }
-                    if (tca < 0) continue;
 
-                    // now need intersection depths to check if in z cluster
-                    let vdot = vec4.dot(pos, pos);
-                    let d = Math.sqrt(vdot - (tca*tca));
-                    if (d > r|| d < 0) continue;
-
-                    let thc = Math.sqrt((r*r) - (d*d));
-                    let t0 = tca - thc;
-                    let t1 = tca + thc;
-
-                    if (t1 < 0 && t0 < 0) continue;
-
-                    if (t1 * light_pos[2] < z0 || t0 * light_pos[2] > z0 + z_size) continue;
-
+                    let ray = vec3.fromValues(x0, y0, z0);
 
 
                     n += 1;
@@ -96,76 +70,85 @@ export default class BaseRenderer {
                     let offset = n - (4 * index);
 
                     this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, index) + offset] = lidx;
-                }
+                }*/
+
+                //console.log(this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)]);
 
             }
         }
     }
-        /*
+
       for (let lidx = 0; lidx < NUM_LIGHTS; lidx++) {
+
           let light = scene.lights[lidx];
           let light_pos = vec4.fromValues(light.position[0], light.position[1], light.position[2], 1.0); // transform into viewspace
           vec4.transformMat4(light_pos, light_pos, viewMatrix);
 
           let r = light.radius;
           light_pos[2] *= -1.0;
+          // if outside z clip planes skip light
+          if ((light_pos[2] + r < z_near) || (light_pos[2] - r > z_far)) continue;
 
-          // z cluster bounds
-          let zmin = Math.floor((light_pos[2] - r - z_near) / z_size);
-          let zmax = Math.floor((light_pos[2] + r - z_near) / z_size);
-          if (zmin > this._zSlices - 1 || zmax < 0) continue;
+          let z_norm = (light_pos[2] - z_near) / (z_far - z_near);
 
-          // x cluster bounds
-          let xmin = Math.floor((light_pos[0] - r - w) / x_size);
-          let xmax = Math.floor((light_pos[0] + r + w) / x_size);
-          if (xmin > this._xSlices - 1 || xmax < 0) continue;
+          let plane_w = (z_near + (z_far - z_near) * z_norm) * w;
+          let plane_h = (z_near + (z_far - z_near) * z_norm) * h;
 
-          // y cluster bounds
-          let ymin = Math.floor((light_pos[1] - r - h) / y_size);
-          let ymax = Math.floor((light_pos[1] + r + h) / y_size);
-          if (ymin > this._ySlices - 1 || ymax < 0) continue;
+          let plane_x = 2.0 * plane_w / this._xSlices;
+          let plane_y = 2.0 * plane_h / this._ySlices;
 
-          // clamp bounds
-          zmin = Math.max(0, zmin);
-          zmin = Math.min(zmin, this._zSlices - 1);
+          let left = Math.floor((light_pos[0] - r - plane_w) / plane_x);
+          let right = Math.floor((light_pos[0] + r - plane_w) / plane_x);
+          let top = Math.floor((light_pos[1] + r - plane_h) / plane_y);
+          let bottom = Math.floor((light_pos[1] - r - plane_h) / plane_y);
+          let front = Math.floor((light_pos[2] - r - z_near) / z_size);
+          let back = Math.floor((light_pos[2] + r - z_near) / z_size);
 
-          zmax = Math.min(this._zSlices - 1, zmax);
+          left = Math.max(0, Math.min(this._xSlices - 1, left));
+          right = Math.max(0, Math.min(this._xSlices - 1, right));
 
-          xmin = Math.max(0, xmin);
-          xmin = Math.min(xmin, this._xSlices - 1);
+          top = Math.max(0, Math.min(this._xSlices - 1, top));
+          bottom = Math.max(0, Math.min(this._xSlices - 1, bottom));
 
-          xmax = Math.min(this._xSlices - 1, xmax);
-          xmax = Math.max(0, xmax);
+          back = Math.max(0, Math.min(this._xSlices - 1, back));
+          front = Math.max(0, Math.min(this._xSlices - 1, front));
 
-          ymin = Math.max(0, ymin);
-          ymin = Math.min(ymin, this._ySlices - 1);
+          //console.log(left, right);
 
-          ymax = Math.min(this._ySlices - 1, ymax);
-          ymax = Math.max(0, ymax);
-
-          let plane_x = light_pos[0] / light_pos[2] - w;
-          let plane_y = light_pos[1] / light_pos[2] - h;
-          let plane_radius = r / light_pos[2];
-
-          for (let z = zmin; z <= zmax; ++z) {
-              for (let y = 0; y < this._ySlices; ++y) {
-                  for (let x = xmin; x <= xmax; ++x) {
+          for (let z = front; z <= back; ++z) {
+              for (let y = bottom; y <= top; ++y) {
+                  for (let x = left; x <= right; ++x) {
                       let i = x + y * this._xSlices + z * this._xSlices * this._ySlices;
 
-                      let n = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] + 1;
-                      if ( n > MAX_LIGHTS_PER_CLUSTER) break;
+                      z_norm = ((z_size * z)- z_near) / (z_far - z_near);
 
+                      let z_n2 = ((z_size * (z + 1))- z_near) / (z_far - z_near);
 
-                      // check distance for culling corners
-                      let z0 = (z * z_size + z_near) - light_pos[2];
-                      let x0 = (x * x_size) - plane_x;
-                      let y0 = (y * y_size) - plane_y;
+                      plane_w = (z_near + (z_far - z_near) * z_norm) * w;
+                      plane_h = (z_near + (z_far - z_near) * z_norm) * h;
 
-                      let dist = Math.sqrt((z0 * z0) + (x0 * x0) + (y0 * y0));
-                      let error = Math.sqrt((x_size * x_size) + (y_size * y_size) + (z_size * z_size));
-                      if (dist - error > plane_radius) continue;
+                      plane_x = 2.0 * plane_w / this._xSlices;
+                      plane_y = 2.0 * plane_h / this._ySlices;
 
+                      let p_x2 = 2.0 * ((z_near + (z_far - z_near) * z_n2) * w) / this._xSlices;
+                      let p_y2 = 2.0 * ((z_near + (z_far - z_near) * z_n2) * h) / this._xSlices;
 
+                      let x0 = x * plane_x;
+                      let y0 = y * plane_y;
+
+                      let diag_x = (p_x2 + plane_x) / 2.0;
+                      let diag_y = (p_y2 + plane_y) / 2.0;
+
+                      let error = Math.sqrt((z_size * z_size) + (diag_x * diag_x) + (diag_y * diag_y));
+
+                      let dist = Math.sqrt((x0 - light_pos[0]) * (x0 - light_pos[0]) + (y0 - light_pos[1]) * (y0 - light_pos[1]) + (z * z_size) * (z * z_size));
+
+                      if (dist - error > r) continue;
+
+                      let n = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)];
+                      if ( n >= MAX_LIGHTS_PER_CLUSTER) break;
+
+                      n += 1;
                       this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = n;
 
                       let index = Math.floor(n / 4);
@@ -176,10 +159,10 @@ export default class BaseRenderer {
                   }
               }
           }
-      }*/
 
 
 
+      }
 
     this._clusterTexture.update();
   }
