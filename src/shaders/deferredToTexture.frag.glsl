@@ -2,6 +2,8 @@
 #extension GL_EXT_draw_buffers: enable
 precision highp float;
 
+uniform mat4 view_matrix;
+
 uniform sampler2D u_colmap;
 uniform sampler2D u_normap;
 
@@ -21,8 +23,17 @@ void main() {
     vec3 norm = applyNormalMap(v_normal, vec3(texture2D(u_normap, v_uv)));
     vec3 col = vec3(texture2D(u_colmap, v_uv));
 
+    norm = normalize(vec3(view_matrix * vec4(norm, 0)));
+
     // TODO: populate your g buffer
-    // gl_FragData[0] = ??
+    gl_FragData[0] = vec4(norm.x, col);
+    gl_FragData[1] = vec4(norm.y, v_position);
+    
+    /*
+    gl_FragData[0] = vec4(col, 0.0);
+    gl_FragData[1] = vec4(v_position, 0.0);
+    gl_FragData[2] = vec4(norm, 0.0);
+    */
     // gl_FragData[1] = ??
     // gl_FragData[2] = ??
     // gl_FragData[3] = ??
