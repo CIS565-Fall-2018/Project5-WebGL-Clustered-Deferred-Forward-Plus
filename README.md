@@ -91,6 +91,12 @@ The stages of the final render is shown below.
 
 # Performance Analysis
 
+We clearly see from the graph shown below that the performance efficiency of the three approaches is as follows:
+
+``` Clustered > ForwardPlus >>> Forward ```
+
+The reason for this behavior is explained above.
+
 ![](output/performanc.png) 
 ### Credits
 
