@@ -18,6 +18,13 @@ This project showcases an implementation of Forward shading, with extensions: Fo
   
 This project is fully implemented with Javascript and WebGL. See a live demo above.
 
+## Implementing the Cluster Datastructure
+To implement clustering, we must be able to break up our viewing frustum into sectors in every dimension (X, Y, and Z). Since the Z dimension is simple (from near clip to far clip), it is simple to test intersections of spheres with it. However, for the X and Y dimensions, our view grows in a cone shape. The image below helps visualize the test we do for each frustum section and each spherical light.
+
+<p align="center"><img width="700" height="500" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/test.png"/></p>
+
+We essentially represent each section of the frustum by a right triangle with sides 1 and d, d being the distance from 0. We then represent it with a normalized vector (the light blue one). Now if we dot that vector with the position vector of the sphere, we are it will result in measuring the red distance outlined in the image above. We compare that red distance with the radius to get a sense of where the sphere is with respect to our frustum.
+
 ## Scene
 ### Sponza
 <p align="center"><img width="1000" height="500" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/top.gif"/></p>
