@@ -5,35 +5,27 @@ import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 export const MAX_LIGHTS_PER_CLUSTER = 100;
 
 export default class BaseRenderer {
-  constructor(xSlices, ySlices, zSlices) {
+  constructor(xSlices, ySlices, zSlices, tanCalculation, camAspect) {
     // Create a texture to store cluster data. Each cluster stores the number of lights followed by the light indices
     this._clusterTexture = new TextureBuffer(xSlices * ySlices * zSlices, MAX_LIGHTS_PER_CLUSTER + 1);
     this._xSlices = xSlices;
     this._ySlices = ySlices;
     this._zSlices = zSlices;
+    
+    this.tanCalculation = tanCalculation;
+    this.camAspect = camAspect;
   }
   
-    computeProjectedRadius(fovy, d, r) {
-  var fov;
 
-  fov = fovy / 2 * Math.PI / 180.0;
+clamp(value, lower, upper)
+  {
+    return Math.max(lower, Math.min(value, upper));
+  }
 
-//return 1.0 / Math.tan(fov) * r / d; // Wrong
-  return 1.0 / Math.tan(fov) * r / Math.sqrt(d * d - r * r); // Right
-}
-
-
-  updateClusters(camera, viewMatrix, projectionMatrix, viewProjectionMatrix, scene) {
+  updateClusters(viewMatrix, scene) {
     // TODO: Update the cluster texture with the count and indices of the lights in each cluster
     // This will take some time. The math is nontrivial...
-    //let projectionMatrix = mat4.create();
-    //let viewMatrix = mat4.create();
-    //let viewProjectionMatrix = mat4.create();
-    //camera.updateMatrixWorld();
-    //mat4.copy(viewMatrix, camera.matrixWorld.elements);
-    //mat4.invert(projectionMatrix, camera.projectionMatrix.elements);
-    //mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-    
+
     for (let z = 0; z < this._zSlices; ++z) {
       for (let y = 0; y < this._ySlices; ++y) {
         for (let x = 0; x < this._xSlices; ++x) {
@@ -42,114 +34,126 @@ export default class BaseRenderer {
         }
       }
     }
-
+    
+    let radius;
+    let c_light;
+    let minValues, maxValues;
+    let frustumHeight, frustumWidth;
+    let dX, dY;
+    let xMin, xMax;
+    let yMin, yMax;
+    let id;
+    let count, row, offset;
+    for (let i = 0; i < NUM_LIGHTS; i++) {
+        
+        radius = scene.lights[i].radius;
+        
+        // Transform light position from world to camera space
+        c_light = vec4.fromValues(scene.lights[i].position[0], scene.lights[i].position[1], scene.lights[i].position[2], 1.0);
+        vec4.transformMat4(c_light, c_light, viewMatrix);
+        c_light[2] = -c_light[2];
+        
+        minValues = vec3.fromValues(c_light[0] - radius, c_light[1] - radius, c_light[2] - radius);
+        maxValues = vec3.fromValues(c_light[0] + radius, c_light[1] + radius, c_light[2] + radius);
+        
+        frustumHeight = Math.abs(this.tanCalculation * c_light[2] * 2);
+        frustumWidth = Math.abs(this.camAspect * frustumHeight);
+        
+        dX = frustumWidth / this._xSlices;
+        dY = frustumHeight / this._ySlices;
+        
+        xMin = Math.floor((minValues[0] + frustumWidth*0.5) / dX) - 1;
+        xMax = Math.floor((maxValues[0] + frustumWidth*0.5) / dX) + 1;
+        xMin = this.clamp(xMin, 0, this._xSlices - 1);
+        xMax = this.clamp(xMax, 0, this._xSlices - 1);
+        
+        yMin = Math.floor((minValues[1] + frustumHeight*0.5) / dY);
+        yMax = Math.floor((maxValues[1] + frustumHeight*0.5) / dY);
+        yMin = this.clamp(yMin, 0, this._ySlices - 1);
+        yMax = this.clamp(yMax, 0, this._ySlices - 1);
+        
+        for (let x = xMin; x <= xMax; x++) {
+            for (let y = yMin; y <= yMax; y++) {
+                id = x + y * this._xSlices;
+            
+                count = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)];
+            
+                count = count + 1;
+            
+                row = Math.floor(count / 4.0);
+                offset = count % 4;
+            
+                this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, row) + offset] = i;
+                this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)] = count;
+            }
+        } 
+    }
+    
+/*
+    
             for (let l = 0; l < NUM_LIGHTS; ++l) {
               
-              let light = scene.lights[l];
-              
-              
-              //let w_Light = vec4.fromValues(light.position[0], light.position[1], light.position[2], 1.0);
-              //let c_Light = vec4.create();
-              //vec4.transformMat4(c_Light, w_Light, viewMatrix);
-              
-              //let w_Radius = vec4.fromValues(light.position[0] + light.radius, light.position[1], light.position[2], 1.0);
-              
-              
-              
-              //let w_lightPos = vec4.fromValues(light.position[0], light.position[1], light.position[2], 1.0);
-              //let s_lightPos = vec4.create();
-              //vec4.transformMat4(s_lightPos, w_lightPos, viewProjectionMatrix);
-              
-              //let w_Min = vec4.fromValues(light.position[0] - light.radius, light.position[1] - light.radius, light.position[2] - light.radius, 1.0);
-              //let w_Max = vec4.fromValues(light.position[0] + light.radius, light.position[1] + light.radius, light.position[2] + light.radius, 1.0);
-              
-              let w_Light = vec4.fromValues(light.position[0], light.position[1], light.position[2], 1.0);
+              //let light = scene.lights[l];
+
+              let w_Light = vec4.fromValues(scene.lights[l].position[0], scene.lights[l].position[1], scene.lights[l].position[2], 1.0);
               let v_Light = vec4.create();
               vec4.transformMat4(v_Light, w_Light, viewMatrix);
+              v_Light[2] *= -1;
               
-              let v_Min = vec4.fromValues(v_Light[0] - light.radius, v_Light[1] - light.radius, v_Light[2] - light.radius, 1.0);
-              let v_Max = vec4.fromValues(v_Light[0] + light.radius, v_Light[1] + light.radius, v_Light[2] + light.radius, 1.0);
-              
-              let v_MinX = vec3.fromValues(v_Light[0] - light.radius, v_Light[1], v_Light[2]);
-              vec3.normalize(v_MinX, v_MinX);
-              let v_MaxX = vec3.fromValues(v_Light[0] + light.radius, v_Light[1], v_Light[2]);
-              vec3.normalize(v_MaxX, v_MaxX);
-              
-              let camera_right = vec3.fromValues(1.0, 0.0, 0.0);
-              
-              let min_cos = vec3.dot(v_MinX, camera_right);
-              
-              let tileXMin = Math.floor(this._xSlices * (min_cos + 1.0) / 2.0);
-              
-              let max_cos = vec3.dot(v_MaxX, camera_right);
-              
-              let tileXMax = Math.floor(this._xSlices * (max_cos + 1.0) / 2.0);
-              
-              //let x_slice_Min = Math.max(0, Math.min(tileXMin, this._xSlices));
-              //let x_slice_Max = Math.max(0, Math.min(tileXMax, this._xSlices));
-              
-              let ctest = vec4.fromValues(camera.position.x, camera.position.y, camera.position.z, 1.0);
-              let blah = vec4.create();
-              vec4.transformMat4(blah, ctest, viewMatrix);
-              
-              let pr = this.computeProjectedRadius(camera.fov, vec3.length(v_Light), light.radius);
+              let v_Min = vec3.fromValues(v_Light[0] - scene.lights[l].radius, v_Light[1] - scene.lights[l].radius, v_Light[2] - scene.lights[l].radius);
+              let v_Max = vec3.fromValues(v_Light[0] + scene.lights[l].radius, v_Light[1] + scene.lights[l].radius, v_Light[2] + scene.lights[l].radius);
               
               
-              let s_Light = vec4.create();
-              vec4.transformMat4(s_Light, w_Light, projectionMatrix);
-              s_Light[0] = s_Light[0] / s_Light[3];
-              s_Light[1] = s_Light[1] / s_Light[3];
-              s_Light[2] = s_Light[2] / s_Light[3];
-              s_Light[3] = s_Light[3] / s_Light[3];
-              /*
-              let s_Min = vec4.create();
-              vec4.transformMat4(s_Min, v_Min, projectionMatrix);
-              let s_Max = vec4.create();
-              vec4.transformMat4(s_Max, v_Max, projectionMatrix);
-              s_Min[0] = s_Min[0] / s_Min[3];
-              s_Min[1] = s_Min[1] / s_Min[3];
-              s_Min[2] = s_Min[2] / s_Min[3];
-              s_Min[3] = s_Min[3] / s_Min[3];
-              //s_Max = s_Max / s_Min[3];
-              s_Max[0] = s_Max[0] / s_Max[3];
-              s_Max[1] = s_Max[1] / s_Max[3];
-              s_Max[2] = s_Max[2] / s_Max[3];
-              s_Max[3] = s_Max[3] / s_Max[3];
+              // Calculate the width and height of frustum at the light's depth
+              let y_height = Math.abs(v_Light[2] * Math.tan(camera.fov * (Math.PI/180.0) * 0.5) * 2);
+              let x_width = Math.abs(camera.aspect * y_height);
+
+              // How large each frustum slice is
+              let dX = x_width / this._xSlices;
+              let dY = y_height / this._ySlices;
               
+              // Need to convert coordinates which are [-x_width / 2, x_width / 2] to be [0, x_width]
+              // Then divide by dX to get the slice
+              let x_slice_Min = Math.floor((v_Min[0] + (x_width * 0.5)) / dX) - 1;
+              let x_slice_Max = Math.floor((v_Max[0] + (x_width * 0.5)) / dX) + 1;
               
-              let p_Min = vec2.fromValues((s_Min[0] + 1.0)/2.0, (s_Min[1] + 1.0)/2.0);
-              let p_Max = vec2.fromValues((s_Max[0] + 1.0)/2.0, (s_Max[1] + 1.0)/2.0);
-              */
-              
-              let p_Min = vec2.fromValues((s_Light[0] + 1.0 - pr) / 2.0, 5.0);
-              let p_Max = vec2.fromValues((s_Light[0] + 1.0 + pr) / 2.0, 5.0);
-              
-              let dX = 1.0 / this._xSlices;
-              let dY = 1.0 / this._ySlices;
-              
-              let x_slice_Min = Math.max(0, Math.min(Math.floor(p_Min[0] / dX), this._xSlices));
-              let x_slice_Max = Math.max(0, Math.min(Math.floor(p_Max[0] / dX), this._xSlices));
-              
-              
-              let y_slice_Min = Math.max(0, Math.min(Math.floor(p_Min[1] / dY), this._ySlices));
-              let y_slice_Max = Math.max(0, Math.min(Math.floor(p_Max[1] / dY), this._ySlices));
-              
+              x_slice_Min = Math.max(0, Math.min(x_slice_Min, this._xSlices - 1));
+              x_slice_Max = Math.max(0, Math.min(x_slice_Max, this._xSlices - 1));
               
               
               for (let x = x_slice_Min; x <= x_slice_Max; x++) {
                 //for (let y = y_slice_Min; y <= y_slice_Max; y++) {
               
-                    let i = x;// + y * this._xSlices;// + z * this._xSlices * this._ySlices;
+                    let index = x;// + y * this._xSlices;// + z * this._xSlices * this._ySlices;
+                    
+                    //let numIndex = index * this._clusterTexture._pixelsPerElement * 4;
+                    
+                    let numIndex = this._clusterTexture.bufferIndex(index, 0);
               
-                    let currNum = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)];
-                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, currNum + 1)] = l;
-                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = currNum + 1;
+                    let currNum = this._clusterTexture.buffer[numIndex];//this._clusterTexture.buffer[numIndex];
+                    let nextNum = currNum + 1;
+                    
+                    if (currNum < MAX_LIGHTS_PER_CLUSTER ) {
+                    
+                        let texel = Math.floor(nextNum / 4.0);
+                        let texelIndex = this._clusterTexture.bufferIndex(index, texel);
+                        let texelSubIndex = (nextNum) - (texel*4); //texel%4;
+                        //this._clusterTexture.buffer[texelIndex + texelSubIndex] = l;
+                        //this._clusterTexture.buffer[numIndex + (texel * 4) + texelSubIndex] = l;
+                        this._clusterTexture.buffer[texelIndex + texelSubIndex] = l;
+                    
+                    
+                        //this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, clusterTextureIndex) + clusterTextureIndex_Mod] = l;
+                        this._clusterTexture.buffer[numIndex] = nextNum;
+                    }
                 //}
               }
               
               
             
           }
+          
+          */
 
 
     this._clusterTexture.update();
