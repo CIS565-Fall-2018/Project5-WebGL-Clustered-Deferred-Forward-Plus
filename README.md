@@ -20,7 +20,7 @@ Forward Plus shading GIF
 Defered shading GIF
 
 ### Performance Analysis
-![](images/graph.jpg)
+![](images/graph.JPG)
 
 ### Credits
 
