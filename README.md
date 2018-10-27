@@ -14,9 +14,11 @@ Overview
 
 Analysis 
 ======================
-* MAX_LIGHTS_PER_CLUSTER is always NUM_LIGHTS;
+* MAX_LIGHTS_PER_CLUSTER is NUM_LIGHTS.
 
-* Rendering time is measured in milisecond, so lower is better.
+* Rendering time is measured in millisecond, so lower is better.
+
+* Cluster size is (15, 15, 15).
 
 ---
 
