@@ -10,8 +10,8 @@ export default function(params) {
   uniform sampler2D u_lightbuffer;
 
   uniform mat4 u_viewMatrix;
-  uniform int u_Width;
-  uniform int u_Height;
+  uniform float u_Width;
+  uniform float u_Height;
   uniform float u_zNear;
   uniform float u_zFar;
 
@@ -85,10 +85,45 @@ export default function(params) {
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
 
+    vec4 fragCoordHomogenous = u_viewMatrix * vec4(v_position, 1.0);
+    float fragZ = -fragCoordHomogenous.z;
+    int zClusterIndex = int((fragZ - u_zNear) / (u_zFar - u_zNear) / float(${params.zSlices}));
+    int xClusterIndex = int((gl_FragCoord.x - 0.5) / u_Width / float(${params.xSlices}));
+    int yClusterIndex = int((gl_FragCoord.y - 0.5) / u_Height / float(${params.ySlices}));
+
+    int clusterIndexFlat = xClusterIndex + ${params.xSlices} * yClusterIndex + ${params.xSlices} * ${params.ySlices} * zClusterIndex;
+    float uFetched = float(clusterIndexFlat + 1) / float(${params.xSlices} * ${params.ySlices} * ${params.zSlices} + 1);
+    int clusterLightCount = int(texture2D(u_clusterbuffer, vec2(uFetched, 0.0)).r);
+
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
+    for (int i = 0; i < ${params.numLights}; ++i)
+    {
+      if (i >= clusterLightCount)
+      {
+        break;
+      }
+      int currentIndex = (i + 1) * 0.25;
+      float vFetched = float(currentIndex + 1) / float((${params.maxLightsPerCluster} + 1) * 0.25 + 1);
+      vec4 texel = texture2D(u_clusterbuffer, vec2(uFetched, vFetched));
+      if (pixelComponent == 0) 
+      {
+        return texel[0];
+      }
+      else if (pixelComponent == 1)
+      {
+        return texel[1];
+      }
+      else if (pixelComponent == 2)
+      {
+        return texel[2];
+      } 
+      else if (pixelComponent == 3)
+      {
+        return texel[3];
+      }
       Light light = UnpackLight(i);
+
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
