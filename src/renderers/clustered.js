@@ -1,5 +1,5 @@
 import { gl, WEBGL_draw_buffers, canvas } from '../init';
-import { mat4, vec4 } from 'gl-matrix';
+import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 import { loadShaderProgram, renderFullscreenQuad } from '../utils';
 import { NUM_LIGHTS } from '../scene';
 import toTextureVert from '../shaders/deferredToTexture.vert.glsl';
@@ -21,7 +21,7 @@ export default class ClusteredRenderer extends BaseRenderer {
     this._lightTexture = new TextureBuffer(NUM_LIGHTS, 8);
     
     this._progCopy = loadShaderProgram(toTextureVert, toTextureFrag, {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_viewMatrix'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -32,7 +32,7 @@ export default class ClusteredRenderer extends BaseRenderer {
         width: canvas.width, height: canvas.height, maxLights: MAX_LIGHTS_PER_CLUSTER,
     }), {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 'u_lightbuffer', 'u_clusterbuffer',
-          'u_viewMatrix', 'u_Near', 'u_Far', 'u_PlaneH', 'u_PlaneW'],
+          'u_Near', 'u_Far', 'u_PlaneH', 'u_PlaneW', 'u_Cam', 'u_Res'],
       attribs: ['a_uv'],
     });
 
@@ -128,6 +128,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._progCopy.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
+    gl.uniformMatrix4fv(this._progCopy.u_viewMatrix, false, this._viewMatrix);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
@@ -155,8 +156,14 @@ export default class ClusteredRenderer extends BaseRenderer {
     // Clear the frame
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
     // Use this shader program
     gl.useProgram(this._progShade.glShaderProgram);
+
+      let cam = vec3.fromValues(camera.position[0], camera.position[1], camera.position[2]);
+      gl.uniform3fv(this._progShade.u_Cam, cam);
+      gl.uniform2fv(this._progShade.u_Res, vec2.fromValues(this._width, this._height));
+
 
       gl.activeTexture(gl.TEXTURE2);
       gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
@@ -166,7 +173,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
       gl.uniform1i(this._progShade.u_clusterbuffer, 3);
 
-    gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
+
 
     // TODO: Bind any other shader inputs
 
