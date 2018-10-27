@@ -62,20 +62,25 @@ export default class BaseRenderer {
       // find cluster range
       let z_min, z_max;
 
-      for(z_min = 0; z_min < this._zSlices; z_min++){
-        let distance = light_pos[2] - (camera.near + z_min * z_step);
-        if(distance <= radius){
-          z_min = Math.max(0, z_min - 1);
-          break;
-        }
-      }
-      for(z_max = this._zSlices - 1; z_max > z_min; z_max--){
-        let distance = (camera.near + z_max * z_step) - light_pos[2];
-        if(distance <= radius){
-          z_max = Math.min(this._zSlices, z_max + 1);
-          break;
-        }
-      }
+      // for(z_min = 0; z_min < this._zSlices; z_min++){
+      //   let distance = light_pos[2] - (camera.near + z_min * z_step);
+      //   if(distance <= radius){
+      //     z_min = Math.max(0, z_min - 1);
+      //     break;
+      //   }
+      // }
+      // for(z_max = this._zSlices - 1; z_max > z_min; z_max--){
+      //   let distance = (camera.near + z_max * z_step) - light_pos[2];
+      //   if(distance <= radius){
+      //     z_max = Math.min(this._zSlices, z_max + 1);
+      //     break;
+      //   }
+      // }
+      z_min = Math.floor((light_pos[2] - camera.near - radius) / z_step);
+      z_max = Math.floor((light_pos[2] - camera.near + radius) / z_step);
+      if(z_min >= this._zSlices || z_max < 0) continue;
+      z_min = Math.max(0, z_min);
+      z_max = Math.min(z_max, this._zSlices - 1);
 
       let x_min, x_max;
 
