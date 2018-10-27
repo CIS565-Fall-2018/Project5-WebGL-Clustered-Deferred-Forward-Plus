@@ -10,6 +10,17 @@ function angle2Rad(angle)
 	return Math.PI * angle / 180.0;
 }
 
+function getDistance2Light(offset, lightCoord)
+{
+  	let denom = Math.sqrt(1 + offset * offset);
+  	let a1 = 1 / temp;
+  	let a2 = -ratio * a1;
+  	let normal = vec2.create();
+
+  	vec2.set(normal, a1, a2);
+  	return vec2.dot(lightCoord, normal);
+}
+
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
     // Create a texture to store cluster data. Each cluster stores the number of lights followed by the light indices
@@ -37,8 +48,10 @@ export default class BaseRenderer {
     let halfFOVinRad = angle2Rad(0.5 * camera.fov);
     let halfHeight = Math.tan(halfFOVinRad);
     let totalHeight = 2.0 * halfHeight;
+    let halfWidth = halfHeight * camera.aspect;
+    let totalWidth = 2.0 * halfWidth;
     let ySeg = totalHeight / this._ySlices;
-    let xSeg = totalHeight * camera.aspect / this._xSlices;
+    let xSeg = totalWidth / this._xSlices;
 
     for (let lightI = 0; lightI < NUM_LIGHTS; ++lightI)
     {
@@ -60,17 +73,77 @@ export default class BaseRenderer {
     		continue;
     	}
 
+		let xLowerIndex; let xUpperIndex;
+    	let yLowerIndex; let yUpperIndex;
+    	
+    	let distance2Light;
+    	
+    	for (xLowerIndex = 0; xLowerIndex < this._xSlices; ++xLowerIndex)
+    	{
+    	    let lightCoordProjected = vec2.create();
+        	lightCoordProjected = vec2.set(lightCoordProjected, lightCoord[0], lightCoord[2]);
+        	distance2Light = Math.abs(getDistance2Light(-halfWidth + xLowerIndex * xSeg, lightCoordProjected));
+        	if (distance2Light < lightR)
+        	{
+          		xLowerIndex = xLowerIndex - 1;
+          		if (xLowerIndex < 0)
+          		{
+          			xLowerIndex = 0;
+          		}
+          		break;
+        	}
+    	}
+
+    	for (xUpperIndex = xLowerIndex + 1; xUpperIndex < this._xSlices; ++xUpperIndex)
+    	{
+        	let lightCoordProjected = vec2.create();
+        	lightCoordProjected = vec2.set(lightPosProjected, lightCoord[0], lightCoord[2]);
+        	distance2Light = Math.abs(getDistance2Light(-halfWidth + xUpperIndex * xSeg, lightCoordProjected));
+        	if (distance2Light < lightR)
+        	{
+          		break;
+        	}
+    	}
+
+    	for (yLowerIndex = 0; yLowerIndex < this._ySlices; ++yLowerIndex)
+    	{
+        	let lightCoordProjected = vec2.create();
+        	lightCoordProjected = vec2.set(lightPosProjected, lightCoord[1], lightCoord[2]);
+        	distance2Light = Math.abs(getDistance2Light(-halfHeight + yLowerIndex * ySeg, lightCoordProjected));
+        	if (distance2Light < lightR)
+        	{
+          		yLowerIndex = yLowerIndex - 1;
+          		if (yLowerIndex < 0)
+          		{
+          			yLowerIndex = 0;
+          		}
+	        	break;
+        	}
+    	}
+
+    	for (yUpperIndex = yLowerIndex + 1; yUpperIndex < this._ySlices; ++yUpperIndex)
+    	{
+        	let lightCoordProjected = vec2.create();
+        	lightCoordProjected = vec2.set(lightPosProjected, lightCoord[1], lightCoord[2]);
+       	 	distance2Light = Math.abs(getDistance2Light(-halfHeight + yUpperIndex * ySeg, lightCoordProjected));
+        	if (distance2Light < lightR)
+        	{
+          		break;
+        	}
+    	}
+
     	for (let z = zLowerIndex; z < zUpperIndex; ++z)
     	{
-    		for (let y = 0; y < this._ySlices; ++y)
+    		for (let y = yLowerIndex; y < yUpperIndex; ++y)
     		{
-    			for (let x = 0; x < this._xSlices; ++x)
+    			for (let x = xLowerIndex; x < xUpperIndex; ++x)
     			{
     				let clusterIndex = x + this._xSlices * y + this._xSlices * this._ySlices * z;
     				let lightCounterIndex = this._clusterTexture.bufferIndex(clusterIndex, 0);
-    				let lightCount = 1 + this._clusterTexture.buffer[lightCounterIndex];
+    				let previousLightCount = this._clusterTexture.buffer[lightCounterIndex];
+    				let lightCount = 1 + previousLightCount;
 
-    				if (lightCount > MAX_LIGHTS_PER_CLUSTER)
+    				if (lightCount < MAX_LIGHTS_PER_CLUSTER)
     				{
     					continue;
     				}
