@@ -3,9 +3,11 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Zach Corse
+  * LinkedIn: https://www.linkedin.com/in/wzcorse/
+  * Personal Website: https://wzcorse.com
+  * Twitter: @ZachCorse
+* Tested on: Windows 10, i7-6700HQ @ 2.60GHz 32GB, NVIDIA GeForce GTX 970M (personal computer)
 
 ### Live Online
 
@@ -15,14 +17,20 @@ WebGL Clustered and Forward+ Shading
 
 [![](img/video.png)](TODO)
 
-### (TODO: Your README)
+## README
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+Introduction
+------------
+In this project I implement basic Forward+ and Clustered Deferred Shading and compare the performance between the two.
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+Features
+------------
+1. Forward Shading
+2. Forward+ Shading
+3. Clustered Deferred Shading
 
+Performance
+------------
 
 ### Credits
 
