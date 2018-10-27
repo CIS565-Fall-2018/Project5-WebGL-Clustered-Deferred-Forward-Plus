@@ -9,6 +9,8 @@ WebGL Clustered and Forward+ Shading
 
 ## [Live Online](https://lanlou123.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
+（**NOTE**need to change "devtool: 'source-map'" into "  devtool: 'cheap-source-map'" inside webpack.config.js to get npm run build working ）
+
 note : I only wrote the shading selection dropdown menu for clustered rendering
 
 ## Click this gif for video link
