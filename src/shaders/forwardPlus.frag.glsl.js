@@ -13,7 +13,6 @@ export default function(params) {
   uniform sampler2D u_clusterbuffer;
   
   uniform mat4 u_viewMatrix;
-  uniform mat4 u_viewProjectionMatrix;
   
   uniform float u_Near;
   uniform float u_Far;
@@ -118,11 +117,10 @@ export default function(params) {
     int n = int(texture2D(u_clusterbuffer, vec2(u, 0.0))[0]);
 
     int light_idx = 0;
-    float v;
     
     for (int i = 0; i < ${params.numLights}; ++i) {
       // check if within # of lights in cluster
-      if (i > n) break;
+      if (i >= n) break;
       // Retrieve light index
       int elements = (int(${params.maxLights}) + 1) / 4;
       
