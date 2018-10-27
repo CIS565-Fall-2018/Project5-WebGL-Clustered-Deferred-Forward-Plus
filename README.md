@@ -42,9 +42,15 @@ The current implementation uses three g-buffers, each storing an array of vec4 d
 gl_FragData[0] = vec4(norm, viewPos.x);
 gl_FragData[1] = vec4(col, viewPos.y);
 gl_FragData[2] = vec4(v_position, -viewPos.z);
-```  
+``` 
+```
+ vec4 normal = texture2D(u_gbuffers[0], v_uv);
+ vec4 albedo = texture2D(u_gbuffers[1], v_uv);
+ vec4 v_position = texture2D(u_gbuffers[2], v_uv);
+ vec3 pos = vec3(normal[3], albedo[3], v_position[3]);
+ ```
   
-The deferred rendering pipeline allows a little more control over the information processing but I would assume there is some overhead to invoking a second shader to simply copy information, plus the memory cost of having multiple buffers saved.
+The deferred rendering pipeline allows a little more control over the information processing, but I would assume there is some overhead to invoking a second shader to simply copy information, plus the memory cost of having multiple buffers saved.
   
 
 ### Toon Shading  
@@ -73,8 +79,16 @@ The outline is most clear in defining different neighboring geometries, such as 
 A more accurate version of this technique would also reference the depth of neighboring pixels to determine outlines. Some of the pillars have similar edge normals to the walls neighboring in screenspace, leaving their outlines only partially defined, but comparing their z positions in viewspace could potentially resolve this.
 
   
-
-
+  
+## Performance Analysis  
+  
+### Light Cluster Culling  
+  
+### Speed Scaling with Light Count  
+  
+### Feature Overhead  
+  
+  
 ### Credits
 
 * [Three.js](https://github.com/mrdoob/three.js) by [@mrdoob](https://github.com/mrdoob) and contributors
