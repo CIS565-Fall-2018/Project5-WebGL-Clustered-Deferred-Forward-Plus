@@ -86,6 +86,32 @@ export default function(params) {
     return (x + y * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices});
   }
   
+  float toonShade(vec3 normal) {
+      float dx = 1.0 / u_Res.x;
+      float dy = 1.0 / u_Res.y;
+      float edgeDetect = 1.0;
+      float s = max(v_uv.x - dx, 0.0);
+      vec4 sample = texture2D(u_gbuffers[0], vec2(s, v_uv.y));
+      if ( dot(sample.xyz, normal) < 0.2 ) edgeDetect = 0.0;
+      if (edgeDetect > 0.0) {
+        s = min(v_uv.x + dx, 1.0);
+        sample = texture2D(u_gbuffers[0], vec2(s, v_uv.y));
+        if ( dot(sample.xyz, normal) < 0.2 ) edgeDetect = 0.0;
+      }
+      if (edgeDetect > 0.0) {
+        s = min(v_uv.y + dy, 1.0);
+        sample = texture2D(u_gbuffers[0], vec2(v_uv.x, s));
+        if ( dot(sample.xyz, normal) < 0.2 ) edgeDetect = 0.0;
+      }
+      if (edgeDetect > 0.0) {
+        s = min(v_uv.y - dy, 1.0);
+        sample = texture2D(u_gbuffers[0], vec2(v_uv.x, s));
+        if ( dot(sample.xyz, normal) < 0.2 ) edgeDetect = 0.0;
+      }
+      
+      return edgeDetect;
+  }
+  
   void main() {
   
      vec4 normal = texture2D(u_gbuffers[0], v_uv);
@@ -128,35 +154,19 @@ export default function(params) {
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
       float lambertTerm = max(dot(L, normal.xyz), 0.0);
       
-      float dx = 1.0 / u_Res.x;
-      float dy = 1.0 / u_Res.y;
+      
+      float tot_light = (lambertTerm + spec);
+      
       float edgeDetect = 1.0;
-      float s = max(v_uv.x - dx, 0.0);
-      vec4 sample = texture2D(u_gbuffers[0], vec2(s, v_uv.y));
-      if ( dot(sample.xyz, normal.xyz) < 0.2 ) edgeDetect = 0.0;
-      if (edgeDetect > 0.0) {
-        s = min(v_uv.x + dx, 1.0);
-        sample = texture2D(u_gbuffers[0], vec2(s, v_uv.y));
-        if ( dot(sample.xyz, normal.xyz) < 0.2 ) edgeDetect = 0.0;
-      }
-      if (edgeDetect > 0.0) {
-        s = min(v_uv.y + dy, 1.0);
-        sample = texture2D(u_gbuffers[0], vec2(v_uv.x, s));
-        if ( dot(sample.xyz, normal.xyz) < 0.2 ) edgeDetect = 0.0;
-      }
-      if (edgeDetect > 0.0) {
-        s = min(v_uv.y - dy, 1.0);
-        sample = texture2D(u_gbuffers[0], vec2(v_uv.x, s));
-        if ( dot(sample.xyz, normal.xyz) < 0.2 ) edgeDetect = 0.0;
-      }
-      
-      float tot_light = edgeDetect * (lambertTerm + spec);
-      //float tot_light = edgeDetect;
-      
       vec3 toon_col = albedo.xyz * floor(tot_light * 6.0) / 6.0;
+      
+      if (${params.TOON} > 0) {
+        edgeDetect = toonShade(normal.xyz);
+        fragColor += toon_col * edgeDetect * tot_light * light.color * vec3(lightIntensity);
+      }
 
-      //fragColor += albedo.xyz * tot_light * light.color * vec3(lightIntensity);
-      fragColor += toon_col * light.color * vec3(lightIntensity);
+      else fragColor += albedo.xyz * tot_light * light.color * vec3(lightIntensity);
+      
     }
 
     const vec3 ambientLight = vec3(0.025);

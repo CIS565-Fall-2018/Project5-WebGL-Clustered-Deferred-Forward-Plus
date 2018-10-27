@@ -10,6 +10,7 @@ import TextureBuffer from './textureBuffer';
 import BaseRenderer, {MAX_LIGHTS_PER_CLUSTER} from './base';
 
 export const NUM_GBUFFERS = 3;
+const TOON_SHADE = 1;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -27,7 +28,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     this._progShade = loadShaderProgram(QuadVertSource, fsSource({
       numLights: NUM_LIGHTS,
-      numGBuffers: NUM_GBUFFERS,
+      numGBuffers: NUM_GBUFFERS, TOON: TOON_SHADE,
         xSlices: xSlices, ySlices: ySlices, zSlices: zSlices,
         width: canvas.width, height: canvas.height, maxLights: MAX_LIGHTS_PER_CLUSTER,
     }), {
