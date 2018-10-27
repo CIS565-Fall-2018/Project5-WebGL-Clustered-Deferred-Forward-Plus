@@ -3,10 +3,14 @@ import ForwardRenderer from './renderers/forward';
 import ForwardPlusRenderer from './renderers/forwardPlus';
 import ClusteredRenderer from './renderers/clustered';
 import Scene from './scene';
+import GpuBinningRenderer from './renderers/gpuBinning';//me
+import GpuBinningDebugRenderer from './renderers/gpuBinningDebug';//me
 
 const FORWARD = 'Forward';
 const FORWARD_PLUS = 'Forward+';
 const CLUSTERED = 'Clustered';
+const GPU_BINNING = 'GpuBinning';//me
+const GPU_BINNING_DEBUG = 'GpuBinningDebug';//me
 
 const params = {
   renderer: FORWARD_PLUS,
@@ -26,10 +30,16 @@ function setRenderer(renderer) {
     case CLUSTERED:
       params._renderer = new ClusteredRenderer(15, 15, 15, camera);
       break;
+    case GPU_BINNING:
+      params._renderer = new GpuBinningRenderer(15, 15, 15, camera);
+      break;
+    case GPU_BINNING_DEBUG:
+      params._renderer = new GpuBinningDebugRenderer(15, 15, 15, camera);
+      break;
   }
 }
 
-gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
+gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED, GPU_BINNING, GPU_BINNING_DEBUG]).onChange(setRenderer);
 
 const scene = new Scene();
 scene.loadGLTF('models/sponza/sponza.gltf');

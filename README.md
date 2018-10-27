@@ -84,7 +84,39 @@ According to the chart, clustered deferred rendering benefits more from ad-hoc b
 
 ---
 
-## 6. Other stuff
+## 6. GPU binning clustered forward renderer.
+
+### overview
+
+* very near distance
+
+![](img/a.JPG)
+
+* near distance
+
+![](img/b.JPG)
+
+* mid distance
+
+![](img/c.JPG)
+
+* far distance
+
+![](img/d.JPG)
+
+* very far distance
+
+![](img/e.JPG)
+
+### analysis
+
+Using GPU to bin the lights is the ultimate solution to increase fps. However, webgl currently does not support compute shader. To bin the lights, we have to draw a full screen quad and convert fragment coordinates to cluster index and loop through 4 lights in each fragment shader. 
+
+Ideally, we want to store only the lights that's in the cluster and a total number of them so that we can loop through only these lights in the subsequent pass. But because we don't have compute shader, we also don't have atomic operations. This makes the above storage scheme impossible. We have to store a bool value for each and every light in the scene for each cluster to indicate whether the particular light is in the particular cluster or not. This means in the subsequent pass, we can not get the total light count and can not only iterate through a small amount of lights. We have to check for each light in the scene whether they are in the cluster or not. And this is an expensive operation. In fact, compared with the un-clustered forward renderer, this makes no improvement at all. The rendering time of the GPU binning clustered forward renderer is not faster than the un-clustered forward renderer.
+
+---
+
+## 7. Other stuff
 
 ![](img/1.JPG)
 
