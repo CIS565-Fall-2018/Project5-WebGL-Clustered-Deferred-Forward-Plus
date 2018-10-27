@@ -8,7 +8,7 @@ import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 //added: shaders for bloom effect
 import QuadVertSource from '../shaders/quad.vert.glsl';
 //added: read brightness filter from filter shader
-import fsSourceToTexture from '../shaders/forwardPlusToTextureAux.frag.glsl.js';
+import fsSourceToTexture from '../shaders/forwardPlusToTexture.frag.glsl.js';
 import fsSourceBrightnessTexture from '../shaders/brightnessFilterToTexture.frag.glsl';
 
 //added: blur fragment & vertex shaders
@@ -57,7 +57,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 //horizontal blur shader
     this._progHorizontalBlur = loadShaderProgram(vsSourceBlurHorizontal, fsSourceBlur, {
       uniforms: ['u_dst_widht', 'u_texture'],
-      attribs: ['a_uv'];
+      attribs: ['a_uv'],
     });
 //vertical blur shader
     this._progVerticalBlur = loadShaderProgram(vsSourceBlurVertical, fsSourceBlur, {
@@ -73,8 +73,10 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
   //bloom effect step2: setup fbos
   setupDrawBuffersBloom(width, height){
-    let attachments0 = newArray(1);
-    attachments0[0] = WEBGL_draw_buffers[`COLOR_ATTACHMENT_WEBGL`];
+    this._width = width;
+    this._height = height;
+    let attachments0 = new Array(1);
+    attachments0[0] = WEBGL_draw_buffers[`COLOR_ATTACHMENT0_WEBGL`];
 //frame buffer1: original screen image    
     //original screen image, write to a frame buffer
     this._fbo_screen = gl.createFramebuffer();
@@ -194,7 +196,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D,
       this._depthTex_Bloom3_DownScale, 0);
 
-    this._downScale2Buffer - gl.createTexture();
+    this._downScale2Buffer = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this._downScale2Buffer);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -273,7 +275,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     //light texture as uniform
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
-    gl.uniform1i(this._progShadeToTexture, u_lightbuffer, 2);
+    gl.uniform1i(this._progShadeToTexture.u_lightbuffer, 2);
 
     //cluster texture
     gl.activeTexture(gl.TEXTURE3);
@@ -362,7 +364,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     this.isBloomEffectOn = isBloomOn;
     if(this.isBloomEffectOn){
       this._brightnessFilterDownScale = 2.0;
-      this._blurDownScale = 6.0;
+      this._blurDownScale = 5.0;
       this.setupDrawBuffersBloom(canvas.width, canvas.height);
     }
     // Create a texture to store light data

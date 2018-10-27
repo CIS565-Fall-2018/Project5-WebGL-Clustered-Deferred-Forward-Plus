@@ -15,5 +15,5 @@ void main(){
 
 	//gl_FragColor = vec4(screenCol, 1.0);
 	//render to FBO
-	gl_FragData[0] = vec4(OriCol, 1.0);
+	gl_FragData[0] = vec4(screenCol, 1.0);
 }

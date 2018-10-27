@@ -12,7 +12,7 @@ const clusterXYOffset = 2;
 //logarithmic function to determine z-direction slices
 function clusterZIndex(viewSpaceZ, nearClipz){
   if(viewSpaceZ < nearClipz){
-    return -1;
+    return -1.0;
   }
   else{
     return Math.floor(Math.log(viewSpaceZ - nearClipz + 1.0) * 2.15);
@@ -70,8 +70,8 @@ export default class BaseRenderer {
       if(clusterZStartIdx > this._zSlices + clusterZOffset || clusterZEndIdx < -clusterZOffset){
         continue;
       }
-      clusterZStartIdx = clamp(clusterZStartIdx - clusterZOffset, 0, this,_zSlices - 1);
-      clusterZEndIdx = clamp(clusterZEndIdx + clusterZOffset, 0, this,_zSlices - 1);
+      clusterZStartIdx = clamp(clusterZStartIdx - clusterZOffset, 0, this._zSlices - 1);
+      clusterZEndIdx = clamp(clusterZEndIdx + clusterZOffset, 0, this._zSlices - 1);
     
       let lightPos3D = vec3.create();
       lightPos3D[0] = lightViewPos[0];

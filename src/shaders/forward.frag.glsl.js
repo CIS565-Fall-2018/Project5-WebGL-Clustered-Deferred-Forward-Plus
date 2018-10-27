@@ -82,7 +82,14 @@ export default function(params) {
       vec3 L = (light.position - v_position) / lightDistance;
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
+//comment out for toon shading    
+      //float lambertTerm = max(dot(L, normal), 0.0);
+//Toon shading test
+      float rampUnitLength = 0.25;
+      float rampUnitValue = 0.33;
+      float rampCoord = max(dot(L,normal) , 0.0);
+      int rampLevel = int(rampCoord / rampUnitLength);
+      float lambertTerm = float(rampLevel) * rampUnitValue;
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }

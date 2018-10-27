@@ -103,7 +103,7 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
     
     //cluster texture dimensions
     const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});
-    const int clusterTextureHeight = int(ceil((float(${params.maxLightsPerCluster}) + 1.0) / 4.0));
+    const int clusterTextureHeight = int(ceil((float(${params.maxNumberLightsPerCluster}) + 1.0) / 4.0));
 
     //get light influence counts from cluster texture buffer:
     //get cluster index
@@ -116,11 +116,11 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
     clusterTex_v += clusterTex_v_offset;
 
     //get the texel using the uv
-    vec4 clusterTex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
+    vec4 cluster_Tex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
     //read influencing data from cluster texel
     int influencingLightCount = int(cluster_Tex[0]);
     //maximum number of light sources in cluster
-    const int numLightsMax = int(min(float(${params.maxLightsPerCluster}), float(${params.numLights})));
+    const int numLightsMax = int(min(float(${params.maxNumberLightsPerCluster}), float(${params.numLights})));
 
     //shade lights
     int clusterTexIdxToFetch = 1;
@@ -131,9 +131,19 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
         break;
       }
       int lightIdx;
-      if(clusterTexIdxToFetch <= 3){
-        lightIdx = int(cluster_Tex[clusterTexIdxToFetch]);
+      if(clusterTexIdxToFetch == 0){
+        lightIdx = int(cluster_Tex[0]);
       }
+      else if(clusterTexIdxToFetch == 1){
+        lightIdx = int(cluster_Tex[1]);
+      }
+      else if(clusterTexIdxToFetch == 2){
+        lightIdx = int(cluster_Tex[2]);
+      }
+      else if(clusterTexIdxToFetch == 3){
+        lightIdx = int(cluster_Tex[3]);
+      }
+
       clusterTexIdxToFetch++;
 
       Light light = UnpackLight(lightIdx);

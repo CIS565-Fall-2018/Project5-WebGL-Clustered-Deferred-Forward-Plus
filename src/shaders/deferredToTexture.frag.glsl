@@ -6,7 +6,7 @@ uniform sampler2D u_colmap;
 uniform sampler2D u_normap;
 
 uniform mat4 u_viewMatrix;
-uniform mat3 u_viewProjctionMatrix;
+uniform mat4 u_viewProjectionMatrix;
 
 varying vec3 v_position;
 varying vec3 v_normal;

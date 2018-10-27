@@ -61,7 +61,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 //horizontal blur shader
     this._progHorizontalBlur = loadShaderProgram(vsSourceBlurHorizontal, fsSourceBlur, {
       uniforms: ['u_dst_widht', 'u_texture'],
-      attribs: ['a_uv'];
+      attribs: ['a_uv'],
     });
 //vertical blur shader
     this._progVerticalBlur = loadShaderProgram(vsSourceBlurVertical, fsSourceBlur, {
@@ -215,7 +215,7 @@ export default class ClusteredRenderer extends BaseRenderer {
      WEBGL_draw_buffers.drawBuffersWEBGL(attachments0);
      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    }//setupDrawBuffersBloom function end
+}//setupDrawBuffersBloom function end
 
     //bloom effect step3: resize bloom frame buffers
     resizeBloomBuffer(width, height){
@@ -256,7 +256,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
         width / this._blurDownScale, height / this._blurDownScale, 
         0, gl.RGBA, gl.FLOAT, null);
-    }//end of resize bloom
+}//end of resize bloom
 
     //bloom effect step 4: render all the buffers
     renderBloom(camera){
@@ -366,13 +366,13 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this._downScale2Buffer);
     gl.uniform1i(this._progCombine.u_brightnessTex, 7);
      renderFullscreenQuad(this._progCombine);
-    }//end of renderBloom
+}//end of renderBloom
 //////////////////////////
 //End of bloom effect-specified functions
 /////////////////////////
 
 
-  }
+  
   constructor(xSlices, ySlices, zSlices, isBloomOn) {
     super(xSlices, ySlices, zSlices);
     
@@ -422,10 +422,10 @@ export default class ClusteredRenderer extends BaseRenderer {
 
 //Bloom effect functions
   if(this.isBloomEffect){
-  }
-//since the function body is moved to be a new function, just need to call it:
+    //since the function body is moved to be a new function, just need to call it:
     this.bloomInitialize();
   }
+}
 
   setupDrawBuffers(width, height) {
     this._width = width;
@@ -450,7 +450,7 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._fbo_gbuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._depthTex, 0);
 
-    let attachments = new Array(NUM_GBUFFERS);
+    //let attachments = new Array(NUM_GBUFFERS);
 
     // Create, bind, and store "color" target textures for the FBO
     this._gbuffers = new Array(NUM_GBUFFERS);
@@ -483,7 +483,7 @@ export default class ClusteredRenderer extends BaseRenderer {
 //similarly, call the function
       this.setupDrawBuffersBloom(width, height);
   }
-
+}
   resize(width, height) {
     this._width = width;
     this._height = height;
@@ -499,9 +499,9 @@ export default class ClusteredRenderer extends BaseRenderer {
     if(this.isBloomEffect){
   //call resizebloom function
       this.resizeBloomBuffer(width, height);
-  }
-    gl.bindTexture(gl.TEXTURE_2D, null);
     }
+    gl.bindTexture(gl.TEXTURE_2D, null);
+}
 
 
   render(camera, scene) {

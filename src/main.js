@@ -9,10 +9,9 @@ const FORWARD_PLUS = 'Forward+';
 const CLUSTERED = 'Clustered';
 
 const params = {
-  renderer: FORWARD_PLUS,
+  renderer: FORWARD,
   _renderer: null,
   bloom: false,
-  toonShading: false,
 };
 
 setRenderer(params.renderer);
@@ -49,7 +48,7 @@ function setBloomEffect(){
 gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
 
 gui.add(params, 'bloom').onChange(setBloomEffect);
-gui.add(params,'toonShading').onChange(setToonShading);
+
 
 const scene = new Scene();
 scene.loadGLTF('models/sponza/sponza.gltf');

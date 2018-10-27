@@ -6,7 +6,7 @@ uniform float u_dst_width;
 
 attribute vec3 a_position;
 
-varying vec2 blurTexureCoords[11];
+varying vec2 blurTextureCoords[11];
 
 void main(){
 	gl_Position = vec4(a_position, 1.0);
@@ -15,7 +15,7 @@ void main(){
 
 	float pixelSize = 1.0/u_dst_width;
 
-	for(int i = -5; i < = 5; i++){
-	blurTexureCoords[i + 5] = centerTexCoords + vec2(0.0, pixelSize * float(i));
+	for(int i = -5; i <= 5; i++){
+	blurTextureCoords[i + 5] = centerTexCoords + vec2(pixelSize * float(i), 0.0);
 	}
 }

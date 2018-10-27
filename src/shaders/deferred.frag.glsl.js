@@ -126,7 +126,7 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
 
     //cluster texture dimensions
     const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});
-    const int clusterTextureHeight = int(ceil((float(${params.maxLightsPerCluster}) + 1.0) / 4.0));
+    const int clusterTextureHeight = int(ceil((float(${params.maxNumberLightsPerCluster}) + 1.0) / 4.0));
 
     //get light influence counts from cluster texture buffer:
     //get cluster index
@@ -139,11 +139,11 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
     clusterTex_v += clusterTex_v_offset;
 
     //get the texel using the uv
-    vec4 clusterTex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
+    vec4 cluster_Tex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
     //read influencing data from cluster texel
     int influencingLightCount = int(cluster_Tex[0]);
     //maximum number of light sources in cluster
-    const int numLightsMax = int(min(float(${params.maxLightsPerCluster}), float(${params.numLights})));
+    const int numLightsMax = int(min(float(${params.maxNumberLightsPerCluster}), float(${params.numLights})));
 
     //shade lights
     int clusterTexIdxToFetch = 1;
@@ -154,8 +154,17 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
         break;
       }
       int lightIdx;
-      if(clusterTexIdxToFetch <= 3){
-        lightIdx = int(cluster_Tex[clusterTexIdxToFetch]);
+      if(clusterTexIdxToFetch == 0){
+        lightIdx = int(cluster_Tex[0]);
+      }
+      if(clusterTexIdxToFetch == 1){
+        lightIdx = int(cluster_Tex[1]);
+      }
+      if(clusterTexIdxToFetch == 2){
+        lightIdx = int(cluster_Tex[2]);
+      }
+      if(clusterTexIdxToFetch == 3){
+        lightIdx = int(cluster_Tex[3]);
       }
       clusterTexIdxToFetch++;
 
@@ -165,7 +174,15 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
       vec3 L = (light.position - v_position) / lightDistance;
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
+      
+//comment out for toon shading    
+      //float lambertTerm = max(dot(L, normal), 0.0);
+//Toon shading test
+      float rampUnitLength = 0.25;
+      float rampUnitValue = 0.33;
+      float rampCoord = max(dot(L,normal) , 0.0);
+      int rampLevel = int(rampCoord / rampUnitLength);
+      float lambertTerm = float(rampLevel) * rampUnitValue;
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
       
