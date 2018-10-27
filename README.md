@@ -12,7 +12,7 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-[![](img/thumb.png)](https://risia.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
+[![](img/Toon1000Lights.png)](https://risia.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ### Demo Video/GIF
 
