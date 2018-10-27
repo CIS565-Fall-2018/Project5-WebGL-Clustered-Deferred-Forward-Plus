@@ -50,22 +50,24 @@ Forward+ w/o bloom|   Forward+ w/ bloom
 Cluster technique is used in both Forward+ and Deferred shading pipelines for this project:
 
 ### (Clustered) Forward+
- - divide view frustrum into clusters, compute which light is in whcih cluster
+ - divide view frustum into clusters, compute which light is in whcih cluster
  - in render stage, for each cluster only render the lights that influencing it
 
 ### (Clustered) Deferred
- - divide view frustrum into clusters, compute which light is in whcih cluster
+ - divide view frustum into clusters, compute which light is in whcih cluster
  - packing vertex attributes like color and normal into g-buffers
  - read g-buffers in fragment shader to perform shading stage
 
 ## Optimization
 
-** Optimized G-buffer in Deferred shading
+**Optimized G-buffer in Deferred shading**
  - Originally, 4 g-buffers are needed
  - After optimization, only 2 g-buffers are needed:
  - g-buffer1:  RGB color & view space depth
  - g-buffer2:  normal & NDC_Depth
  - all other values can be reconstructed from these g-buffer values
+
+
 
 ## Effects
  - Toon shading
@@ -74,7 +76,7 @@ Cluster technique is used in both Forward+ and Deferred shading pipelines for th
 
 
  
- - Bloom (buggy, currently screen has flash) implemented by adding extra stages into pipeline: brightness fitler, gaussian blur and combine shader (same as bloom stages in [CUDA-Rasterizer](https://github.com/Ninjajie/Project4-CUDA-Rasterizer))
+ - Bloom (buggy, currently screen has flash, but **kinda cool, isn't it?**) implemented by adding extra stages into pipeline: brightness fitler, gaussian blur and combine shader (same as bloom stages in [CUDA-Rasterizer](https://github.com/Ninjajie/Project4-CUDA-Rasterizer))
 
 ![](images/bloom1.png)
 
@@ -92,8 +94,11 @@ Naive implementation requires 4 g-buffers:
 
 
 g-buffer[0] | albedo (RGB)
+------------|------------
 g-buffer[1] | normal (XYZ)
+------------|------------
 g-buffer[2] | depth (float)
+------------|------------
 g-buffer[3] | position (XYZ)
 
 The buffers are visualized as follows:
@@ -117,16 +122,39 @@ The optimization is aimed at storing only the very necessary data, and other dat
 After optimization, only two g-buffers are needed, they are organized like this:
 
 g-buffer[0] | albedo (RGB) | View Space Depth
+------------|--------------|-------------------
 g-buffer[1] | normal (XYZ) | Screen Space Depth
 
 
+#### Performance Comparison:
 
-## Pipelines performances
+![](images/gbuffers.png)
+
+Render time per frame noticably decrease with g-buffer optimization. The main reason
+for this is that the bandwidth is saved when only 2 g-buffers are used.
+
+
+## Different Pipelines Performance Comparison
+
+ - Forward pipeline is naive: check every light against each fragment in shading stage
+ - (Clustered) Forward+ pipeline is a smarter pipeline, with clustered frustrum, only check cluster with influencing lights, but limited by bandwidth
+ - (Clustered) Deferred pipeline is another pipeline using clusters, by optimizing g-buffer, it reduces the burden on bandwith
+ - Frustum divide is done by slicing z-direction in logarithmic way, and x-y-directions in linear way
+
+![](images/pipelines.png)
+
+As shown in the chart, clustered pipelines outperform naive forward renderer. Moreover, clustered deferred shading is slightly better than forward+ in this configuration.
 
 
 ## Effects performances
 
+Bloom effect is currently buggy, so performance analysis is skipped.
 
+For toon shading, it's just normal Lambertian shading been discretized, so it shouldn't have impact on the performance:
+
+![](images/toon.png)
+
+The experiment results confirm our assumption.
 
 
 ### Credits
