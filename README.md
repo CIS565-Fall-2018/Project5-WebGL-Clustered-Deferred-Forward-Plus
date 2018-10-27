@@ -15,7 +15,7 @@ WebGL Clustered and Forward+ Shading
 
 ### Demo Video/GIF
 
-[![](img/test_scene.png)]
+![gif](img/test_scene.gif)
 
 ## README
 
