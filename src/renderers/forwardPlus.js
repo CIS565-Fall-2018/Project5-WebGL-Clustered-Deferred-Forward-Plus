@@ -1,7 +1,8 @@
 import { gl } from '../init';
-import { mat4, vec4, vec3 } from 'gl-matrix';
+import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 import { loadShaderProgram } from '../utils';
 import { NUM_LIGHTS } from '../scene';
+import { MAX_LIGHTS_PER_CLUSTER } from './base.js'
 import vsSource from '../shaders/forwardPlus.vert.glsl';
 import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
@@ -16,8 +17,13 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      numLights_perCluster: MAX_LIGHTS_PER_CLUSTER,
+      slices_x: xSlices,
+      slices_y: ySlices,
+      slices_z: zSlices
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer',
+                 'u_view_matrix', 'u_screen_dimensions', 'u_near_clip', 'u_far_clip'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -64,6 +70,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
+    gl.uniformMatrix4fv(this._shaderProgram.u_view_matrix, false, this._viewMatrix);
 
     // Set the light texture as a uniform input to the shader
     gl.activeTexture(gl.TEXTURE2);
@@ -75,7 +82,10 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
-    // TODO: Bind any other shader inputs
+    // Bind any other shader inputs
+    gl.uniform2f(this._shaderProgram.u_screen_dimensions, canvas.width, canvas.height);
+    gl.uniform1f(this._shaderProgram.u_near_clip, camera.near); 
+    gl.uniform1f(this._shaderProgram.u_far_clip, camera.far);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);
