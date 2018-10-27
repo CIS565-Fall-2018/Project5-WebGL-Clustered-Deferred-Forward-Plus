@@ -9,6 +9,11 @@ export default function(params) {
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
 
+  uniform float u_nearClip;
+  uniform vec2 u_clusterTileSize;
+  uniform float u_clusterZStride;
+  uniform mat4 u_viewMatrix;
+
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
@@ -16,12 +21,17 @@ export default function(params) {
   varying vec3 v_normal;
   varying vec2 v_uv;
 
+//logarithmic function to determine z-direction slices
+int clusterZIndex(float viewSpaceZ, float nearClipz){
+    return int(floor(log(viewSpaceZ - nearClipz + 1.0) * 2.15));
+}
+
   vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
     vec3 up = normalize(vec3(0.001, 1, 0.001));
     vec3 surftan = normalize(cross(geomnor, up));
     vec3 surfbinor = cross(geomnor, surftan);
-    return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
+    return normalize(normap.y * surftan + normap.x * surfbinor + normap.z * geomnor);
   }
 
   struct Light {
@@ -81,21 +91,93 @@ export default function(params) {
 
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+    //changed
+    vec3 viewSpacePos3 = vec3(u_viewMatrix * vec4(v_position, 1.0));
+    
+    //which cluster is this fragment in??
+    int clusterXIdx = int(gl_FragCoord.x / u_clusterTileSize.x);
+    int clusterYIdx = int(gl_FragCoord.y / u_clusterTileSize.y);
+    //int clusterZIdx = int((-viewSpacePos3.z - u_nearClip) / u_clusterZStride);
+    int clusterZIdx = clusterZIndex(-viewSpacePos3.z , u_nearClip);
+
+    //cluster texture dimensions
+    const int clusterTextureWidth = int(${params.numXSlices}) * int(${params.numYSlices}) * int(${params.numZSlices});
+    const int clusterTextureHeight = int(ceil((float(${params.maxNumberLightsPerCluster}) + 1.0) / 4.0));
+
+    //get light influence counts from cluster texture buffer:
+    //get cluster index
+    int clusterIdx = clusterXIdx + clusterYIdx * int(${params.numXSlices}) + clusterZIdx * int(${params.numXSlices}) * int(${params.numYSlices});
+    
+    //uv coords in cluster texture
+    float clusterTex_u = float(clusterIdx + 1) / float(clusterTextureWidth + 1);
+    float clusterTex_v = 0.0;
+    float clusterTex_v_offset = 1.0 / float(clusterTextureHeight + 1);
+    clusterTex_v += clusterTex_v_offset;
+
+    //get the texel using the uv
+    vec4 cluster_Tex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
+    //read influencing data from cluster texel
+    int influencingLightCount = int(cluster_Tex[0]);
+    //maximum number of light sources in cluster
+    const int numLightsMax = int(min(float(${params.maxNumberLightsPerCluster}), float(${params.numLights})));
+
+    //shade lights
+    int clusterTexIdxToFetch = 1;
+    for(int i = 0; i < numLightsMax; i++)
+    {
+      if(i == influencingLightCount)
+      {
+        break;
+      }
+      int lightIdx;
+      if(clusterTexIdxToFetch == 0){
+        lightIdx = int(cluster_Tex[0]);
+      }
+      else if(clusterTexIdxToFetch == 1){
+        lightIdx = int(cluster_Tex[1]);
+      }
+      else if(clusterTexIdxToFetch == 2){
+        lightIdx = int(cluster_Tex[2]);
+      }
+      else if(clusterTexIdxToFetch == 3){
+        lightIdx = int(cluster_Tex[3]);
+      }
+
+      clusterTexIdxToFetch++;
+
+      Light light = UnpackLight(lightIdx);
+
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
+      
+
+//comment out for toon shading    
+      //float lambertTerm = max(dot(L, normal), 0.0);
+//Toon shading test
+      float rampUnitLength = 0.25;
+      float rampUnitValue = 0.33;
+      float rampCoord = max(dot(L,normal) , 0.0);
+      int rampLevel = int(rampCoord / rampUnitLength);
+      float lambertTerm = float(rampLevel) * rampUnitValue;
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      
+      if(clusterTexIdxToFetch == 4){
+        clusterTexIdxToFetch = 0;
+        clusterTex_v += clusterTex_v_offset;
+        cluster_Tex = texture2D(u_clusterbuffer, vec2(clusterTex_u, clusterTex_v));
+      }
+    
     }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
+
+
   }
   `;
 }

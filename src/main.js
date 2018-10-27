@@ -9,8 +9,9 @@ const FORWARD_PLUS = 'Forward+';
 const CLUSTERED = 'Clustered';
 
 const params = {
-  renderer: FORWARD_PLUS,
+  renderer: FORWARD,
   _renderer: null,
+  bloom: false,
 };
 
 setRenderer(params.renderer);
@@ -18,18 +19,36 @@ setRenderer(params.renderer);
 function setRenderer(renderer) {
   switch(renderer) {
     case FORWARD:
-      params._renderer = new ForwardRenderer();
+      params._renderer = new ForwardRenderer(params.bloom);
       break;
     case FORWARD_PLUS:
-      params._renderer = new ForwardPlusRenderer(15, 15, 15);
+      params._renderer = new ForwardPlusRenderer(15, 15, 15, params.bloom);
       break;
     case CLUSTERED:
-      params._renderer = new ClusteredRenderer(15, 15, 15);
+      params._renderer = new ClusteredRenderer(15, 15, 15, params.bloom);
       break;
   }
 }
 
+function setBloomEffect(){
+  switch(params.renderer) {
+    case FORWARD:
+      params._renderer = new ForwardRenderer(params.bloom);
+      break;
+    case FORWARD_PLUS:
+      params._renderer = new ForwardPlusRenderer(15, 15, 15, params.bloom);
+      break;
+    case CLUSTERED:
+      params._renderer = new ClusteredRenderer(15, 15, 15, params.bloom);
+      break;
+  }
+}
+
+
 gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
+
+gui.add(params, 'bloom').onChange(setBloomEffect);
+
 
 const scene = new Scene();
 scene.loadGLTF('models/sponza/sponza.gltf');
