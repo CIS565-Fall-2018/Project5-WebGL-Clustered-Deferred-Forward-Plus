@@ -39,7 +39,7 @@ export default function(params) {
     int pixel = component / 4;
     float v = float(pixel + 1) / float(textureHeight + 1);
     vec4 texel = texture2D(texture, vec2(u, v));
-    int pixelComponent = component - pixel * 4;
+    int pixelComponent = component - (pixel * 4);
     if (pixelComponent == 0) {
       return texel[0];
     } else if (pixelComponent == 1) {
@@ -80,15 +80,31 @@ export default function(params) {
   }
 
   void main() {
-      /*
+    
+    int x = int(float(u_xSlices) * gl_FragCoord.x / float(u_xDim));
+    //int y = int(float(u_ySlices) * gl_FragCoord.y / float(u_xDim));
+    
+    int index = x; // + y * u_xSlices;// + z * u_xSlices * u_ySlices;
+    
+    int num = int(ExtractFloat(u_clusterbuffer, u_xSlices * u_ySlices, ${params.maxLights + 1}, index, 0));
+    float f = 100.0;
+    gl_FragColor = vec4(float(num) / f, float(num) / f, float(num) / f, 1.0);
+    
+  
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
-
+    
     vec3 fragColor = vec3(0.0);
+    
+    /*
+    for (int i = 0; i < ${params.maxLights}; ++i) {
+        if (i >= num) {
+            break;
+        }
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+      int light_i = int(ExtractFloat(u_clusterbuffer, u_xSlices * u_ySlices, ${params.maxLights + 1}, index, i));
+      Light light = UnpackLight(light_i);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
@@ -97,18 +113,11 @@ export default function(params) {
 
       fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
-
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
-
-    //gl_FragColor = vec4(fragColor, 1.0);
+    gl_FragColor = vec4(fragColor, 1.0);
     */
-    //gl_FragColor = vec4(float(u_ySlices)/30.0, float(u_ySlices)/30.0, float(u_ySlices)/30.0, 1.0);
-    
-    float num = ExtractFloat(u_clusterbuffer, u_xSlices * u_ySlices, ${params.maxLights + 1}, 0, 0);
-    float f = 100.0;
-    gl_FragColor = vec4(num / f, num / f, num / f, 1.0);
-    //gl_FragColor = vec4(gl_FragCoord.y / float(u_yDim));
   }
+
   `;
 }
