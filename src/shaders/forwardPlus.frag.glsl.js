@@ -10,6 +10,8 @@ export default function(params) {
   uniform sampler2D u_lightbuffer;
   uniform int u_xSlices;
   uniform int u_ySlices;
+  uniform int u_xDim;
+  uniform int u_yDim;
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
@@ -47,6 +49,7 @@ export default function(params) {
     } else if (pixelComponent == 3) {
       return texel[3];
     }
+    return 0.0;
   }
 
   Light UnpackLight(int index) {
@@ -103,9 +106,9 @@ export default function(params) {
     //gl_FragColor = vec4(float(u_ySlices)/30.0, float(u_ySlices)/30.0, float(u_ySlices)/30.0, 1.0);
     
     float num = ExtractFloat(u_clusterbuffer, u_xSlices * u_ySlices, ${params.maxLights + 1}, 0, 0);
-    float f = 200.0;
-    //gl_FragColor = vec4(num / f, num / f, num / f, 1.0);
-    gl_FragColor = vec4(gl_Position[0], gl_Position[1], 0.0, 1.0);
+    float f = 100.0;
+    gl_FragColor = vec4(num / f, num / f, num / f, 1.0);
+    //gl_FragColor = vec4(gl_FragCoord.y / float(u_yDim));
   }
   `;
 }

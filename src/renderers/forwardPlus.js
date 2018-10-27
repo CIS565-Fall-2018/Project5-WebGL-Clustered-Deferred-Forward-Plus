@@ -19,7 +19,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
       numLights: NUM_LIGHTS,
       maxLights: MAX_LIGHTS_PER_CLUSTER
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'u_xSlices', 'u_ySlices'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer', 'u_xSlices', 'u_ySlices', 'u_xDim', 'u_yDim'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -36,7 +36,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     mat4.multiply(this._viewProjectionMatrix, this._projectionMatrix, this._viewMatrix);
 
     // Update cluster texture which maps from cluster index to light list
-    this.updateClusters(camera, this._viewMatrix, scene);
+    this.updateClusters(camera, this._viewMatrix, this._projectionMatrix, this._viewProjectionMatrix, scene);
     
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
@@ -80,6 +80,9 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     // TODO: Bind any other shader inputs
     gl.uniform1i(this._shaderProgram.u_xSlices, this._xSlices);
     gl.uniform1i(this._shaderProgram.u_ySlices, this._ySlices);
+    
+    gl.uniform1i(this._shaderProgram.u_xDim, canvas.width);
+    gl.uniform1i(this._shaderProgram.u_yDim, canvas.height);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);
