@@ -10,10 +10,6 @@ WebGL Clustered and Forward+ Shading
 # Video Demo
   [<img src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/thumb.jpg">](https://www.youtube.com/watch?v=J1Pvi4GN62o)
 
-#Live Online
-
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
-
 # Deferred Shading Intro
 This project showcases an implementation of Forward shading, with extensions: Forward+ and Clustered/Deferred shading.
   * For **Forward** shading, we supply the graphics card the geometry data, which is then projected, broken into vertices, and split into fragments. Each fragment then gets the final lighting treatment before they are passed onto the screen.
