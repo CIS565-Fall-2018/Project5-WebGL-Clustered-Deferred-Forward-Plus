@@ -78,8 +78,8 @@ Cluster technique is used in both Forward+ and Deferred shading pipelines for th
  - Bloom (buggy, currently screen has flash, but **kinda cool, isn't it?**) implemented by adding extra stages into pipeline: brightness fitler, gaussian blur and combine shader (same as bloom stages in [CUDA-Rasterizer](https://github.com/Ninjajie/Project4-CUDA-Rasterizer))
 
 ![](images/bloom1.png)
-
-
+----------------------
+![](images/BLOOM.gif)
 
 
 Analysis
