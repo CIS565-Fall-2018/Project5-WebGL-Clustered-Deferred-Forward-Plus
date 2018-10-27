@@ -92,23 +92,23 @@ According to the chart, clustered deferred rendering benefits more from ad-hoc b
 
 * very near distance
 
-![](img/a.JPG)
+![](img/a.jpg)
 
 * near distance
 
-![](img/b.JPG)
+![](img/b.jpg)
 
 * mid distance
 
-![](img/c.JPG)
+![](img/c.jpg)
 
 * far distance
 
-![](img/d.JPG)
+![](img/d.jpg)
 
 * very far distance
 
-![](img/e.JPG)
+![](img/e.jpg)
 
 ### analysis
 
