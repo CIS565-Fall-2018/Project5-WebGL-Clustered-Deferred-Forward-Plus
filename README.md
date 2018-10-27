@@ -14,10 +14,10 @@ WebGL Clustered and Forward+ Shading
 ### Demo Video/GIF
 
 #### Forward
-![](https://i.gyazo.com/5ad68f3d9d63db9b007bb3e1a637d586.mp4)
+![](f.gif)
 
 #### Deferred
-![](https://i.gyazo.com/d93af5b3ca1ecdf85b07a535f971f151.mp4)
+![](d.gif)
 
 ## Features
 
