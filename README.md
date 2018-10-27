@@ -3,29 +3,35 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Ziad Ben Hadj-Alouane
+  * [LinkedIn](https://www.linkedin.com/in/ziadbha/), [personal website](https://www.seas.upenn.edu/~ziadb/)
+* Tested on: Google Chrome Version 70.0.3538.77 (WebGL), Windows 10, i7-8750H @ 2.20GHz, 16GB, GTX 1060
+
+# Video Demo
+  [<img src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/thumb.jpg">](https://www.youtube.com/watch?v=J1Pvi4GN62o)
 
 ### Live Online
 
 [![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
-### Demo Video/GIF
+# Deferred Shading Intro
+This project showcases an implementation of Forward shading, with extensions: Forward+ and Clustered/Deferred shading.
+  * For **Forward** shading, we supply the graphics card the geometry data, which is then projected, broken into vertices, and split into fragments. Each fragment then gets the final lighting treatment before they are passed onto the screen.
+  * For **Forward+** shading, we do the same thing except that we break our viewing frustum into pieces, and compute the lights that overlap these pieces. As such, we can determine which section (i.e cluster) a fragment is in, and iterate over a select few number of lights.
+  * For **Clustered** shading (deferred shading), we do the same thing except that the rendering is deferred a little bit until all of the geometries have passed down many stages. The final image is then obtained by doing lighting calculations at the end. This essentially requires more passes on the scene.
+  
+This project is fully implemented with Javascript and WebGL. See a live demo above.
 
-[![](img/video.png)](TODO)
+## Scene
+### Sponza
+| Depth View | Normals View | Blinn-Phong View |
+| ------------- | ----------- | ----------- |
+| <p align="center"><img width="300" height="200" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_z.png"/></p>| <p align="center"><img width="300" height="200" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_norm.png/"></p> | <p align="center"><img width="300" height="200" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_none.png/"></p> |
 
-### (TODO: Your README)
-
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
-
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+# Performance Comparison
 
 
 ### Credits
-
 * [Three.js](https://github.com/mrdoob/three.js) by [@mrdoob](https://github.com/mrdoob) and contributors
 * [stats.js](https://github.com/mrdoob/stats.js) by [@mrdoob](https://github.com/mrdoob) and contributors
 * [webgl-debug](https://github.com/KhronosGroup/WebGLDeveloperTools) by Khronos Group Inc.
