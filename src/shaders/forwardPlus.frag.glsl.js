@@ -176,6 +176,8 @@ int clusterZIndex(float viewSpaceZ, float nearClipz){
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
+
+
   }
   `;
 }
