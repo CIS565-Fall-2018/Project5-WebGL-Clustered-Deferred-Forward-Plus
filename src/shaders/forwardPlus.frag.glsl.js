@@ -12,6 +12,13 @@ export default function(params) {
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
+  uniform mat4 u_viewMatrix;
+  uniform float u_screenWidth;
+  uniform float u_screenHeight;
+  uniform int u_xSlices;
+  uniform int u_ySlices;
+  uniform int u_maxLightsPerCluster;
+
   varying vec3 v_position;
   varying vec3 v_normal;
   varying vec2 v_uv;
@@ -79,10 +86,18 @@ export default function(params) {
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
 
+    int cluster_x = int(gl_FragCoord.x * float(u_xSlices) / u_screenWidth);
+    int cluster_y = int(gl_FragCoord.y * float(u_ySlices) / u_screenHeight);
+    int cluster_idx = cluster_x + cluster_y * u_xSlices;
+    int num_clusters = u_xSlices * u_ySlices;
+    int clusterNumLights = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, cluster_idx, 0));
+
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+    for(int i = 1; i < ${params.clusterTextureHeight} * 4 - 1; ++i) {
+      if (i > clusterNumLights) break;
+      int light_idx = int(ExtractFloat(u_clusterbuffer, ${params.clusterTextureWidth}, ${params.clusterTextureHeight}, cluster_idx, i));
+      Light light = UnpackLight(light_idx);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
