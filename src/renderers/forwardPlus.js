@@ -1,11 +1,12 @@
 import { gl } from '../init';
-import { mat4, vec4, vec3 } from 'gl-matrix';
+import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 import { loadShaderProgram } from '../utils';
 import { NUM_LIGHTS } from '../scene';
 import vsSource from '../shaders/forwardPlus.vert.glsl';
 import fsSource from '../shaders/forwardPlus.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
+import { MAX_LIGHTS_PER_CLUSTER } from './base';
 
 export default class ForwardPlusRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -16,8 +17,22 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      xSlices: xSlices,
+      ySlices: ySlices,
+      zSlices: zSlices,
+      MAX_LIGHTS_PER_CLUSTER: MAX_LIGHTS_PER_CLUSTER,
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
+      uniforms: [
+        'u_viewProjectionMatrix', 
+        'u_colmap', 
+        'u_normap', 
+        'u_lightbuffer', 
+        'u_clusterbuffer', 
+        'u_viewMatrix', 
+        'u_nearClip', 
+        'u_farClip',
+        'u_dimensions'
+      ],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -76,6 +91,12 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
     // TODO: Bind any other shader inputs
+    let dimensions = vec2.create();
+    vec2.set(dimensions, canvas.width, canvas.height);
+    gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
+    gl.uniform2fv(this._shaderProgram.u_dimensions, dimensions);
+    gl.uniform1f(this._shaderProgram.u_nearClip, camera.near);
+    gl.uniform1f(this._shaderProgram.u_farClip, camera.far);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);
