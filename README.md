@@ -31,7 +31,7 @@ Configuration: all running with 300 moving lights, *Toon Shading*
 --------------------------|----------------------------
 Forward render|   Forward+ render
 
-![](images/Forward2.png)  | ![](images/Cluster.png)
+![](images/Forward2.png)  | ![](images/Clustered.png)
 --------------------------|----------------------------
 Forward render|   Cluster deferred render
 
@@ -68,8 +68,15 @@ Cluster technique is used in both Forward+ and Deferred shading pipelines for th
  - all other values can be reconstructed from these g-buffer values
 
 ## Effects
- - Toon shading(as image above)
+ - Toon shading
+
+![](images/Forward1.png)
+
+
+ 
  - Bloom (buggy, currently screen has flash) implemented by adding extra stages into pipeline: brightness fitler, gaussian blur and combine shader (same as bloom stages in [CUDA-Rasterizer](https://github.com/Ninjajie/Project4-CUDA-Rasterizer))
+
+![](images/bloom1.png)
 
 
 
@@ -80,6 +87,40 @@ Analysis
 *Configuration: 1080p canvas, 300 lights sponza scene*
 
 ## g-buffer optimization performances
+
+Naive implementation requires 4 g-buffers:
+g-buffer[0] | albedo (RGB)
+------------|------------
+g-buffer[1] | normal (XYZ)
+------------|------------
+g-buffer[2] | depth (float)
+------------|------------
+g-buffer[3] | position (XYZ)
+
+The buffers are visualized as follows:
+
+####Albedo
+
+![](images/albedo.gif)
+-------------------
+
+####Normal
+
+![](images/normal.gif)
+-------------------
+
+####Depth
+
+![](images/depth.gif)
+-------------------
+
+The optimization is aimed at storing only the very necessary data, and other data can be reconstructed from them.
+After optimization, only two g-buffers are needed, they are organized like this:
+
+g-buffer[0] | albedo (RGB) | View Space Depth
+------------|--------------|-------------------
+g-buffer[1] | normal (XYZ) | Screen Space Depth
+
 
 
 ## Pipelines performances
