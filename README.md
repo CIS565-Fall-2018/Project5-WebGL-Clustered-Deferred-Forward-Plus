@@ -93,10 +93,10 @@ Naive implementation requires 4 g-buffers:
 
 |g-buffer index| Content |
 |------------|------------|
-|g-buffer[0] | albedo (RGB)|
-|g-buffer[1] | normal (XYZ)|
-|g-buffer[2] | depth (float)|
-|g-buffer[3] | position (XYZ)|
+|0 | albedo (RGB)|
+|1 | normal (XYZ)|
+|2 | depth (float)|
+|3 | position (XYZ)|
 
 The buffers are visualized as follows:
 
@@ -118,9 +118,9 @@ The buffers are visualized as follows:
 The optimization is aimed at storing only the very necessary data, and other data can be reconstructed from them.
 After optimization, only two g-buffers are needed, they are organized like this:
 |g-buffer index| Content xyz| Content w|
-|------------|--------------|-------------------|
-|0 | albedo (RGB) | View Space Depth|
-|1 | normal (XYZ) | Screen Space Depth|
+|--------------|------------|----------|
+|      0       | albedo (RGB) | View Space Depth|
+|      1       | normal (XYZ) | Screen Space Depth|
 
 
 #### Performance Comparison:
