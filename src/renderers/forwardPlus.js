@@ -19,7 +19,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
             maxLights: MAX_LIGHTS_PER_CLUSTER,
         }), {
             uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer',
-                        'u_viewMat', 'u_nearClip', 'u_farClip', 'u_width', 'u_height'],
+                        'u_viewMat', 'u_nearClip', 'u_farClip', 'u_width', 'u_height', 'u_cameraPos'],
             attribs: ['a_position', 'a_normal', 'a_uv'],
         });
 
@@ -77,11 +77,13 @@ export default class ForwardPlusRenderer extends BaseRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
         gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
+        // Bind camera & canvas stuff
         gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
         gl.uniform1f(this._shaderProgram.u_nearClip, camera.near);
         gl.uniform1f(this._shaderProgram.u_farClip, camera.far);
         gl.uniform1f(this._shaderProgram.u_width, canvas.width);
         gl.uniform1f(this._shaderProgram.u_height, canvas.height);
+        gl.uniform3f(this._shaderProgram.u_cameraPos, camera.position.x, camera.position.y, camera.position.z);
 
         // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
         scene.draw(this._shaderProgram);

@@ -13,8 +13,9 @@ export default function (params) {
   uniform mat4 u_viewMat;
   uniform float u_nearClip;
   uniform float u_farClip;
+  uniform vec3 u_cameraPos;
   
-  // Screen unifroms
+  // Screen uniforms
   uniform float u_width;
   uniform float u_height;
 
@@ -126,13 +127,21 @@ export default function (params) {
 
         float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
         float lambertTerm = max(dot(L, normal), 0.0);
-
+        
+        vec3 viewDir = normalize(u_cameraPos - v_position);
+        vec3 halfDir = normalize(L + viewDir);
+        float angle = max(dot(halfDir, normal), 0.0);
+        float specExp = 500.0;
+        float spec = pow(angle, specExp);
+        albedo += spec;
+        
         fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
+    float depth = (gl_FragCoord.z - 0.9) * 5.0;
     gl_FragColor = vec4(fragColor, 1.0);
   }
   `;
