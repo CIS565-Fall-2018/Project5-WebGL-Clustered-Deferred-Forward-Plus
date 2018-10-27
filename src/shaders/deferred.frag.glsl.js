@@ -75,12 +75,20 @@ export default function (params) {
   }
 
   void main() {
-    vec3 albedo = texture2D(u_gbuffers[1], v_uv).rgb;
-    vec3 normal = texture2D(u_gbuffers[2], v_uv).xyz;
+    vec4 fullPos = texture2D(u_gbuffers[0], v_uv);
+    vec4 fullCol = texture2D(u_gbuffers[1], v_uv);
+    vec3 albedo = fullCol.rgb;
+    vec3 v_position = fullPos.xyz;
+    float normZ = sqrt(1.0 - pow(fullPos.w, 2.0) - pow(fullCol.w, 2.0));
+    
+    // restore sign of norm z
+    if (albedo.r < 0.0) {
+        albedo.r = -albedo.r;
+        normZ *= -1.0;
+    }
+    vec3 normal = vec3(fullPos.w, fullCol.w, normZ);
     
     vec3 fragColor = vec3(0.0);
-    
-    vec3 v_position = texture2D(u_gbuffers[0], v_uv).xyz;
     
     // Cluster identification
     vec4 camSpacePos = u_viewMat * vec4(v_position, 1.0);

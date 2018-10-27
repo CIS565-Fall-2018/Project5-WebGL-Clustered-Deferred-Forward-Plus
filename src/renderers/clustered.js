@@ -9,7 +9,7 @@ import fsSource from '../shaders/deferred.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer, {MAX_LIGHTS_PER_CLUSTER} from './base';
 
-export const NUM_GBUFFERS = 3;
+export const NUM_GBUFFERS = 2;
 
 export default class ClusteredRenderer extends BaseRenderer {
     constructor(xSlices, ySlices, zSlices) {
