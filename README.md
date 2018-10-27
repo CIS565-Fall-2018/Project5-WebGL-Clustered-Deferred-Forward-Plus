@@ -15,22 +15,30 @@ WebGL Clustered and Forward+ Shading
 
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+[![](img/test_scene.png)]
 
 ## README
 
 Introduction
 ------------
-In this project I implement basic Forward+ and Clustered Deferred Shading and compare the performance between the two.
+In this project I implement basic Forward+ and Clustered Deferred Shading and compare the performance difference between the two. Forward+ subdivides the camera frustum into equally proportioned clusters in the camera's x- and y- directions. Lights in the scene are binned into these clusters, such that fragments in these clusters are only shaded with the lights that have a chance of affecting their color.
+
+Clustered shading further adds proportional slicing along the z-direction. Again, lights in the scene are binned into these (x,y,z) clusters. The clustered shading is deferred, in that it only computes fragment shading after the scene's depth and g-buffers are set.
 
 Features
 ------------
 1. Forward Shading
 2. Forward+ Shading
 3. Clustered Deferred Shading
+4. Optimized G-Buffers
+   * 1st G-Buffer stores [frag_position, normal.x]
+   * 2nd G-Buffer stores [frag_color, normal.y]
+   * Because the normal vector is normalized, normal.z can be computed in the deferred fragment shader
 
 Performance
 ------------
+
+![pic1](img/graph_1.png)
 
 ### Credits
 
