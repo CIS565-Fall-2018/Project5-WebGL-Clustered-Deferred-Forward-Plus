@@ -4,6 +4,7 @@ WebGL Clustered and Forward+ Shading
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
 * Connie Chang
+  * [LinkedIn](https://www.linkedin.com/in/conniechang44), [Demo Reel](https://www.vimeo.com/ConChang/DemoReel)
 * Tested on: **Google Chrome 70.0** on
   Windows 8, i7-4510U @ 2.00GHz 8GB, Intel HD Graphics 4400 128MB (Personal laptop)
 
@@ -13,7 +14,7 @@ WebGL Clustered and Forward+ Shading
 
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+[![](vimeo_thumbnail.PNG)](https://vimeo.com/297528543)
 
 ### Introduction
 This was a quick project in WebGL to implement forward plus and deferred shading algorithms. A comparison among forward plus, deferred, and plain forward can be found at the bottom of the page. In addition, the deferred forward plus has toon shading and 2-component normals for G-buffer optimization.  
@@ -23,6 +24,11 @@ This was a quick project in WebGL to implement forward plus and deferred shading
 * Deferred Forward Plus
 * 2-Component Normal Optimization
 * Toon shading (Ramp shading and Sobel edge detection)
+
+### Toon Shading
+![](toon_shading.PNG)  
+
+For toon shading, I implemented ramp shading and edge detection with a Sobel filter. The ramp shading simply discretizes the Lambertian term in the lighting calculations. Sobel applies a kernel to a pixel's neighbors to see if it's at an edge. If it is, I make that pixel darker. The effect looks a little gross, with the dark edges looking like mold. But it does feel a bit cartoon-y.  
 
 ### Performance
 All render times were recorded with 100 lights in the scene, using the Chrome DevTools Profiler. The times are in milliseconds and per frame. The tile grid was 15 x 15 x 15.
