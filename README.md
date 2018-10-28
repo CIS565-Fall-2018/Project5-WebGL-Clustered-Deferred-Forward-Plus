@@ -85,12 +85,36 @@ A more accurate version of this technique would also reference the depth of neig
   
 ## Performance Analysis  
   
+I compared the average latency per frame between the three methods. The measurement in the top left corner of the screen turned out to be unreliable, for example saying only 1ms when the program was clearly severly slowed down. Instead, I used Google's built-in DevTools to run a performance analysis. In this analysis is a timeline including all the times for a frame to render. I added the number of frame transitions and divided the simulation time by this to get a rough estimate of the average frame delay for each case.
+  
 ### Light Cluster Culling  
   
-### Speed Scaling with Light Count  
+The light culling is very compute heavy, and by all means should be moved to a GPU implementation to run parallel. In fact, some of my measurements showed the compute time as a major bottleneck.  
+  
+![PerfPlot1](img/PerfPlot1.PNG)  
+  
+If the max lights per cluster is only bounded by the number of lights, the lights are only culled by cluster binning, which as mentioned is resource and compute expensive task. There is likely some optimal number of lights per cluster for accuracy in rendering a scene while still improving speed. This would also need to balance with the amount of world space contained within each cluster compared to the size of the lights. When the max lights per cluster is reduced back down to 100, there is significant improvement in the framerate.  
+  
+![PerfPlot2](img/PerfPlot2.PNG)  
+    
+Since the light culling pass does not need to do additional computations or memory access with a cluster if it is full, this saves significant compute time. This limit would be more easily checked if we looped through the clusters first instead of the lights, saving the trouble of computing the light bounding box, as all that is needed is accessing and checking one buffer value.  
+  
+### Deferred vs Forward Shading
+  
+You may have noticed from the plots that in the same conditions the deferred shader seems to have lower latency than the Forward+ renderer. This is in spite of identical light-culling functions. Apparently the fist fragment shader pass ensures that only one fragment per pixel is being rendered in the final image. This can significantly reduce the number of pixels being shaded in a complex scene, so each light is only used once per pixel.  
+The tradoff, as mentioned previously, is the g-buffers needing to store a screen-sized texture each, adding to memory overhead. Additionally, while the g-buffers make it easier to share attribute data between fragments, and thus enables certain techniques, deferred shading limits the ability to do others. Rendering different materials, transparency, and anti-aliasing are supposed to be more difficult to implement if possible at all.
   
 ### Feature Overhead  
   
+I attempted to compare the speed of the deferred renderer with and without the extra light corner culling step and the toon shading.
+   
+![PerfPlot3](img/PerfPlot3.PNG)  
+  
+Under the conditions used, the slowdown from this extra functionality seems minimal. The corner checking only occurs if the cluster isn't full and the cluster is in the bounding box, so even in a scene with dense lighting only a fraction of cases go through this extra step. The toon shading does require extra steps to compute, retrieve or compare values in the fragment shader, but since many pixels are being processed at once, in parallel, the effects on the delay become almost trivial.
+  
+### G-Buffer Setup  
+  
+Compacting fragment data for the shader into as little buffer space as possible has the added benefits of reducing memory usage and the number of memory accesses necessary to retrieve this info. It is posible to compact certain data further, such as the normal to two components, but this then may require extra overhead in re-computing the missing component. Thus, the g-buffers require optimization between memory overhead and compute overhead. A compute operation is generally cheaper than a memory transfer. 
   
 ### Credits
 

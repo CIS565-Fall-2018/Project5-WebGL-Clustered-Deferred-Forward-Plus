@@ -37,43 +37,6 @@ export default class BaseRenderer {
                 // Reset the light count to 0 for every cluster
                 this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = 0;
 
-                // define frustrum as 8 vectors pointing to xyz corners
-                // check both near and far intersections
-                // we can calculate all vectors from the bottom-left-front corner
-                //let v0 = [(x * x_size - w), (y * y_size - h)];
-                /*
-                let x0 = x * x_size - w;
-                let y0 = y * y_size - h;
-                let z0 = z * z_size + z_near;
-
-                // loop over lights
-                for (let lidx = 0; lidx < NUM_LIGHTS; lidx++) {
-                    let n = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)];
-                    if ( n >= MAX_LIGHTS_PER_CLUSTER) break;
-                    let light = scene.lights[lidx];
-                    let light_pos = vec4.fromValues(light.position[0], light.position[1], light.position[2], 1.0); // transform into viewspace
-                    vec4.transformMat4(light_pos, light_pos, viewMatrix);
-
-                    let r = light.radius;
-                    light_pos[2] *= -1.0;
-                    // if outside z cluster planes skip light
-                    if ((light_pos[2] + r < z0) || (light_pos[2] - r > z0 + z_size)) continue;
-
-
-                    let ray = vec3.fromValues(x0, y0, z0);
-
-
-                    n += 1;
-                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = n;
-
-                    let index = Math.floor(n / 4);
-                    let offset = n - (4 * index);
-
-                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, index) + offset] = lidx;
-                }*/
-
-                //console.log(this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)]);
-
             }
         }
     }
@@ -97,6 +60,7 @@ export default class BaseRenderer {
           let plane_x = 2.0 * plane_w / this._xSlices;
           let plane_y = 2.0 * plane_h / this._ySlices;
 
+          // bbox
           let left = Math.floor((light_pos[0] - r - plane_w) / plane_x);
           let right = Math.floor((light_pos[0] + r - plane_w) / plane_x);
           let top = Math.floor((light_pos[1] + r - plane_h) / plane_y);
@@ -112,8 +76,6 @@ export default class BaseRenderer {
 
           back = Math.max(0, Math.min(this._xSlices - 1, back));
           front = Math.max(0, Math.min(this._xSlices - 1, front));
-
-          //console.log(left, right);
 
           for (let z = front; z <= back; ++z) {
               for (let y = bottom; y <= top; ++y) {
@@ -159,8 +121,6 @@ export default class BaseRenderer {
                   }
               }
           }
-
-
 
       }
 
