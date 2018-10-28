@@ -9,6 +9,8 @@ WebGL Clustered and Forward+ Shading
   * [Facebook](https://www.facebook.com/yang.bowen.7399)
   * [Steam](https://steamcommunity.com/id/grillnov)
 * Tested on: Windows 10 x64, i7-6800K @ 3.40GHz 32GB, GTX 1080 8GB (Personal computer at home)
+
+## Some apologies
 Note: Since the submission deadlines of both SIGGRAPH 2019 and CGF are approaching, I only made it to finish the Forward+ part of this project...
 
 ### Forward+ Demo
@@ -16,8 +18,6 @@ Note: Since the submission deadlines of both SIGGRAPH 2019 and CGF are approachi
 ![](Screenshot.png)()
 
 ### Live Online
-
-[![](img/thumb.png)](http://Grillnov.github.io/Project5B-WebGL-Deferred-Shading)
 
 ### Demo Video/GIF
 
