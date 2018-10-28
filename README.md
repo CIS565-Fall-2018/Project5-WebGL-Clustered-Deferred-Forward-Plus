@@ -3,25 +3,39 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Alexander Chan
+* Tested on: **Google Chrome 70.0** on
+  Windows 10 Version 1803, i7-5820k @ 3.70 GHz 16GB, GTX 1080 @ 1620 MHz 8GB (Personal Computer)
+
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[![](img/all.gif)](http://ascn.github.io/Project5-WebGL-Deferred-Shading)
 
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+![](img/1000.gif)
+1000 lights with deferred clustered shading at 60 fps.
 
-### (TODO: Your README)
+### Analysis
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+![](img/performance.png)
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+| Number of lights | Forward     | Forward+    | Deferred (3 G buffers) | Deferred (2 G buffers) |
+|------------------|-------------|-------------|------------------------|------------------------|
+| 100              | 16.66666667 | 16.66666667 | 16.66666667            | 16.66666667            |
+| 500              | 29.41176471 | 16.66666667 | 16.66666667            | 16.66666667            |
+| 1000             | 58.82352941 | 23.25581395 | 16.66666667            | 16.66666667            |
+| 2000             | 111.1111111 | 41.66666667 | 16.66666667            | 16.66666667            |
+| 4000             | 333.3333333 | 83.33333333 | 29.41176471            | 28.57142857            |
+
+At 100 lights, I was able to hit the FPS cap for all the different pipelines (even forward rendering). However, increasing the number of lights to 500 revealed that the vanilla forward pipeline had much worse performance, as the frametime almost doubled, while there was no change for the other 3 tested.
+
+As the number of lights increased, the deferred pipelines stayed at the FPS cap, while the forward+ pipeline started to fall at 1000 lights. This is interesting as the logic behind the deferred and forward+ fragment shaders is exactly the same. The performance increase is likely due to the fact that the fragment shader itself is quite expensive (as we iterate over the number of lights in this cluster, which can be very high), and the deferred pipeline guarantees that this expensive shader is run only once per pixel. The forward+ pipeline may be running the fragment shader on fragments that are not drawn to the screen.
+
+The optimized deferred pipeline only uses 2 gbuffers instead of 3, encoding a 3 component normal in 2, and reconstructing it in the fragment shader. Another compression technique would be to store only the depth in the gbuffer, instead of the position, and reconstruct the world space position in the fragment shader.
+
+There is a slight improvement, but not that noticeable (only 1 fewer ms per frame). However, when doing more complex shading, such as PBR shading with more fragment attributes (such as metallic, specular, roughness, velocity for motion blur, etc) it may have a much larger improvement packing all of the attributes into the smallest amount of data possible. This simple shading with a color and a normal does not benefit as much.
 
 
 ### Credits
