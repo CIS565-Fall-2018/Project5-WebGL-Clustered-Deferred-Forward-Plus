@@ -17,7 +17,7 @@ export default function(params) {
   uniform float u_screenHeight;
   uniform float u_cameraFar;
   uniform float u_cameraNear;
-  
+
   // uniform vec2 u_screendimension;
   // uniform vec2 u_cameraclip;
   // float u_cameraNear = u_cameraclip[0];
@@ -25,10 +25,10 @@ export default function(params) {
   // float u_screenWidth = u_screendimension[0];
   // float u_screenHeight = u_screendimension[1];
 
-  const int numxSlices = ${params.numXSlices};
-  const int numySlices = ${params.numYSlices};
-  const int numzSlices = ${params.numZSlices};
-  const int numMaxLightsPerCluster = ${params.maxLightsPerCluster};
+  const int numxSlices = int(${params.numxSlices});
+  const int numySlices = int(${params.numySlices});
+  const int numzSlices = int(${params.numzSlices});
+  const int numMaxLightsPerCluster = int(${params.numMaxLightPerCluster});
 
 
   varying vec2 v_uv;
