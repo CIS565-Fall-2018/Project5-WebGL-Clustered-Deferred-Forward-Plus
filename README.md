@@ -3,13 +3,14 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Xinyu Lin
+[Linkedin](https://www.linkedin.com/in/xinyu-lin-138352125/)
+* Tested on: Google Chrome 69.0.3497.199, macOS(Version 10.13.6), Intel Core i7 2.9 GHz, 16GB, Radeon Pro 560 4096MB (Private Computer)
+
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[![](img2/lambert_100.gif)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
 ### Demo Video/GIF
 
