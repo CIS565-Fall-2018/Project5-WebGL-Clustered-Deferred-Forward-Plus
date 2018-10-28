@@ -18,6 +18,8 @@ WebGL Clustered and Forward+ Shading
 
 ## Live Online
 
+The demo may take about 15-30 seconds to load up, just give it some time.
+
 [Demo Link](https://ishanranade.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ## Demo Video/GIF
