@@ -100,7 +100,7 @@ Using GPU to bin the lights is the ultimate solution to increase fps. However, w
 
 Ideally, we want to store only the lights that's in the cluster and a total number of them so that we can loop through only these lights in the subsequent pass. But because we don't have compute shader, we also don't have atomic operations. This makes the above storage scheme impossible. We have to store a bool value for each and every light in the scene for each cluster to indicate whether the particular light is in the particular cluster or not. This can be illustrated in the following picture.
 
-![](x.JPG)
+![](img/x.JPG)
 
 
 This means in the subsequent pass, we can not get the total light count and can not only iterate through a small amount of lights. We have to check for each light in the scene whether they are in the cluster or not. And this is an expensive operation. In fact, compared with the un-clustered forward renderer, this makes no improvement at all. The rendering time of the GPU binning clustered forward renderer is not faster than the un-clustered forward renderer.
