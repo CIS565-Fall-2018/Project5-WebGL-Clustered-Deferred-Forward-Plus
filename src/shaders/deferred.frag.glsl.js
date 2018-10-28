@@ -3,21 +3,25 @@ export default function(params) {
   #version 100
   precision highp float;
   
+
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
-  
   uniform sampler2D u_lightbuffer;
   uniform sampler2D u_clusterbuffer;
+  uniform vec2 u_screendimension;
+  uniform vec2 u_cameraclip;
   uniform mat4 u_viewMatrix;
-  uniform mat4 u_invViewMatrix;
-  uniform float u_screenWidth;
-  uniform float u_screenHeight;
-  uniform float u_cameraFar;
-  uniform float u_cameraNear;
+  uniform mat4 u_viewInvMatrix;
+  uniform mat4 u_viewProjInvMatrix;
+  uniform int u_isBlinn;
 
-  const int numxSlices = ${params.numxSlices};
-  const int numySlices = ${params.numySlices};
-  const int numzSlices = ${params.numzSlices};
-  const int numMaxLightsPerCluster = ${params.numMaxLightPerCluster};
+
+
+
+
+  const int numxSlices = int(${params.numXSlices});
+  const int numySlices = int(${params.numYSlices});
+  const int numzSlices = int(${params.numZSlices});
+  const int numMaxLightsPerCluster = int(${params.maxLightsPerCluster});
 
   varying vec2 v_uv;
 
@@ -76,10 +80,6 @@ export default function(params) {
   
   void main() {
     // TODO: extract data from g buffers and do lighting
-    // vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
-    // vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
-    // vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
-    // vec4 gb3 = texture2D(u_gbuffers[3], v_uv);
 
     vec3 albedo     = texture2D(u_gbuffers[0], v_uv).xyz;
     vec3 v_position = texture2D(u_gbuffers[1], v_uv).xyz;
@@ -88,13 +88,13 @@ export default function(params) {
     vec3 fragColor = vec3(0.0);
     vec4 viewPos = u_viewMatrix * vec4(v_position, 1.0);
 
-    float zInterval = (u_cameraFar - u_cameraNear) / float(numzSlices); 
-    int z = int((-viewPos.z - u_cameraNear) / zInterval);
+    float zInterval = (u_cameraclip[1] - u_cameraclip[0]) / float(numzSlices); 
+    int z = int((-viewPos.z - u_cameraclip[0]) / zInterval);
 
-    float xInterval = float(u_screenWidth) / float(numxSlices);
+    float xInterval = float(u_screendimension[0]) / float(numxSlices);
     int x = int(gl_FragCoord.x / xInterval);
 
-    float yInterval = float(u_screenHeight) / float(numySlices);
+    float yInterval = float(u_screendimension[1]) / float(numySlices);
     int y = int(gl_FragCoord.y / yInterval);
 
     int index = x + y * numxSlices + z * numxSlices * numySlices;
@@ -109,38 +109,27 @@ export default function(params) {
         break;
       }
 
-      float vCoord = float((index + 1) / 4 + 1) / float(TexelsinColumn + 1);
-      int lightId = int(texture2D(u_clusterbuffer, vec2(uCoord, vCoord))[(index + 1) - 4 * ((index + 1) / 4)]);
-      Light light = UnpackLight(lightId);
+      int pixel = (index + 1) / 4;
+      float vCoord = float(pixel + 1) / float(TexelsinColumn + 1);
+      vec4 clusterTexel = texture2D(u_clusterbuffer, vec2(uCoord, vCoord));
+
+      int lightIndex;
+      int component = (index + 1) - 4 * pixel;
+      if (component == 0)      
+        lightIndex = int(clusterTexel[0]);      
+      else if (component == 1)     
+        lightIndex = int(clusterTexel[1]);      
+      else if (component == 2)      
+        lightIndex = int(clusterTexel[2]);
+      else if (component == 3)
+        lightIndex = int(clusterTexel[3]);
+
+      Light light = UnpackLight(lightIndex);
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
-
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
       float lambertTerm = max(dot(L, normal), 0.0);
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
-
-
-      // int pixel = (index + 1) / 4;
-      // float vCoord = float(pixel + 1) / float(TexelsinColumn + 1);
-      // vec4 clusterTexel = texture2D(u_clusterbuffer, vec2(uCoord, vCoord));
-
-      // int lightIndex;
-      // int component = (index + 1) - 4 * pixel;
-      // if (component == 0)      
-      //   lightIndex = int(clusterTexel[0]);      
-      // else if (component == 1)     
-      //   lightIndex = int(clusterTexel[1]);      
-      // else if (component == 2)      
-      //   lightIndex = int(clusterTexel[2]);
-      // else if (component == 3)
-      //   lightIndex = int(clusterTexel[3]);
-
-      // Light light = UnpackLight(lightIndex);
-      // float lightDistance = distance(light.position, v_position);
-      // vec3 L = (light.position - v_position) / lightDistance;
-      // float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      // float lambertTerm = max(dot(L, normal), 0.0);
-      // fragColor += albedo * lambertTerm  * light.color * vec3(lightIntensity);
+      fragColor += albedo * lambertTerm  * light.color * vec3(lightIntensity);
 
     }
 
