@@ -14,6 +14,7 @@ export default function(params) {
   uniform float u_Height;
   uniform float u_zNear;
   uniform float u_zFar;
+  uniform float u_numMaxLightsPerCluster;
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
@@ -100,9 +101,29 @@ export default function(params) {
     for (int i = 0; i < ${params.numLights}; ++i)
     {
       int lightIndex = i;
-      if (lightIndex >= clusterLightCount)
+      float curIndexFlt = float(i + 1) * 0.25;
+      int curIndex = int(curIndexFlt);
+      
+      float vFetched = float(float(curIndex) + 1.0) / float((u_numMaxLightsPerCluster + 1.0) * 0.25 + 1.0);
+      vec4 texel = texture2D(u_clusterbuffer, vec2(uFetched, vFetched));
+      
+      int pixelComponent = (i + 1) - (curIndex * 4);
+
+      if (pixelComponent == 0) 
       {
-        break;
+        lightIndex = int(texel[0]);
+      }
+      else if (pixelComponent == 1)
+      {
+        lightIndex = int(texel[1]);
+      }
+      else if (pixelComponent == 2)
+      {
+        lightIndex = int(texel[2]);
+      } 
+      else if (pixelComponent == 3)
+      {
+        lightIndex = int(texel[3]);
       }
 
       Light light = UnpackLight(lightIndex);
