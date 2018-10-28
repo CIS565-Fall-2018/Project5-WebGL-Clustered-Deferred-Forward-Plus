@@ -9,7 +9,7 @@ WebGL Clustered and Forward+ Shading
 
 ## Live Online
 
-[![](images/clustered-phong.gif)](http://echiu1997.github.io/Project5B-WebGL-Deferred-Shading)
+[![](images/clustered-phong.gif)](https://echiu1997.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ## Description
 
