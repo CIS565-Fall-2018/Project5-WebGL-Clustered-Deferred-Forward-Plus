@@ -17,11 +17,9 @@ export default function(params) {
   uniform float xstart;
   uniform float xend;
   uniform float xstep;
-  
   uniform float ystart;
   uniform float yend;
   uniform float ystep;
-  
   uniform float zstart;
   uniform float zend;
   uniform float zstep;
@@ -80,24 +78,24 @@ export default function(params) {
     frustum.points4 = p0;
     frustum.points5 = p4;
     
-    frustum.normals0 = normalize(cross(p1 - p0, p2 - p0));
-    frustum.normals1 = normalize(cross(p5 - p1, p3 - p1));
-    frustum.normals2 = normalize(cross(p3 - p2, p6 - p2));
-    frustum.normals3 = normalize(cross(p2 - p0, p4 - p0));
-    frustum.normals4 = normalize(cross(p4 - p0, p1 - p0));
-    frustum.normals5 = normalize(cross(p6 - p4, p5 - p4));
+    frustum.normals0 = normalize(cross(normalize(p1 - p0), normalize(p2 - p0)));
+    frustum.normals1 = normalize(cross(normalize(p5 - p1), normalize(p3 - p1)));
+    frustum.normals2 = normalize(cross(normalize(p3 - p2), normalize(p6 - p2)));
+    frustum.normals3 = normalize(cross(normalize(p2 - p0), normalize(p4 - p0)));
+    frustum.normals4 = normalize(cross(normalize(p4 - p0), normalize(p1 - p0)));
+    frustum.normals5 = normalize(cross(normalize(p6 - p4), normalize(p5 - p4)));
     
     return frustum;
   }
   
   bool FrustumSphereOverlap(Frustum frustum, vec3 sphereCenter, float sphereRadius)
   {
+            
         float distance = 0.0;
 
         for(int i = 0;i<6;++i)
         {
-            vec3 frustumPlaneToSphereDir;
-            
+
             if(i==0)
             {
                 distance = dot(frustum.normals0, sphereCenter - frustum.points0);
@@ -126,7 +124,7 @@ export default function(params) {
             if(abs(distance) < sphereRadius)
             {
                 // intersect, return true
-                return true;
+                // return true;
             }
             else if(distance > sphereRadius)
             {
@@ -225,15 +223,15 @@ export default function(params) {
       {
         ////////////////////////////////////////////////////////////////////
         //DEBUG, USING GREEN CHANNEL TO MARK THE LIGHTS WHO ARE not IN THE CLUSTER
-        if(i==0) fragColor.g += 0.25;
-        else if(i==1) fragColor.g += 0.25;
-        else if(i==2) fragColor.g += 0.25;
-        else if(i==3) fragColor.g += 0.25;
+        // if(i==0) fragColor.g += 0.25;
+        // else if(i==1) fragColor.g += 0.25;
+        // else if(i==2) fragColor.g += 0.25;
+        // else if(i==3) fragColor.g += 0.25;
         ////////////////////////////////////////////////////////////////////
       }
     }
     
-    gl_FragData[0] = fragColor;
+    gl_FragData[0] = fragColor;//vec4(float(x)/float(CLUSTER_X), float(y)/float(CLUSTER_Y), float(z)/float(CLUSTER_Z), 1.0);//
     
   }
   `;

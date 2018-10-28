@@ -80,12 +80,12 @@ export default function(params) {
     frustum.points4 = p0;
     frustum.points5 = p4;
     
-    frustum.normals0 = normalize(cross(p1 - p0, p2 - p0));
-    frustum.normals1 = normalize(cross(p5 - p1, p3 - p1));
-    frustum.normals2 = normalize(cross(p3 - p2, p6 - p2));
-    frustum.normals3 = normalize(cross(p2 - p0, p4 - p0));
-    frustum.normals4 = normalize(cross(p4 - p0, p1 - p0));
-    frustum.normals5 = normalize(cross(p6 - p4, p5 - p4));
+    frustum.normals0 = normalize(cross(normalize(p1 - p0), normalize(p2 - p0)));
+    frustum.normals1 = normalize(cross(normalize(p5 - p1), normalize(p3 - p1)));
+    frustum.normals2 = normalize(cross(normalize(p3 - p2), normalize(p6 - p2)));
+    frustum.normals3 = normalize(cross(normalize(p2 - p0), normalize(p4 - p0)));
+    frustum.normals4 = normalize(cross(normalize(p4 - p0), normalize(p1 - p0)));
+    frustum.normals5 = normalize(cross(normalize(p6 - p4), normalize(p5 - p4)));
     
     return frustum;
   }
@@ -96,8 +96,7 @@ export default function(params) {
 
         for(int i = 0;i<6;++i)
         {
-            vec3 frustumPlaneToSphereDir;
-            
+        
             if(i==0)
             {
                 distance = dot(frustum.normals0, sphereCenter - frustum.points0);
@@ -126,7 +125,7 @@ export default function(params) {
             if(abs(distance) < sphereRadius)
             {
                 // intersect, return true
-                return true;
+                // return true;
             }
             else if(distance > sphereRadius)
             {
@@ -200,7 +199,7 @@ export default function(params) {
     
     Frustum frustum = GenerateFrustum(float(x), float(y), float(z));
     
-    vec4 fragColor = vec4(0, 0, 0, 1);
+    vec4 fragColor = vec4(0, 0, 0, 0);
     
     for (int i = 0; i < 4; ++i) {
       int lightIdx = lightIdxStart + i;
