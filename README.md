@@ -10,7 +10,6 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-Demo link currently does not work. Npm gives build errors.  
 [Live Demo](https://cawney4.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ### Demo Video/GIF
