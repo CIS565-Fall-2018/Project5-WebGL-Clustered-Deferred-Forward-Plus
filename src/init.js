@@ -82,7 +82,7 @@ window.addEventListener('resize', () => setSize(canvas.clientWidth, canvas.clien
 
 if (DEBUG) {
   const spector = new Spector();
-  spector.displayUI();
+  //spector.displayUI();
 }
 
 // Creates a render loop that is wrapped with camera update and stats logging
