@@ -11,13 +11,11 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
-
-### Demo Video/GIF
-
-[![](img/test_scene.png)]
+[![](img/screenshot.JPG)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
 
 ## README
+
+![gif](img/test_scene.gif)
 
 Introduction
 ------------
@@ -38,7 +36,11 @@ Features
 Performance
 ------------
 
+We see in the graph below that clustered deferred shading does offer a consistent and considerable speedup over even forward+ shading, and also that forward+ shading is faster than the naive forward approach. All of the FPS values shown below are reported using the G-Buffer optimization highlighted in the Features section.
+
 ![pic1](img/graph_1.png)
+
+Reducing the number of G-buffers required from three to two does offer an observable difference in FPS. For 100 lights, clustered differed shading drops 10 FPS (from 53 to 43). The optmization, in this case, is passing normal.x with the position vector and normal.y with the color vector instead of passing each fragment normal in its own G-buffer.
 
 ### Credits
 
