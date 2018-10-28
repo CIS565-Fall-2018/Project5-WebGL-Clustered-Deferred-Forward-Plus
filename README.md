@@ -34,11 +34,11 @@ Forward plus shading is a technique in which you perform forward rendering, but 
 
 ## Effects
 
-For Forward Plus I used basic lambert shading, but for the Deferred renderer I used Blinn Phong shading to add some specular information to the scene.  You can see from the two images at th very beginning of the README or the demo gif the difference between the shading.  You will notice that the Deferred renderer appears to make the scene brighter.
+For Forward Plus I used basic lambert shading, but for the Deferred renderer I used Blinn Phong shading to add some specular information to the scene.  You can see from the two images at the very beginning of the README or the demo gif the difference between the shading.  You will notice that the Deferred renderer appears to make the scene brighter.
 
 ## Deferred
 
-Deferred shading is a technique where you have an extra pass in between the typical vertex and fragment shaders in which you render fragment data to a series of textures and use those textures in the final fragment shader.  These textures are usually known as g-buffers, and eac g-buffer holds unique data.  Deferred rendering can also make use of clustering to improve performance.  Below are examples of the various textures that we can output to the final stage and the type of data each represents.
+Deferred shading is a technique where you have an extra pass in between the typical vertex and fragment shaders in which you render fragment data to a series of textures and use those textures in the final fragment shader.  These textures are usually known as g-buffers, and each g-buffer holds unique data.  Deferred rendering can also make use of clustering to improve performance.  Below are examples of the various textures that we can output to the final stage and the type of data each represents.
 
 ![](normals.JPG)
 
@@ -54,7 +54,7 @@ Deferred shading is a technique where you have an extra pass in between the typi
 
 ## Optimizations
 
-Some optimizations I used include packing data in the G buffers to save memory.  I needed the view space position for my final shading calculations, so I stored each element as the 4th components of each of the 3 g-buffers that I used.  This helped me reduce to only using 3 g-buffers.  Reducing the number of g-buffers is important because it reduces the amount of memory that must be created to fill a texture and pass it on to the final fragment stage.  The less g-buffers needed the less memory that must be stored on the GPU.
+Some optimizations I used include packing data in the G buffers to save memory and using 2 component normals and recreating the thrid component when needed.  I needed the view space position for my final shading calculations, so I stored each element as the 4th component of each of the 3 g-buffers that I used.  This helped me reduce to only using 3 g-buffers.  Reducing the number of g-buffers is important because it reduces the amount of memory that must be created to fill a texture and pass it on to the final fragment stage.  The less g-buffers needed the less memory that must be stored on the GPU.
 
 There were a couple optimizations I tried to use for the g-buffers as illustrated in this table with their effects on FPS specifically for Deferred shading.
 
@@ -92,7 +92,7 @@ During my experimentation, I found that my computer was limited in the size of m
 
 ![](25.JPG)
 
-I found that Deferred rendering tended to be the fastest, which became more visible the more lights I added to the scene.  This may be because forward plus shading does not have to push extra g-buffers on to the GPU, so it scale well as all that increases is the cluster buffer size.  Unfortunately, my implementations of the renderers did not scale very well with increasing light counts and the FPS dramatically decreased.  This is probably because I did not split up the fruzels very well and chose a linear split along the x, y, and z axes.  There are more efficient splits to try to have finer resolutions closer to the near clip and coarser ones as you approach the far clip since there will be less content near the far clip.  I may have also been able to reduce g-buffer sizes even more by not using floats and perhaps using smaller data types, though that would have cost accuracy.
+I found that Forward Plus rendering tended to be the fastest, which became more visible the more lights I added to the scene.  This may be because forward plus shading does not have to push extra g-buffers on to the GPU, so it scale well as all that increases is the cluster buffer size.  Unfortunately, my implementations of the renderers did not scale very well with increasing light counts and the FPS dramatically decreased.  This is probably because I did not split up the fruzels very well and chose a linear split along the x, y, and z axes.  There are more efficient splits to try to have finer resolutions closer to the near clip and coarser ones as you approach the far clip since there will be less content near the far clip.  I may have also been able to reduce g-buffer sizes even more by not using floats and perhaps using smaller data types, though that would have cost accuracy.
 
 
 ### Credits
