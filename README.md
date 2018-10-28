@@ -3,26 +3,29 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Name: Bowen Yang
+  * [LinkedIn](https://www.linkedin.com/in/%E5%8D%9A%E6%96%87-%E6%9D%A8-83bba6148)
+  * [GitHub](https://github.com/Grillnov)
+  * [Facebook](https://www.facebook.com/yang.bowen.7399)
+  * [Steam](https://steamcommunity.com/id/grillnov)
+* Tested on: Windows 10 x64, i7-6800K @ 3.40GHz 32GB, GTX 1080 8GB (Personal computer at home)
+
+## Some apologies
+Note: Since the submission deadlines of both SIGGRAPH 2019 and CGF are approaching, I only made it to finish the Forward+ part of this project...
+
+### Forward+ Demo
+
+![](Screenshot.png)()
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
-
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+[![](img/video.png)]()
 
-### (TODO: Your README)
+### README
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
-
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
-
+The light numbers related to each fragment (with Z value maintained) in the clusters are tracked using a buffer, that's later binded with a texture.
 
 ### Credits
 
