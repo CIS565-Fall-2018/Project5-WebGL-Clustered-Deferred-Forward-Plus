@@ -11,6 +11,13 @@ export default function(params) {
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
+  
+  uniform mat4 u_viewMatrix;
+  
+  uniform float u_Near;
+  uniform float u_Far;
+  uniform float u_PlaneH;
+  uniform float u_PlaneW;
 
   varying vec3 v_position;
   varying vec3 v_normal;
@@ -73,6 +80,26 @@ export default function(params) {
       return 0.0;
     }
   }
+  
+  int findCluster () {
+    vec4 pos = u_viewMatrix * vec4(v_position, 1.0);
+    pos.z = -pos.z;
+    
+    float z_norm = (pos.z - u_Near) / (u_Far - u_Near);
+    
+    float w = (u_Near + (u_Far - u_Near) * z_norm) * u_PlaneW;
+    float h = (u_Near + (u_Far - u_Near) * z_norm) * u_PlaneH;
+    
+    float x_size = 2.0 * w / float(${params.xSlices});
+    float y_size = 2.0 * h / float(${params.ySlices});
+    
+    int x = int((pos.x - w) / x_size);
+    int y = int((pos.y - h) / y_size);
+    int z = int((pos.z - u_Near) * float(${params.zSlices}) / (u_Far - u_Near));
+    
+    
+    return (x + y * ${params.xSlices} + z * ${params.xSlices} * ${params.ySlices});
+  }
 
   void main() {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
@@ -80,9 +107,29 @@ export default function(params) {
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
+    
+    // determine fragment cluster
+    int num_clusters = ${params.xSlices} * ${params.ySlices} * ${params.zSlices};
+    int clusterIdx = findCluster();
+    
+    float u = float(clusterIdx + 1) / float(num_clusters + 1);
+    // number of lights in cluster
+    int n = int(texture2D(u_clusterbuffer, vec2(u, 0.0))[0]);
 
+    int light_idx = 0;
+    
     for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+      // check if within # of lights in cluster
+      if (i >= n) break;
+      // Retrieve light index
+      int elements = (int(${params.maxLights}) + 1) / 4;
+      
+      light_idx = int(ExtractFloat(u_clusterbuffer, num_clusters, elements, clusterIdx, i+1));
+    
+      
+      //Light light = UnpackLight(i);
+      Light light = UnpackLight(light_idx);
+      
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
