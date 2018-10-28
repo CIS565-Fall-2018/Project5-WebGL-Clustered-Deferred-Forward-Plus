@@ -10,11 +10,11 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+![Live Demo](https://cawney4.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ### Demo Video/GIF
 
-[![](vimeo_thumbnail.PNG)](https://vimeo.com/297528543)
+![](vimeo_thumbnail.PNG)](https://vimeo.com/297528543)
 
 ### Introduction
 This was a quick project in WebGL to implement forward plus and deferred shading algorithms. A comparison among forward plus, deferred, and plain forward can be found at the bottom of the page. In addition, the deferred forward plus has toon shading and 2-component normals for G-buffer optimization.  
