@@ -114,9 +114,24 @@ Under the conditions used, the slowdown from this extra functionality seems mini
   
 ### G-Buffer Setup  
   
-Compacting fragment data for the shader into as little buffer space as possible has the added benefits of reducing memory usage and the number of memory accesses necessary to retrieve this info. It is posible to compact certain data further, such as the normal to two components, but this then may require extra overhead in re-computing the missing component. Thus, the g-buffers require optimization between memory overhead and compute overhead. A compute operation is generally cheaper than a memory transfer. 
+Compacting fragment data for the shader into as little buffer space as possible has the added benefits of reducing memory usage and the number of memory accesses necessary to retrieve this info. It is posible to compact certain data further, such as the normal to two components, but this then may require extra overhead in re-computing the missing component. Thus, the g-buffers require optimization between memory overhead and compute overhead. A compute operation is generally cheaper than a memory transfer.  
   
-### Credits
+To verify that optimizing buffer usage is beneficial I did a performance analysis with the values stored each in a separate buffer, and with the values stored more compact (the way described in the Deferred Rendering section).  
+  
+Separate Buffers:  
+  
+![GBufBad](img/GBufBad1.PNG)
+  
+Compact Buffers:  
+  
+![GBufGood](img/GBufGood1.PNG)  
+  
+I recorded performance in the same conditions and approximateely the same time. We can compare the ratios of the rendering time over the total execution time. The separate values render in 3.912% of the total time, while the compact values render in 3.543% of the time. If we use the total non-idle time instead this becomes 20.22% and 19.28%, respectively. This approximately 1% difference doesn't seem like mich, but this case considers very simple buffers and calculations.  
+In a shader requiring many precise material properties and texture data, the number of values necessary could hypothetically blow up. It would be impractical to assign a new buffer for each property, and, as this case has shown on a small scale, this is not best practice performance-wise.
+  
+  
+  
+## Credits
 
 * [Three.js](https://github.com/mrdoob/three.js) by [@mrdoob](https://github.com/mrdoob) and contributors
 * [stats.js](https://github.com/mrdoob/stats.js) by [@mrdoob](https://github.com/mrdoob) and contributors
