@@ -10,7 +10,7 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-![Live Demo](https://cawney4.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
+[Live Demo](https://cawney4.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ### Demo Video/GIF
 
