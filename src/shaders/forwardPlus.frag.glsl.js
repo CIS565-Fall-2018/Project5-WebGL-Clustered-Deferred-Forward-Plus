@@ -125,7 +125,7 @@ export default function(params) {
       {
         lightIndex = int(texel[3]);
       }
-
+      lightIndex = i;
       Light light = UnpackLight(lightIndex);
 
       float lightDistance = distance(light.position, v_position);

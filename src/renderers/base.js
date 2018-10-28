@@ -84,7 +84,7 @@ export default class BaseRenderer {
     				let previousLightCount = this._clusterTexture.buffer[lightCounterIndex];
     				let lightCount = 1 + previousLightCount;
 
-    				if (lightCount > MAX_LIGHTS_PER_CLUSTER)
+    				if (lightCount <= MAX_LIGHTS_PER_CLUSTER)
     				{
     					this._clusterTexture.buffer[lightCounterIndex] = lightCount;
     					let texelFetched = Math.floor(lightCount * 0.25);
