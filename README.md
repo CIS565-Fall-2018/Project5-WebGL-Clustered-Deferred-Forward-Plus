@@ -3,26 +3,47 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Eric Chiu
+* Tested on: Macbook Pro (Retina, 15-inch, Mid 2015), OS X El Capitan 10.11.6, 2.5 GHz Intel Core i7, AMD Radeon R9 M370X 2048 MB
 
-### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+## Live Online
 
-### Demo Video/GIF
+[![](images/clustered-phong.gif)](http://echiu1997.github.io/Project5B-WebGL-Deferred-Shading)
 
-[![](img/video.png)](TODO)
+## Description
 
-### (TODO: Your README)
+This project implements 
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+## Performance Analysis
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+![](./images/forward-clustered.png)
 
+![](./images/default-optimized.png)
+
+## Forward Plus
+
+![](./images/forward-plus.gif)
+
+## Clustered Lambert Shading
+
+![](./images/clustered-lambert.gif)
+
+## Clustered Phong Shading
+
+![](./images/clustered-phong.gif)
+
+## Clustered Toon Shading
+
+![](./images/clustered-toon.gif)
+
+## Clustered Iridescent Shading
+
+![](./images/clustered-iridescence.gif)
+
+## Clustered Sobel Shading
+
+![](./images/clustered-sobel.gif)
 
 ### Credits
 

@@ -1,7 +1,6 @@
 export default function(params) {
   return `
-  // TODO: This is pretty much just a clone of forward.frag.glsl.js
-
+  
   #version 100
   precision highp float;
 
@@ -9,7 +8,7 @@ export default function(params) {
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
 
-  // TODO: Read this buffer to determine the lights influencing a cluster
+  // Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
   uniform mat4 u_viewMatrix;
@@ -81,36 +80,32 @@ export default function(params) {
   }
 
   void main() {
+
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
 
-
     
-    // TODO
+    // NEW
     int clusterXIndex = int(gl_FragCoord.x / (float(u_screenWidth) / float(${params.xSlices})) );
     int clusterYIndex = int(gl_FragCoord.y / (float(u_screenHeight) / float(${params.ySlices})) );
     vec4 cameraPos = u_viewMatrix * vec4(v_position, 1.0);
     cameraPos.z = -cameraPos.z;
-    int clusterZ = int( (cameraPos.z - u_camera_near) / 
+    int clusterZIndex = int( (cameraPos.z - u_camera_near) / 
       (float(u_camera_far - u_camera_near) / float(${params.zSlices})));
-
-    int clusterIndex = clusterXIndex + clusterYIndex * ${params.xSlices} + clusterZ * ${params.xSlices} * ${params.ySlices};
+    int clusterIndex = clusterXIndex + clusterYIndex * ${params.xSlices} + clusterZIndex * ${params.xSlices} * ${params.ySlices};
+    
     int numClusters = ${params.xSlices} * ${params.ySlices} * ${params.zSlices};
     float u = float(clusterIndex + 1) / float(numClusters + 1);
     int numClusterLights = int(texture2D(u_clusterbuffer, vec2(u, 0)).r);
-
     int texelsPerCol = int(float(${params.maxLightsPerCluster} + 1) * 0.25) + 1;
-
 
 
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-
-
-
-      // TODO
+    for (int i = 0; i < ${params.numLights}; ++i) 
+    {
+      // NEW
       if (i >= numClusterLights) { break; }
       int texIndex = int(float(i + 1) * 0.25);
       float v = float(texIndex + 1) / float(texelsPerCol + 1);
@@ -124,21 +119,19 @@ export default function(params) {
       else if (texelComponent == 3) { lightIndex = int(texel[3]); }
       Light light = UnpackLight(lightIndex);
 
-
-
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
-
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
-
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      
+      float lambertComponent = max(dot(L, normal), 0.0);
+      fragColor += albedo * lambertComponent * light.color * vec3(lightIntensity);
     }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
+
   }
   `;
 }

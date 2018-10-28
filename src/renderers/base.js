@@ -9,32 +9,6 @@ function clamp(num, min, max)
   return Math.min(Math.max(num, min), max);
 }
 
-function getNormalComponents(angle) 
-{
-
-    let bigHypot = Math.sqrt(1 + angle*angle);
-    let normSide1 = 1 / bigHypot;
-    let normSide2 = -angle*normSide1;
-    return vec2.fromValues(normSide1, normSide2);
-}
-
-function findPlanePointDis(planePos, Pt, XY) 
-{
-  let interval = Math.sqrt(planePos*planePos+1);
-  let lightp = vec3.fromValues(Pt[0],Pt[1],Pt[2]);
-  let res = vec3.fromValues(0,0,0);
-  if(XY == 1) {
-      let planenor = vec3.fromValues(1.0/interval,0.0,-planePos/interval);
-      res = vec3.dot(lightp,planenor);
-  }
-  if(XY==2)
-  {
-    let planenor = vec3.fromValues(0.0,1.0/interval,-planePos/interval);
-    res = vec3.dot(lightp,planenor);
-  }
-  return res;
-}
-
 export default class BaseRenderer 
 {
   constructor(xSlices, ySlices, zSlices) {
@@ -60,7 +34,7 @@ export default class BaseRenderer
 
 
 
-    // TODO: Update the cluster texture with the count and indices of the lights in each cluster
+    // NEW: Update the cluster texture with the count and indices of the lights in each cluster
     // This will take some time. The math is nontrivial...
 
     var halfHeight = Math.tan(camera.fov / 2.0 * (Math.PI/180.0));

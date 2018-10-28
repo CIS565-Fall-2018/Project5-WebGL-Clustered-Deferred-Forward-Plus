@@ -80,7 +80,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
-    // TODO: Upload view matrix
+    // NEW: Upload view matrix
     gl.uniformMatrix4fv(this._shaderProgram.u_viewMatrix, false, this._viewMatrix);
 
     // Set the light texture as a uniform input to the shader
@@ -93,7 +93,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
     gl.uniform1i(this._shaderProgram.u_clusterbuffer, 3);
 
-    // TODO: Bind any other shader inputs
+    // NEW: Bind any other shader inputs
     gl.uniform1f(this._shaderProgram.u_screenWidth, canvas.width);
     gl.uniform1f(this._shaderProgram.u_screenHeight, canvas.height);
     gl.uniform1f(this._shaderProgram.u_camera_near, camera.near);
