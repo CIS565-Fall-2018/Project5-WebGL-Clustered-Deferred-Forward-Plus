@@ -80,6 +80,8 @@ clamp(value, lower, upper)
         
         zMin = Math.floor(minValues[2] / this.dZ);
         zMax = Math.floor(maxValues[2] / this.dZ);
+        zMin = this.clamp(zMin, 0, this._zSlices - 1) - 1;
+        zMax = this.clamp(zMax, 0, this._zSlices - 1) + 1;
         
         // Loop through intersecting tiles and update them
         for (let z = zMin; z <= zMax; z++) {
@@ -91,11 +93,13 @@ clamp(value, lower, upper)
             
                     count = count + 1;
             
-                    row = Math.floor(count / 4.0);
-                    offset = count % 4;
+                    if (count <= MAX_LIGHTS_PER_CLUSTER) {
+                        row = Math.floor(count / 4.0);
+                        offset = count % 4;
             
-                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, row) + offset] = i;
-                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)] = count;
+                        this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, row) + offset] = i;
+                        this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)] = count;
+                    }
                 }
             } 
         }

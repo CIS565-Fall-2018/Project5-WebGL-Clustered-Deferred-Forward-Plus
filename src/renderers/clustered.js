@@ -10,7 +10,7 @@ import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 import { MAX_LIGHTS_PER_CLUSTER } from './base';
 
-export const NUM_GBUFFERS = 4;
+export const NUM_GBUFFERS = 2;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices, tanCalculation, camAspect, zStride) {
@@ -34,7 +34,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]',
                     'u_viewProjectionMatrix', 'u_viewMatrix', 'u_colmap', 'u_normap', 
                     'u_lightbuffer', 'u_clusterbuffer', 'u_xSlices', 'u_ySlices', 
-                    'u_xDim', 'u_yDim', 'u_clusterDimX', 'u_clusterDimY', 'u_dZ', 'u_camNear'],
+                    'u_xDim', 'u_yDim', 'u_clusterDimX', 'u_clusterDimY', 'u_dZ', 'u_camNear', 'u_texWidth', 'u_texHeight'],
       attribs: ['a_uv'],
     });
 
@@ -189,6 +189,10 @@ export default class ClusteredRenderer extends BaseRenderer {
     
     gl.uniform1f(this._progShade.u_camNear, camera.near);
     gl.uniform1f(this._progShade.u_dZ, (camera.far - camera.near) / this._zSlices);
+    
+    gl.uniform1i(this._progShade.u_texWidth, this._width);
+    gl.uniform1i(this._progShade.u_texHeight, this._height);
+
 
     // Bind g-buffers
     const firstGBufferBinding = 4; // You may have to change this if you use other texture slots

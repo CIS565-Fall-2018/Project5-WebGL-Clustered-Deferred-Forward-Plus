@@ -5,7 +5,6 @@ export default function(params) {
   
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
   
- #define M_PI 3.141592653
 
   #define M_PI 3.141592653
 
@@ -18,6 +17,9 @@ export default function(params) {
   uniform int u_yDim;
   uniform float u_dZ;
   uniform float u_camNear;
+  uniform int u_texWidth;
+  uniform int u_texHeight;
+
   
   uniform mat4 u_viewMatrix;
   uniform int u_clusterDimX;
@@ -85,12 +87,17 @@ export default function(params) {
     // TODO: extract data from g buffers and do lighting
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
-    vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
-    // vec4 gb3 = texture2D(u_gbuffers[3], v_uv);
+    //vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
     
-    vec3 albedo = gb2.rgb;
-    vec3 normal = gb1.xyz;
+    
+    vec3 albedo = gb1.rgb;
     vec3 v_position = gb0.xyz;
+    //vec3 normal = gb2.xyz;
+    
+    // Optimization. 2-component normal
+    vec3 normal = vec3(gb0.w, gb1.w, 0.0);
+    normal.z = sqrt(1.0 - (normal.x * normal.x) - (normal.y * normal.y));
+    normal = normalize(normal);
 
     // Convert v_position from world to camera space
     vec3 c_position = vec3(u_viewMatrix * vec4(v_position, 1.0));
@@ -109,6 +116,7 @@ export default function(params) {
     
     vec4 data0 = texture2D(u_clusterbuffer, vec2(u, v));
     int num = int(data0[0]);
+    num = int(ExtractFloat(u_clusterbuffer, u_clusterDimX, u_clusterDimY, index, 0));
     
     vec3 fragColor = vec3(0.0);
     
@@ -139,6 +147,7 @@ export default function(params) {
             lightIndex = int(color[3]);
         }
         
+        lightIndex = int(ExtractFloat(u_clusterbuffer, u_clusterDimX, u_clusterDimY, index, i));
         
         Light light = UnpackLight(lightIndex);
         
@@ -147,13 +156,63 @@ export default function(params) {
         float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
         float lambertTerm = max(dot(L, normal), 0.0);
         
+        // Toon shading. Ramp
+        if (lambertTerm < 0.3) {
+            lambertTerm = 0.3;
+        } else if (lambertTerm  < 0.6) {
+            lambertTerm = 0.6;
+        } else {
+            lambertTerm = 1.0;
+        }
+        
         fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
         
     }
     
+    
+    // Toon shading. Edge detection
+    
+    
+    float dX = 1.0 / float(u_texWidth);
+    float dY = 1.0 / float(u_texHeight);
+
+    mat3 sobelHorizontal;
+    sobelHorizontal[0] = vec3(3.0, 0.0, -3.0);
+    sobelHorizontal[1] = vec3(10.0, 0.0, -10.0);
+    sobelHorizontal[2] = vec3(3.0, 0.0, -3.0);
+
+    mat3 sobelVertical;
+    sobelVertical[0] = vec3(3.0, 10.0, 3.0);
+    sobelVertical[1] = vec3(0.0, 0.0, 0.0);
+    sobelVertical[2] = vec3(-3.0, -10.0, -3.0);
+
+    vec3 totalHorizontal = vec3(0, 0, 0);
+    vec3 totalVertical = vec3(0, 0, 0);
+
+    vec3 tempColor;
+    vec2 tempUV;
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            tempUV = clamp(v_uv + vec2(float(i) * dX, float(j) * dY), 0.0, 1.0);
+            tempColor = texture2D(u_gbuffers[1], tempUV).rgb;
+            totalHorizontal += sobelHorizontal[i + 1][j + 1] * tempColor;
+            totalVertical += sobelVertical[i + 1][j + 1] * tempColor;
+        }
+    }
+
+    float gradientR = sqrt(totalHorizontal.r * totalHorizontal.r + totalVertical.r * totalVertical.r);//  distance(totalHorizontal.r, totalVertical.r);
+    float gradientG = sqrt(totalHorizontal.g * totalHorizontal.g + totalVertical.g * totalVertical.g);//  distance(totalHorizontal.g, totalVertical.g);
+    float gradientB = sqrt(totalHorizontal.b * totalHorizontal.b + totalVertical.b * totalVertical.b);//  distance(totalHorizontal.b, totalVertical.b);
+    tempColor = vec3(gradientR, gradientG, gradientB);
+    
+    if ((tempColor.r + tempColor.g + tempColor.b) / 3.0 > 1.0) {
+        //fragColor = vec3(0.0);
+        fragColor *= 0.2;
+    }
+    //fragColor *= tempColor;
+    
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
-    
     gl_FragColor = vec4(fragColor, 1.0);
   }
   `;

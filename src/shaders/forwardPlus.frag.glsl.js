@@ -106,6 +106,8 @@ export default function(params) {
     
     vec4 data0 = texture2D(u_clusterbuffer, vec2(u, v));
     int num = int(data0[0]);
+    
+    num = int(ExtractFloat(u_clusterbuffer, u_clusterDimX, u_clusterDimY, index, 0));
 
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
@@ -140,6 +142,7 @@ export default function(params) {
             lightIndex = int(color[3]);
         }
         
+        lightIndex = int(ExtractFloat(u_clusterbuffer, u_clusterDimX, u_clusterDimY, index, i));
         
         Light light = UnpackLight(lightIndex);
         
