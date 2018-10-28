@@ -3,26 +3,44 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Zach Corse
+  * LinkedIn: https://www.linkedin.com/in/wzcorse/
+  * Personal Website: https://wzcorse.com
+  * Twitter: @ZachCorse
+* Tested on: Windows 10, i7-6700HQ @ 2.60GHz 32GB, NVIDIA GeForce GTX 970M (personal computer)
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[![](img/screenshot.JPG)](https://daedalus5.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
-### Demo Video/GIF
+## README
 
-[![](img/video.png)](TODO)
+![gif](img/test_scene.gif)
 
-### (TODO: Your README)
+Introduction
+------------
+In this project I implement basic Forward+ and Clustered Deferred Shading and compare the performance difference between the two. Forward+ subdivides the camera frustum into equally proportioned clusters in the camera's x- and y- directions. Lights in the scene are binned into these clusters, such that fragments in these clusters are only shaded with the lights that have a chance of affecting their color.
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+Clustered shading further adds proportional slicing along the z-direction. Again, lights in the scene are binned into these (x,y,z) clusters. The clustered shading is deferred, in that it only computes fragment shading after the scene's depth and g-buffers are set.
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+Features
+------------
+1. Forward Shading
+2. Forward+ Shading
+3. Clustered Deferred Shading
+4. Optimized G-Buffers
+   * 1st G-Buffer stores [frag_position, normal.x]
+   * 2nd G-Buffer stores [frag_color, normal.y]
+   * Because the normal vector is normalized, normal.z can be computed in the deferred fragment shader
 
+Performance
+------------
+
+We see in the graph below that clustered deferred shading does offer a consistent and considerable speedup over even forward+ shading, and also that forward+ shading is faster than the naive forward approach. All of the FPS values shown below are reported using the G-Buffer optimization highlighted in the Features section.
+
+![pic1](img/graph_1.png)
+
+Reducing the number of G-buffers required from three to two does offer an observable difference in FPS. For 100 lights, clustered differed shading drops 10 FPS (from 53 to 43). The optmization, in this case, is passing normal.x with the position vector and normal.y with the color vector instead of passing each fragment normal in its own G-buffer.
 
 ### Credits
 

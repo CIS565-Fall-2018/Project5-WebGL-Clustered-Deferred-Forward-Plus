@@ -21,7 +21,7 @@ function setRenderer(renderer) {
       params._renderer = new ForwardRenderer();
       break;
     case FORWARD_PLUS:
-      params._renderer = new ForwardPlusRenderer(15, 15, 15);
+      params._renderer = new ForwardPlusRenderer(15, 15, 1);
       break;
     case CLUSTERED:
       params._renderer = new ClusteredRenderer(15, 15, 15);
