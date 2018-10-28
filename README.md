@@ -17,7 +17,7 @@ Note: Since the submission deadlines of both SIGGRAPH 2019 and CGF are approachi
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[![](img/thumb.png)](http://Grillnov.github.io/Project5B-WebGL-Deferred-Shading)
 
 ### Demo Video/GIF
 
