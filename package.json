@@ -5,6 +5,7 @@
     "build": "webpack --env.production"
   },
   "dependencies": {
+    "webpack-sources": "1.0.1",
     "dat.gui": "^0.7.3",
     "gl-matrix": "^2.4.0",
     "gpu.js": "^1.8.1",
