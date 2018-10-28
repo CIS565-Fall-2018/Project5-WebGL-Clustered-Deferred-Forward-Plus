@@ -5,7 +5,7 @@ import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 export const MAX_LIGHTS_PER_CLUSTER = 100;
 
 export default class BaseRenderer {
-  constructor(xSlices, ySlices, zSlices, tanCalculation, camAspect) {
+  constructor(xSlices, ySlices, zSlices, tanCalculation, camAspect, zStride) {
     // Create a texture to store cluster data. Each cluster stores the number of lights followed by the light indices
     this._clusterTexture = new TextureBuffer(xSlices * ySlices * zSlices, MAX_LIGHTS_PER_CLUSTER + 1);
     this._xSlices = xSlices;
@@ -14,6 +14,7 @@ export default class BaseRenderer {
     
     this.tanCalculation = tanCalculation;
     this.camAspect = camAspect;
+    this.dZ = zStride;
   }
   
 
@@ -42,6 +43,7 @@ clamp(value, lower, upper)
     let dX, dY;
     let xMin, xMax;
     let yMin, yMax;
+    let zMin, zMax;
     let id;
     let count, row, offset;
     for (let i = 0; i < NUM_LIGHTS; i++) {
@@ -53,108 +55,51 @@ clamp(value, lower, upper)
         vec4.transformMat4(c_light, c_light, viewMatrix);
         c_light[2] = -c_light[2];
         
+        // Get the min and max values of the sphere
         minValues = vec3.fromValues(c_light[0] - radius, c_light[1] - radius, c_light[2] - radius);
         maxValues = vec3.fromValues(c_light[0] + radius, c_light[1] + radius, c_light[2] + radius);
         
+        // Calculate the dimensions of the image plane at the light's depth
         frustumHeight = Math.abs(this.tanCalculation * c_light[2] * 2);
         frustumWidth = Math.abs(this.camAspect * frustumHeight);
         
+        // How big a slice is for this image plane
         dX = frustumWidth / this._xSlices;
         dY = frustumHeight / this._ySlices;
         
+        // Calcualte the screen space bounding boxes 
         xMin = Math.floor((minValues[0] + frustumWidth*0.5) / dX) - 1;
         xMax = Math.floor((maxValues[0] + frustumWidth*0.5) / dX) + 1;
         xMin = this.clamp(xMin, 0, this._xSlices - 1);
         xMax = this.clamp(xMax, 0, this._xSlices - 1);
         
-        yMin = Math.floor((minValues[1] + frustumHeight*0.5) / dY);
-        yMax = Math.floor((maxValues[1] + frustumHeight*0.5) / dY);
+        yMin = Math.floor((minValues[1] + frustumHeight*0.5) / dY) - 1;
+        yMax = Math.floor((maxValues[1] + frustumHeight*0.5) / dY) + 1;
         yMin = this.clamp(yMin, 0, this._ySlices - 1);
         yMax = this.clamp(yMax, 0, this._ySlices - 1);
         
-        for (let x = xMin; x <= xMax; x++) {
+        zMin = Math.floor(minValues[2] / this.dZ);
+        zMax = Math.floor(maxValues[2] / this.dZ);
+        
+        // Loop through intersecting tiles and update them
+        for (let z = zMin; z <= zMax; z++) {
             for (let y = yMin; y <= yMax; y++) {
-                id = x + y * this._xSlices;
+                for (let x = xMin; x <= xMax; x++) {
+                    id = x + y * this._xSlices + z * this._xSlices * this._ySlices;
             
-                count = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)];
+                    count = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)];
             
-                count = count + 1;
+                    count = count + 1;
             
-                row = Math.floor(count / 4.0);
-                offset = count % 4;
+                    row = Math.floor(count / 4.0);
+                    offset = count % 4;
             
-                this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, row) + offset] = i;
-                this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)] = count;
-            }
-        } 
+                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, row) + offset] = i;
+                    this._clusterTexture.buffer[this._clusterTexture.bufferIndex(id, 0)] = count;
+                }
+            } 
+        }
     }
-    
-/*
-    
-            for (let l = 0; l < NUM_LIGHTS; ++l) {
-              
-              //let light = scene.lights[l];
-
-              let w_Light = vec4.fromValues(scene.lights[l].position[0], scene.lights[l].position[1], scene.lights[l].position[2], 1.0);
-              let v_Light = vec4.create();
-              vec4.transformMat4(v_Light, w_Light, viewMatrix);
-              v_Light[2] *= -1;
-              
-              let v_Min = vec3.fromValues(v_Light[0] - scene.lights[l].radius, v_Light[1] - scene.lights[l].radius, v_Light[2] - scene.lights[l].radius);
-              let v_Max = vec3.fromValues(v_Light[0] + scene.lights[l].radius, v_Light[1] + scene.lights[l].radius, v_Light[2] + scene.lights[l].radius);
-              
-              
-              // Calculate the width and height of frustum at the light's depth
-              let y_height = Math.abs(v_Light[2] * Math.tan(camera.fov * (Math.PI/180.0) * 0.5) * 2);
-              let x_width = Math.abs(camera.aspect * y_height);
-
-              // How large each frustum slice is
-              let dX = x_width / this._xSlices;
-              let dY = y_height / this._ySlices;
-              
-              // Need to convert coordinates which are [-x_width / 2, x_width / 2] to be [0, x_width]
-              // Then divide by dX to get the slice
-              let x_slice_Min = Math.floor((v_Min[0] + (x_width * 0.5)) / dX) - 1;
-              let x_slice_Max = Math.floor((v_Max[0] + (x_width * 0.5)) / dX) + 1;
-              
-              x_slice_Min = Math.max(0, Math.min(x_slice_Min, this._xSlices - 1));
-              x_slice_Max = Math.max(0, Math.min(x_slice_Max, this._xSlices - 1));
-              
-              
-              for (let x = x_slice_Min; x <= x_slice_Max; x++) {
-                //for (let y = y_slice_Min; y <= y_slice_Max; y++) {
-              
-                    let index = x;// + y * this._xSlices;// + z * this._xSlices * this._ySlices;
-                    
-                    //let numIndex = index * this._clusterTexture._pixelsPerElement * 4;
-                    
-                    let numIndex = this._clusterTexture.bufferIndex(index, 0);
-              
-                    let currNum = this._clusterTexture.buffer[numIndex];//this._clusterTexture.buffer[numIndex];
-                    let nextNum = currNum + 1;
-                    
-                    if (currNum < MAX_LIGHTS_PER_CLUSTER ) {
-                    
-                        let texel = Math.floor(nextNum / 4.0);
-                        let texelIndex = this._clusterTexture.bufferIndex(index, texel);
-                        let texelSubIndex = (nextNum) - (texel*4); //texel%4;
-                        //this._clusterTexture.buffer[texelIndex + texelSubIndex] = l;
-                        //this._clusterTexture.buffer[numIndex + (texel * 4) + texelSubIndex] = l;
-                        this._clusterTexture.buffer[texelIndex + texelSubIndex] = l;
-                    
-                    
-                        //this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, clusterTextureIndex) + clusterTextureIndex_Mod] = l;
-                        this._clusterTexture.buffer[numIndex] = nextNum;
-                    }
-                //}
-              }
-              
-              
-            
-          }
-          
-          */
-
 
     this._clusterTexture.update();
   }
