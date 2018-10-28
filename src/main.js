@@ -9,22 +9,29 @@ const FORWARD_PLUS = 'Forward+';
 const CLUSTERED = 'Clustered';
 
 const params = {
-  renderer: FORWARD_PLUS,
+  renderer: CLUSTERED,
   _renderer: null,
 };
 
 setRenderer(params.renderer);
 
 function setRenderer(renderer) {
-  switch(renderer) {
+    
+    // Optimization. Calculate this once and store it.
+    let tanCalculation = Math.tan(camera.fov * (Math.PI/180.0) * 0.5);
+    
+    let zSlices = 15;
+    let zStride = camera.far - camera.near / zSlices;
+    
+  switch(renderer) {      
     case FORWARD:
       params._renderer = new ForwardRenderer();
       break;
     case FORWARD_PLUS:
-      params._renderer = new ForwardPlusRenderer(15, 15, 15);
+      params._renderer = new ForwardPlusRenderer(15, 15, zSlices, tanCalculation, camera.aspect, zStride);
       break;
     case CLUSTERED:
-      params._renderer = new ClusteredRenderer(15, 15, 15);
+      params._renderer = new ClusteredRenderer(15, 15, zSlices, tanCalculation, camera.aspect, zStride);
       break;
   }
 }
