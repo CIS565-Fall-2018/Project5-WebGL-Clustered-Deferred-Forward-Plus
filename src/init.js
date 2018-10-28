@@ -19,7 +19,7 @@ export const canvas = document.getElementById('canvas');
 
 // Initialize the WebGL context
 const glContext = canvas.getContext('webgl');
-
+  
 // Get a debug context
 export const gl = DEBUG ? WebGLDebug.makeDebugContext(glContext, (err, funcName, args) => {
   abort(WebGLDebug.glEnumToString(err) + ' was caused by call to: ' + funcName);
