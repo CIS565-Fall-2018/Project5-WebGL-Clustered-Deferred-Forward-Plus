@@ -35,15 +35,22 @@ export default class ClusteredRenderer extends BaseRenderer {
       maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER,
     }), {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]',  
-                 'u_screendimension', 'u_cameraclip', 'u_lightbuffer', 'u_clusterbuffer',
-                 'u_viewMatrix', 'u_viewInvMatrix', 'u_viewProjInvMatrix', 'u_isBlinn'],
+                 'u_screenWidth', 'u_screenHeight', 'u_cameraFar', 'u_cameraNear',
+                 'u_lightbuffer', 'u_clusterbuffer',
+                 'u_viewMatrix', 'u_invViewMatrix', 'u_viewProjInvMatrix'],
       attribs: ['a_uv'],
     });
 
+
+    // gl.uniform1f(this._progShade.u_screenWidth, canvas.width);
+    // gl.uniform1f(this._progShade.u_screenHeight, canvas.height);
+    // gl.uniform1f(this._progShade.u_cameraFar, camera.far);
+    // gl.uniform1f(this._progShade.u_cameraNear, camera.near);
     this._projectionMatrix = mat4.create();
     this._viewMatrix = mat4.create();
     this._viewProjectionMatrix = mat4.create();
-
+    this._invViewMatrix = mat4.create();
+    this._viewProjInvMatrix = mat4.create();
     console.log("Clustered rendering, light num = " + NUM_LIGHTS);
   }
 
@@ -165,16 +172,31 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.useProgram(this._progShade.glShaderProgram);
 
     // TODO: Bind any other shader inputs
-    let invViewMat = mat4.create();
-    mat4.invert(invViewMat, this._viewMatrix);
-    let invVPMat = mat4.create();
-    mat4.invert(invVPMat, this._viewProjectionMatrix);
+    // let invViewMat = mat4.create();
+    // mat4.invert(invViewMat, this._viewMatrix);
+    // let invVPMat = mat4.create();
+    // mat4.invert(invVPMat, this._viewProjectionMatrix);
+
+
+    mat4.invert(this._invViewMatrix, this._viewMatrix);
+    mat4.invert(this._viewProjInvMatrix, this._viewProjectionMatrix);
+
     gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
-    gl.uniform2fv(this._progShade.u_screendimension, [canvas.width, canvas.height]);
-    gl.uniform2fv(this._progShade.u_cameraclip, [camera.near, camera.far]);
-    gl.uniformMatrix4fv(this._progShade.u_viewInvMatrix, false, invViewMat);
-    gl.uniformMatrix4fv(this._progShade.u_viewProjInvMatrix, false, invVPMat);
-    gl.uniform1i(this._progShade.u_isBlinn, onBlinn);
+    gl.uniformMatrix4fv(this._progShade.u_invViewMatrix, false, this._invViewMatrix);
+    gl.uniformMatrix4fv(this._progShade.u_viewProjInvMatrix, false, this._viewProjInvMatrix);
+
+    // gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);
+    // gl.uniformMatrix4fv(this._progShade.u_viewInvMatrix, false, invViewMat);
+    // gl.uniformMatrix4fv(this._progShade.u_viewProjInvMatrix, false, invVPMat);
+
+    // gl.uniform2fv(this._progShade.u_screendimension, [canvas.width, canvas.height]);
+    // gl.uniform2fv(this._progShade.u_cameraclip, [camera.near, camera.far]);
+    gl.uniform1f(this._progShade.u_screenWidth, canvas.width);
+    gl.uniform1f(this._progShade.u_screenHeight, canvas.height);
+    gl.uniform1f(this._progShade.u_cameraFar, camera.far);
+    gl.uniform1f(this._progShade.u_cameraNear, camera.near);
+
+    // gl.uniform1i(this._progShade.u_isBlinn, onBlinn);
 
     //console.log(onBlinn);
 
