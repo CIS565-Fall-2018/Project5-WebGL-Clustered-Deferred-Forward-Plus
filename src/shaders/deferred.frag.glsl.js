@@ -73,6 +73,7 @@ export default function(params) {
     // TODO: extract data from g buffers and do lighting
     vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
     vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
+    //vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
 
     vec3 v_position = gb0.rgb;
     vec3 albedo = gb1.rgb;
@@ -80,6 +81,7 @@ export default function(params) {
     normal.z = sqrt(1.0 - (normal.x * normal.x) - (normal.y * normal.y));
     normal = normalize(normal);
     normal = vec3(u_inverseViewMatrix * vec4(normal, 0.0));
+    //vec3 normal = gb2.rgb;
 
     vec4 fragViewPos = u_viewMatrix * vec4(v_position, 1.0);
     fragViewPos.z = -1.0 * fragViewPos.z;

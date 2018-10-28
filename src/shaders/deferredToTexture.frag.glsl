@@ -27,6 +27,6 @@ void main() {
     // TODO: populate your g buffer
     gl_FragData[0] = vec4(v_position, norm.x);
     gl_FragData[1] = vec4(col, norm.y);
-    // gl_FragData[2] = ??
+    //gl_FragData[2] = vec4(norm.x, norm.y, norm.z, 0.0);
     // gl_FragData[3] = ??
 }
