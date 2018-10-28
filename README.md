@@ -3,29 +3,70 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Ziad Ben Hadj-Alouane
+  * [LinkedIn](https://www.linkedin.com/in/ziadbha/), [personal website](https://www.seas.upenn.edu/~ziadb/)
+* Tested on: Google Chrome Version 70.0.3538.77 (WebGL), Windows 10, i7-8750H @ 2.20GHz, 16GB, GTX 1060
 
-### Live Online
+# Video Demo
+  [<img src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/thumb.jpg">](https://www.youtube.com/watch?v=J1Pvi4GN62o)
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+# Deferred Shading Intro
+This project showcases an implementation of Forward shading, with extensions: Forward+ and Clustered/Deferred shading.
+  * For **Forward** shading, we supply the graphics card the geometry data, which is then projected, broken into vertices, and split into fragments. Each fragment then gets the final lighting treatment before they are passed onto the screen.
+  * For **Forward+** shading, we do the same thing except that we break our viewing frustum into pieces, and compute the lights that overlap these pieces. As such, we can determine which section (i.e cluster) a fragment is in, and iterate over a select few number of lights.
+  * For **Clustered** shading (deferred shading), we do the same thing except that the rendering is deferred a little bit until all of the geometries have passed down many stages. The final image is then obtained by doing lighting calculations at the end. This essentially requires more passes on the scene.
+  
+This project is fully implemented with Javascript and WebGL. See a live demo above.
 
-### Demo Video/GIF
+## Implementing the Cluster Datastructure
+To implement clustering, we must be able to break up our viewing frustum into sectors in every dimension (X, Y, and Z). Since the Z dimension is simple (from near clip to far clip), it is simple to test intersections of spheres with it. However, for the X and Y dimensions, our view grows in a cone shape. The image below helps visualize the test we do for each frustum section and each spherical light.
 
-[![](img/video.png)](TODO)
+<p align="center"><img width="700" height="500" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/test.png"/></p>
 
-### (TODO: Your README)
+We essentially represent each section of the frustum by a right triangle with sides 1 and d, d being the distance from 0. We then represent it with a normalized vector (the light blue one). Now if we dot that vector with the position vector of the sphere (the brown one), it will result in measuring the red distance outlined in the image above. We compare that red distance with the radius to get a sense of where the sphere is with respect to our frustum.
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+## Scene
+### Sponza
+<p align="center"><img width="1000" height="500" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/top.gif"/></p>
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+#### Views
+| Depth View | Normals View | Non-Debug View |
+| ------------- | ----------- | ----------- |
+| <p align="center"><img width="200" height="150" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_z.png"/> </p>| <p align="center"><img width="200" height="150" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_norm.jpg/"></p> | <p align="center"><img width="200" height="150" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/debug_none.jpg/"></p> |
+
+#### Blinn-Phong Effect
+<p align="center"><img width="700" height="400" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/blinn.jpg"/></p>
+
+Blinn-Phong is a shading effect achieved by adding a specular component to the albedo color:
+ 
+~~~~
+vec3 halfDirection = lightDirection + viewDirection
+float angle = dot(halfDirection, normal);
+float spec = pow(angle, exponent);
+albedo += spec;
+~~~~
+
+Adding Blinn-Phong virtually has no performance impact. It is an extra 3 instructions per lighting computation.
+
+# Performance
+## Forward vs. Forward+ vs. Clustered/Deferred
+The graph below shows performance differences for the different shading techniques. Overall, the more lights we have, the better Clustering is. However, if we have a low number of lights (say 100), then clustering does more work than needed, hurting performance.
+<p align="center"><img width="700" height="400" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/performance_diff.png"/></p>
+
+This is easily explained by the lost benefit of creating the clustering data-structure in the forward+ cases: the less lights you have, the less iterations you would have done anyways.
+
+## Packing Normals in the Position and Color G-Buffers
+To reduce the amount of G-Buffers we use, I pack the normals' x and y values in the w coordinate of the position and color vectors. I then retrieve the z coordinate since the normal vector is normalized. The sign value is not lost, since I also multiply the Red color channel by -1 if the z coordinate is negative. There are still some artifacts as showcased below:
+
+| With Packing | Without Packing |
+| ------------- | ----------- |
+| <p align="center"><img width="400" height="300" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/packed.png"/> </p>| <p align="center"><img width="400" height="300" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/unpacked.png/"></p> |
+
+As for performance, packing clearly wins because we do less global memory reads (at the expense of slightly more computation)
+<p align="center"><img width="700" height="400" src="https://github.com/ziedbha/Project5-WebGL-Clustered-Deferred-Forward-Plus/blob/master/imgs/performance_packing.png"/></p>
 
 
 ### Credits
-
 * [Three.js](https://github.com/mrdoob/three.js) by [@mrdoob](https://github.com/mrdoob) and contributors
 * [stats.js](https://github.com/mrdoob/stats.js) by [@mrdoob](https://github.com/mrdoob) and contributors
 * [webgl-debug](https://github.com/KhronosGroup/WebGLDeveloperTools) by Khronos Group Inc.

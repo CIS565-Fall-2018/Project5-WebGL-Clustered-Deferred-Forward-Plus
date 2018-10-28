@@ -1,5 +1,5 @@
-export default function(params) {
-  return `
+export default function (params) {
+    return `
   // TODO: This is pretty much just a clone of forward.frag.glsl.js
 
   #version 100
@@ -8,6 +8,16 @@ export default function(params) {
   uniform sampler2D u_colmap;
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
+  
+  // Camera uniforms
+  uniform mat4 u_viewMat;
+  uniform float u_nearClip;
+  uniform float u_farClip;
+  uniform vec3 u_cameraPos;
+  
+  // Screen uniforms
+  uniform float u_width;
+  uniform float u_height;
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
@@ -46,6 +56,11 @@ export default function(params) {
       return texel[3];
     }
   }
+  
+  // Unpack number of lights for a specific cluster
+  int UnpackNbLights(int clusterIdx, float u) {
+    return int(texture2D(u_clusterbuffer, vec2(u, 0.0)).x);
+  }
 
   Light UnpackLight(int index) {
     Light light;
@@ -80,21 +95,53 @@ export default function(params) {
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
+    
+    // Cluster identification
+    vec4 camSpacePos = u_viewMat * vec4(v_position, 1.0);
+    int clusterX = int(gl_FragCoord.x / u_width * float(${params.xSlices}));
+    int clusterY = int(gl_FragCoord.y / u_height * float(${params.ySlices}));
+    int clusterZ = int((-camSpacePos.z - u_nearClip) / (u_farClip - u_nearClip) * float(${params.zSlices}));
+    ivec3 cluster = ivec3(clusterX, clusterY, clusterZ);
+    
+    // Get indexing info
+    int clusterIdx = cluster.x + cluster.y * ${params.xSlices} + cluster.z * ${params.xSlices} * ${params.ySlices};
+    int clusterTexWidth = ${params.xSlices} * ${params.ySlices} * ${params.zSlices};
+    int clusterTexHeight = int(float(${params.maxLights} + 1) / 4.0) + 1;
+    
+    // Get # Lights for this texture
+    int nbLights = int(ExtractFloat(u_clusterbuffer, clusterTexWidth, clusterTexHeight,  clusterIdx, 0)); 
+       
+    // Iterate over all lights because of loop unrolling
+    for (int i = 0; i < ${params.numLights}; i++) {
+        if (i >= nbLights) {
+           break;
+        }
+   
+        // get the wanted light idx by extracting from texture 
+        int lightIdx = int(ExtractFloat(u_clusterbuffer, clusterTexWidth, clusterTexHeight,  clusterIdx, i + 1));
+             
+        // Shade the object with the light
+        Light light = UnpackLight(lightIdx);
+        float lightDistance = distance(light.position, v_position);
+        vec3 L = (light.position - v_position) / lightDistance;
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
-      float lightDistance = distance(light.position, v_position);
-      vec3 L = (light.position - v_position) / lightDistance;
-
-      float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
-
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+        float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
+        float lambertTerm = max(dot(L, normal), 0.0);
+        
+        vec3 viewDir = normalize(u_cameraPos - v_position);
+        vec3 halfDir = normalize(L + viewDir);
+        float angle = max(dot(halfDir, normal), 0.0);
+        float specExp = 500.0;
+        float spec = pow(angle, specExp);
+        albedo += spec;
+        
+        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
+    float depth = (gl_FragCoord.z - 0.9) * 5.0;
     gl_FragColor = vec4(fragColor, 1.0);
   }
   `;
