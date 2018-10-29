@@ -10,19 +10,36 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-[![](img2/lambert_100.gif)](https://460xlin.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
+[![](img2/main.jpg)](https://460xlin.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
 
 ### Demo Video/GIF
 
-[![](img/video.png)](TODO)
+![](img2/lambert_100.gif)
 
-### (TODO: Your README)
+### Cel Shading
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+![](img2/cel_100.gif)
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+### Blinn-phong
+
+![](img2/blinn-phong_100.jpg)
+
+### Features
+
+- Cluster update
+  - Devide the whole frustum into **_xSclices * _ySlices * _zSlices** clusters and assign lights into overlapping clusters
+- Foward+
+  - Build a data structure (texture buffer) to keep track of how many lights are in each cluster with their indices
+  - Render the scene using only the lights that overlap a given cluster
+- Clustered
+  - Reuse clustering logic
+  - Store vertex attributes in g-buffer
+  - Read g-buffer and render scene to produce final output
+- Effect
+  - Blinn-Phong shading
+  - Cel shading
+- Optimization
+  - Pack values into vec4, reduce number of g-buffers from 4 to 3, reconstructing world position using camera matrice and (gl.FragCoord.x, gl.FragCoord.y, depth)
 
 
 ### Credits
