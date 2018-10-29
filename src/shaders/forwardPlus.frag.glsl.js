@@ -5,6 +5,10 @@ export default function(params) {
   #version 100
   precision highp float;
 
+  #define CLUSTER_X ${params.clusterX}
+  #define CLUSTER_Y ${params.clusterY}
+  #define CLUSTER_Z ${params.clusterZ}
+
   uniform sampler2D u_colmap;
   uniform sampler2D u_normap;
   uniform sampler2D u_lightbuffer;
@@ -12,10 +16,19 @@ export default function(params) {
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
+  uniform float nearClipPlane;
+  uniform float farClipPlane;
+  uniform float camX;
+  uniform float camY;
+  uniform float camZ;
+  
+  uniform mat4 u_viewMatrix;//me
+  uniform mat4 u_viewProjectionMatrix;//me
+
   varying vec3 v_position;
   varying vec3 v_normal;
   varying vec2 v_uv;
-
+  
   vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
     vec3 up = normalize(vec3(0.001, 1, 0.001));
@@ -73,6 +86,23 @@ export default function(params) {
       return 0.0;
     }
   }
+  
+  int UnpackCluster(int x, int y, int z, int index) {
+    int indexOver4 = index / 4;
+    float u = (float(x + y * CLUSTER_X + z * CLUSTER_X * CLUSTER_Y) + 0.3) / float(CLUSTER_X*CLUSTER_Y*CLUSTER_Z);//0.3 is the offset, 15 is the frustum count in each axis
+    float v = (float(indexOver4) + 0.3) / ceil(float(${params.numLights} + 1) / 4.0);//0.3 is the offset, 101 is the MAX_LIGHTS_PER_CLUSTER + 1
+    vec4 texel = texture2D(u_clusterbuffer, vec2(u, v));
+    int pixelComponent = index - indexOver4 * 4;
+    if (pixelComponent == 0) {
+      return int(texel[0]);
+    } else if (pixelComponent == 1) {
+      return int(texel[1]);
+    } else if (pixelComponent == 2) {
+      return int(texel[2]);
+    } else if (pixelComponent == 3) {
+      return int(texel[3]);
+    }
+  }
 
   void main() {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
@@ -81,21 +111,37 @@ export default function(params) {
 
     vec3 fragColor = vec3(0.0);
 
+    vec4 ndc_position = u_viewProjectionMatrix * vec4(v_position, 1.0);
+    ndc_position /= ndc_position.w;
+    vec3 CAMERA_position = (u_viewMatrix * vec4(v_position, 1.0)).xyz;
+
+    int x = int(clamp((ndc_position.x * 0.5 + 0.5) * float(CLUSTER_X), 0.0, float(CLUSTER_X)));//from [-1,1] to [0, 15] to [0,15)
+    int y = int(clamp((ndc_position.y * 0.5 + 0.5) * float(CLUSTER_Y), 0.0, float(CLUSTER_Y)));//from [-1,1] to [0, 15] to [0,15)
+    int z = int(clamp((- CAMERA_position.z - nearClipPlane) / (farClipPlane - nearClipPlane) * float(CLUSTER_Z), 0.0, float(CLUSTER_Z)));//from [-1,1] to [0, 15] to [0,15)
+    int lightCount = UnpackCluster(x, y, z, 0);
+    
     for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+      if(i >= lightCount)
+        break;
+
+      Light light = UnpackLight(UnpackCluster(x, y, z, i + 1));
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
+      //float lambertTerm = max(dot(L, normal), 0.0);
+      vec3 camera = vec3(camX, camY, camZ);//vec3(-u_viewMatrix[3][0], -u_viewMatrix[3][1], -u_viewMatrix[3][2]);
+      vec3 Eye = normalize(camera - v_position);
+      vec3 H = normalize((L + Eye)/2.0);
+      float blinnPhongTerm = pow(abs(dot(H, normal)), 5.0);
 
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      fragColor += albedo * blinnPhongTerm * light.color * vec3(lightIntensity);//albedo * lambertTerm * light.color * vec3(lightIntensity);
     }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
-    gl_FragColor = vec4(fragColor, 1.0);
+    gl_FragColor = vec4(fragColor, 1.0);// + lightCountCol;
   }
   `;
 }

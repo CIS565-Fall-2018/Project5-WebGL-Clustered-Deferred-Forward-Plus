@@ -33,14 +33,14 @@ export default class ForwardRenderer {
 
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0] = scene.lights[i].position[0];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 1] = scene.lights[i].position[1];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 2] = scene.lights[i].position[2];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 3] = scene.lights[i].radius;
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0)] = scene.lights[i].position[0];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1)] = scene.lights[i].position[1];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 2)] = scene.lights[i].position[2];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 3)] = scene.lights[i].radius;
 
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 0] = scene.lights[i].color[0];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 1] = scene.lights[i].color[1];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 2] = scene.lights[i].color[2];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 4)] = scene.lights[i].color[0];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 5)] = scene.lights[i].color[1];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 6)] = scene.lights[i].color[2];
     }
     // Update the light texture
     this._lightTexture.update();

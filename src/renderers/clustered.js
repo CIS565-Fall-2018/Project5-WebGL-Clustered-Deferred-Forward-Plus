@@ -12,8 +12,8 @@ import BaseRenderer from './base';
 export const NUM_GBUFFERS = 4;
 
 export default class ClusteredRenderer extends BaseRenderer {
-  constructor(xSlices, ySlices, zSlices) {
-    super(xSlices, ySlices, zSlices);
+  constructor(xSlices, ySlices, zSlices, camera) {
+    super(xSlices, ySlices, zSlices, camera);
     
     this.setupDrawBuffers(canvas.width, canvas.height);
     
@@ -21,16 +21,19 @@ export default class ClusteredRenderer extends BaseRenderer {
     this._lightTexture = new TextureBuffer(NUM_LIGHTS, 8);
     
     this._progCopy = loadShaderProgram(toTextureVert, toTextureFrag, {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap'],
+      uniforms: ['u_viewProjectionMatrix', 'u_viewMatrix', 'u_colmap', 'u_normap'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
     this._progShade = loadShaderProgram(QuadVertSource, fsSource({
       numLights: NUM_LIGHTS,
       numGBuffers: NUM_GBUFFERS,
+      clusterX: xSlices,
+      clusterY: ySlices,
+      clusterZ: zSlices
     }), {
-      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]'],
-      attribs: ['a_uv'],
+      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]', 'u_lightbuffer', 'u_clusterbuffer', 'u_viewProjectionMatrix', 'u_viewMatrix', 'u_viewMatrixInv', 'nearClipPlane', 'farClipPlane', 'camX', 'camY', 'camZ'],
+      attribs: ['a_position'],
     });
 
     this._projectionMatrix = mat4.create();
@@ -123,20 +126,22 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // Upload the camera matrix
     gl.uniformMatrix4fv(this._progCopy.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
+    gl.uniformMatrix4fv(this._progCopy.u_viewMatrix, false, this._viewMatrix);//me
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
     
     // Update the buffer used to populate the texture packed with light data
+      // I changed the index conversion scheme so that no addition needed
     for (let i = 0; i < NUM_LIGHTS; ++i) {
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0] = scene.lights[i].position[0];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 1] = scene.lights[i].position[1];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 2] = scene.lights[i].position[2];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 3] = scene.lights[i].radius;
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0)] = scene.lights[i].position[0];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1)] = scene.lights[i].position[1];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 2)] = scene.lights[i].position[2];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 3)] = scene.lights[i].radius;
 
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 0] = scene.lights[i].color[0];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 1] = scene.lights[i].color[1];
-      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 1) + 2] = scene.lights[i].color[2];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 4)] = scene.lights[i].color[0];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 5)] = scene.lights[i].color[1];
+      this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 6)] = scene.lights[i].color[2];
     }
     // Update the light texture
     this._lightTexture.update();
@@ -154,9 +159,30 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.useProgram(this._progShade.glShaderProgram);
 
     // TODO: Bind any other shader inputs
+      //me
+      gl.uniform1f(this._progShade.nearClipPlane, camera.near);
+      gl.uniform1f(this._progShade.farClipPlane, camera.far);
+      gl.uniform1f(this._progShade.camX, camera.position.x);
+      gl.uniform1f(this._progShade.camY, camera.position.y);
+      gl.uniform1f(this._progShade.camZ, camera.position.z);
+
+      // Upload the camera matrix
+      gl.uniformMatrix4fv(this._progShade.u_viewProjectionMatrix, false, this._viewProjectionMatrix);//me
+      gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);//me
+      gl.uniformMatrix4fv(this._progShade.u_viewMatrixInv, false, mat4.invert(mat4.create(), this._viewMatrix));//me
+
+      // Set the light texture as a uniform input to the shader
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
+      gl.uniform1i(this._progShade.u_lightbuffer, 2);
+
+      // Set the cluster texture as a uniform input to the shader
+      gl.activeTexture(gl.TEXTURE3);
+      gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
+      gl.uniform1i(this._progShade.u_clusterbuffer, 3);
 
     // Bind g-buffers
-    const firstGBufferBinding = 0; // You may have to change this if you use other texture slots
+    const firstGBufferBinding = 4; // You may have to change this if you use other texture slots
     for (let i = 0; i < NUM_GBUFFERS; i++) {
       gl.activeTexture(gl[`TEXTURE${i + firstGBufferBinding}`]);
       gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
