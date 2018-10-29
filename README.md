@@ -1,6 +1,8 @@
 WebGL Clustered and Forward+ Shading
 ======================
 
+[LIVE DEMO](https://salaark.github.io/WebGL-Clustered-Deferred-Forward-Plus/)
+
 * Salaar Kohari
 * LinkedIn ([https://www.linkedin.com/in/salaarkohari](https://www.linkedin.com/in/salaarkohari))
 * Website ([http://salaar.kohari.com](http://salaar.kohari.com))

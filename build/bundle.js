@@ -54793,7 +54793,7 @@ var FORWARD_PLUS = 'Forward+';
 var CLUSTERED = 'Clustered';
 
 var params = {
-  renderer: FORWARD_PLUS,
+  renderer: FORWARD,
   _renderer: null
 };
 
