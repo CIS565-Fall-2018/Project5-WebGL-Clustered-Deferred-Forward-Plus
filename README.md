@@ -58,6 +58,10 @@ World Position
 * Forward+
 ![](img2/forward_plus.jpg)
 
+##### Performance comparison of Forward, Foward+ and Clustered methods
+![](img2/com.jpg)
+
+From the comparison of different rendering methods' performances, we can find that as the number of lights increases, the performance of Forward rendering dramatically drops. Also, the performance of Forward rendering is worse than Forward Plus and Clustered Deferred rendering. Also, Forward Plus Rendering is better than Clustered Rendering. 
 ### Credits
 
 * [Three.js](https://github.com/mrdoob/three.js) by [@mrdoob](https://github.com/mrdoob) and contributors
