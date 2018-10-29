@@ -49,6 +49,15 @@ Albedo | Normal
 World Position
 ![](img2/pos.jpg)
 
+* Clusterd
+![](img2/clu.jpg)
+
+* Forward
+![](img2/forward.jpg)
+
+* Forward+
+![](img2/forward_plus.jpg)
+
 ### Credits
 
 * [Three.js](https://github.com/mrdoob/three.js) by [@mrdoob](https://github.com/mrdoob) and contributors
