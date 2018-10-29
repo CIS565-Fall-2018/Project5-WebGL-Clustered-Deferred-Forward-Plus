@@ -33,17 +33,6 @@ module.exports = function(env) {
         },
       ],
     },
-    plugins: [
-      isProduction ? new MinifyPlugin({
-        keepFnName: true,
-        keepClassName: true,
-      }) : undefined,
-      new webpack.DefinePlugin({
-        'process.env': {
-          'NODE_ENV':  (isProduction ? JSON.stringify('production'): JSON.stringify('development')),
-        }
-      }),
-    ].filter(p => p),
     devtool: 'source-map',
     devServer: {
       port: 5650,
