@@ -22,7 +22,7 @@ Forward+ rendering scene with 100 dynamic lights. On a desktop computer, this sc
 
 ![](img/lightgraph.png)
 
-This graph describes how performance is impacted by increasing numbers of lights. A major optimization food clustering was to only iterate over relevant clusters when adding lights to the scene. Additional performance, particularly at larger numbers of lights, could be obtained using a hierarchical data structure to store cluster light information.
+This graph describes how performance is impacted by increasing numbers of lights. A major optimization for clustering was to only iterate over relevant clusters when adding lights to the scene. Additional performance, particularly at larger numbers of lights, could be obtained using a hierarchical data structure to store cluster light information. For now, higher light counts (over 5000) start to increase frame time exponentially.
 
 ![](img/depth.png)
 
