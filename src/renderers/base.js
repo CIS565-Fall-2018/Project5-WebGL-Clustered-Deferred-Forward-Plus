@@ -3,7 +3,7 @@ import {NUM_LIGHTS} from '../scene'
 import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 
 
-export const MAX_LIGHTS_PER_CLUSTER = 500;
+export const MAX_LIGHTS_PER_CLUSTER = 5000;
 
 
 function getDistance(ratio, lightPos)

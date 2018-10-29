@@ -117,21 +117,21 @@ export default function(params) {
       vec3 L = (light.position - v_position) / lightDistance;
       float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
       float lambertTerm = max(dot(L, normal), 0.0);
-      // fragColor += albedo * lambertTerm  * light.color * vec3(lightIntensity);
+      fragColor += albedo * lambertTerm  * light.color * vec3(lightIntensity);
 
       // ============================ blinn-phong ============================ 
-      vec3 specColor = vec3(1.0);
-      vec3 V = -normalize(vec3(viewPos));
-      vec3 H = normalize(L + V);
-      float dotNL = max(dot(normal, L), 0.0);
-      float specularTerm = pow(max(dot(H, normal), 0.0), 1.0);
-      fragColor += (albedo * lambertTerm + dotNL * specColor * specularTerm) * light.color * vec3(lightIntensity);
+      // vec3 specColor = vec3(1.0);
+      // vec3 V = -normalize(vec3(viewPos));
+      // vec3 H = normalize(L + V);
+      // float dotNL = max(dot(normal, L), 0.0);
+      // float specularTerm = pow(max(dot(H, normal), 0.0), 1.0);
+      // fragColor += (albedo * lambertTerm + dotNL * specColor * specularTerm) * light.color * vec3(lightIntensity);
 
 
       // ============================ cel shading ============================ 
-      float numShades = 2.0;
-      float celIntensity = ceil(lambertTerm * numShades) / numShades;
-      lambertTerm *= celIntensity;
+      // float numShades = 2.0;
+      // float celIntensity = ceil(lambertTerm * numShades) / numShades;
+      // lambertTerm *= celIntensity;
       // fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
 
     }
@@ -143,9 +143,9 @@ export default function(params) {
     // gl_FragColor = vec4(u_screenWidth, u_screenWidth, u_screenWidth, 1.0);
     // gl_FragColor = viewPos;
     // gl_FragColor = vec4(v_uv, 0.0,  1.0);
-    // gl_FragColor = vec4(fragColor, 1.0);
+    gl_FragColor = vec4(fragColor, 1.0);
     // gl_FragColor = vec4(vec3(v_position.z / (u_cameraFar - u_cameraNear)), 1.0);
-    gl_FragColor = vec4(abs(vec3(v_position.z)) / 10.0, 1.0);
+    // gl_FragColor = vec4(abs(vec3(v_position.z)) / 10.0, 1.0);
 
 
   }
