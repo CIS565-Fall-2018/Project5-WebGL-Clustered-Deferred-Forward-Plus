@@ -41,6 +41,13 @@ WebGL Clustered and Forward+ Shading
 - Optimization
   - Pack values into vec4, reduce number of g-buffers from 4 to 3, reconstructing world position using camera matrice and (gl.FragCoord.x, gl.FragCoord.y, depth)
 
+### Analysis
+
+Albedo | Normal
+:--:|:--:
+![](img2/albedo.jpg) | ![](img2/normal.jpg)
+World Position
+![](img2/pos.jpg)
 
 ### Credits
 
