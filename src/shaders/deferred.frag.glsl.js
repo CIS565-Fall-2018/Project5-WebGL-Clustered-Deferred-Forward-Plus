@@ -143,7 +143,11 @@ export default function(params) {
     // gl_FragColor = vec4(u_screenWidth, u_screenWidth, u_screenWidth, 1.0);
     // gl_FragColor = viewPos;
     // gl_FragColor = vec4(v_uv, 0.0,  1.0);
-    gl_FragColor = vec4(fragColor, 1.0);
+    // gl_FragColor = vec4(fragColor, 1.0);
+    // gl_FragColor = vec4(vec3(v_position.z / (u_cameraFar - u_cameraNear)), 1.0);
+    gl_FragColor = vec4(abs(vec3(v_position.z)) / 10.0, 1.0);
+
+
   }
   `;
 }
