@@ -18,7 +18,7 @@ In Forward+ rendering, the screen is divided into frustum clusters consisting of
 
 ![](img/forwardplus.gif)
 
-Forward+ rendering scene with 100 dynamic lights. On a desktop computer, this scene takes less than 3ms per frame to render.
+Forward+ rendering scene with 100 dynamic lights. On a desktop computer, this scene takes 2ms per frame to render.
 
 ![](img/lightgraph.png)
 
