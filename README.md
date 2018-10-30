@@ -3,25 +3,17 @@ WebGL Clustered and Forward+ Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Zichuan Yu
+  * [LinkedIn](https://www.linkedin.com/in/zichuan-yu/), [Behance](https://www.behance.net/zainyu717ebcc)
+* Tested on: **Google Chrome 70.0.3538.77 (Official Build) (64-bit)** MacBook Pro (Retina, 15-inch, Mid 2015), 2.5 GHz Intel Core i7 16 GB 1600 MHz DDR3, AMD Radeon R9 M370X 2048 MB / Intel Iris Pro 1536 MB
 
-### Live Online
+### Demo GIF
 
-[![](img/thumb.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+![video](img/video.gif)
 
-### Demo Video/GIF
+### Performance Analysis
 
-[![](img/video.png)](TODO)
-
-### (TODO: Your README)
-
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
-
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
+![chart](img/chart.png)
 
 
 ### Credits

@@ -25,9 +25,11 @@ struct Light {
 
 float ExtractFloat(sampler2D texture, int textureWidth, int textureHeight, int index, int component) {
   float u = float(index + 1) / float(textureWidth + 1);
+  // vertical offset
   int pixel = component / 4;
   float v = float(pixel + 1) / float(textureHeight + 1);
   vec4 texel = texture2D(texture, vec2(u, v));
+  // pixel is the truncation result, the following code caluculate what reamains
   int pixelComponent = component - pixel * 4;
   if (pixelComponent == 0) {
     return texel[0];
@@ -42,14 +44,16 @@ float ExtractFloat(sampler2D texture, int textureWidth, int textureHeight, int i
 
 Light UnpackLight(int index) {
   Light light;
+  // + 1 to make it a little bigger than the floor edge of each pixel
   float u = float(index + 1) / float(${params.numLights + 1});
   vec4 v1 = texture2D(u_lightbuffer, vec2(u, 0.0));
   vec4 v2 = texture2D(u_lightbuffer, vec2(u, 0.5));
   light.position = v1.xyz;
 
-  // LOOK: This extracts the 4th float (radius) of the (index)th light in the buffer
+  // LOOK: This extracts the 4th (component 3) float (radius) of the (index)th light in the buffer
   // Note that this is just an example implementation to extract one float.
   // There are more efficient ways if you need adjacent values
+  // float ExtractFloat(sampler2D texture, int textureWidth, int textureHeight, int index, int component)
   light.radius = ExtractFloat(u_lightbuffer, ${params.numLights}, 2, index, 3);
 
   light.color = v2.rgb;

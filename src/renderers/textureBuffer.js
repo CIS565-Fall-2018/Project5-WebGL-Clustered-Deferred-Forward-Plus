@@ -7,9 +7,12 @@ export default class TextureBuffer {
    * @param {Number} elementSize The number of values in each item of the buffer
    */
 
+  // there are elementCount elements in total
+  // each of them has elementSize values
   constructor(elementCount, elementSize) {
     // Initialize the texture. We use gl.NEAREST for texture filtering because we don't want to blend between values in the buffer. We want the exact value
     this._glTexture = gl.createTexture();
+    // state machine, set the texture's attributes
     gl.bindTexture(gl.TEXTURE_2D, this._glTexture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -19,6 +22,7 @@ export default class TextureBuffer {
     // The texture stores 4 values in each "pixel". Thus, the texture we create is elementCount x ceil(elementSize / 4)
     this._pixelsPerElement = Math.ceil(elementSize / 4);
     this._elementCount = elementCount;
+    // void gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView? pixels);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, elementCount, this._pixelsPerElement, 0, gl.RGBA, gl.FLOAT, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
@@ -37,7 +41,8 @@ export default class TextureBuffer {
   /**
    * Computes the starting buffer index to a particular item.
    * @param {*} index The index of the item
-   * @param {*} component The ith float of an element is located in the (i/4)th pixel
+   * @param {*} component Which pixel The ith float of an element is located in the (i/4)th pixel
+   * @IMPT: elements are arranged in colomun, not row!!!
    */
   bufferIndex(index, component) {
     return 4 * index + 4 * component * this._elementCount;
@@ -48,6 +53,7 @@ export default class TextureBuffer {
    */
   update() {
     gl.bindTexture(gl.TEXTURE_2D, this._glTexture);
+    // void gl.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, ArrayBufferView? pixels);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this._elementCount, this._pixelsPerElement, gl.RGBA, gl.FLOAT, this._buffer);
     gl.bindTexture(gl.TEXTURE_2D, null);
   }
