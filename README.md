@@ -7,7 +7,7 @@ WebGL Clustered and Forward+ Shading
 * Tested on: **Google Chrome 69.0.3497.100 (Official Build) (64-bit)** on
   Windows 10, i7-6700HQ @ 2.60GHz 16GB, GTX 1070 8GB (Personal Laptop)
 
-## [Live Online](https://lanlou123.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus/)
+## [Live Online](https://lanlou123.github.io/WebGL-Clustered-Deferred-Forward-Plus-Rendering/)
 
 （**NOTE :** need to change "devtool: 'source-map'" into "  devtool: 'cheap-source-map'" inside webpack.config.js to get npm run build working!!! ）
 
