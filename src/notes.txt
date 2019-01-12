@@ -1,0 +1,75 @@
+TODOs in the whole project
+
+init.js
+1 // TODO: Change this to enable / disable debug mode
+
+main.js
+21/24/27 Sets the xyz bound of the frustum
+
+scene.js
+4 // TODO: Edit if you want to change the light initial positions 
+10 // TODO: This controls the number of lights
+160 // OPTIONAL TODO: Edit if you want to change how lights move
+
+167 draw takes in a shaderProgram (which I assume is like forward+ forward, etc) and from the 
+shaderProgram we get a_position a_normal and a_size which I'm not quite sure about. I assume its like 
+taking the model.posInfo and making a_position point to that. That sounds about right. 
+
+Lecture Notes
+
+So Forward rendering is instead of per light iterating through all the objects in one shader at the 
+end of the rendering pipeline (causing unnecessarily large fragment shader time) we do: 
+
+per visible object iterating through all lights that affect it and literally send just that 
+scene through the whole rendering pipeline multiple times. 
+
+Problem is, must have a different shader for each material, 
+and inside of each shader it must have math for all types of light. This creates a 
+large amount of large shaders that we constantly have to switch in and out
+
+Forward saves time on the naive way because we have more objects than lights generally and so 
+we can have more parallelism. Also we are spending more time computing (?)
+
+Do each light's effect on the whole scene in separate shaders and then accumulate them so that
+you can compute all of the lights in parallel.
+
+you can also do that per light per object to add to the parallelism, (multi-pass) but that means
+that occluded objects are still being shaded unnecessarily. It also means that we need a separate 
+shader for each material-light type (which I mean you would need anyway, it would just be in a 
+big shader rather than a bunch of tiny ones, but I guess that is a bit less unweildly). 
+
+It seems to me that multi pass is a no brainer for the faster way. But it seems like multi pass 
+might be slower for when there are many many lights and very few objects. Actually in single pass 
+you calculate which lights affect the object. So that would definitely be faster for a super large 
+scene with a lot of dark areas.
+
+HOW DO WE PREVENT HAVING TO WRITE 50 BILLION SHADERS:
+Simple, you write one shader for each light and one for each material and do deferred rendering.
+
+With deferred you start by running all of the visible objects through the pipeline and instead of 
+rendering the color into a frame buffer you put the object's properties into a g-buffer.
+
+These properties are like (movement, color, depth, normals, etc.)
+
+Then you run all of the lights through the pipeline and compute their effect using the g-buffer and
+accumulate that final color in the framebuffer
+
+This is good, we now have less shaders and we don't transform objects multiple times, but we do read from
+this damn g-buffer a lot now don't we. Also we recalculate the lighting equation many times. 
+
+We also can't do translucency (since we only have the fragment closest to us).
+
+What is forward+ ?
+
+Forward+ is basically the answer to deferred rendering. Forward's big comeback move. 
+
+In total we make only three runs of the pipeline. The first is a depth calculation (we don't need 
+all that other g-buffer stuff) -- this is useful for light culling. We then pass light culling through
+a compute shader (which iirc doesn't do the rasterization stuff and instead just goes), which 
+gets us a list of per tile light info and then writes to the output this list (not a whole lot of memory).
+Then all we do is make a draw call for each material in the scene (metal etc.) and only accumulate
+the lights that are in the tiles. Note that we only have to calculate the effect of a light on the 
+tiles it is in (which we've calculated and doesn't take up memory). 
+
+OKAY now that that's out of the way time to figure out how to assign how many lights are in a cluster 
+and what their indices are.
