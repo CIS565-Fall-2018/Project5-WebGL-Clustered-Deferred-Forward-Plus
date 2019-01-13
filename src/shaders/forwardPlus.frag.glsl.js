@@ -94,6 +94,7 @@ export default function(params) {
 
     // okay so here we gotta transform the position to screen space
     vec4 screenSpacePos = u_viewProjectionMatrix * vec4(v_position, 1.0);
+    float oldZ = screenSpacePos.z / (u_far - u_near);
     screenSpacePos = screenSpacePos / screenSpacePos.w;
 
     // then figure out which cluster we're inside?
@@ -105,28 +106,35 @@ export default function(params) {
     // now to get my cluster index 
     int cx = int((((screenSpacePos.x + 1.0) / 2.0) * u_screenWidth) / clusterWidthX);
     int cy = int((((screenSpacePos.y + 1.0) / 2.0) * u_screenHeight) / clusterHeightY);
-    int cz = int((((screenSpacePos.z + 2.0) / 2.0) * (u_far - u_near)) / clusterDepthZ);
+    int cz = int(oldZ * u_zSlices);
+    //int cz = int((((oldZ + 1.0) / 2.0) * (u_far - u_near)) / clusterDepthZ);
     int clusterIndex = cx + cy * int(u_xSlices) + cz * int(u_xSlices) * int(u_ySlices);
 
     // get the number of lights in the cluster
-    int numLights = int(ExtractFloat(u_clusterbuffer, int(u_xSlices * u_ySlices * u_zSlices), int(101), clusterIndex, 0));
+    float numLights = ExtractFloat(u_clusterbuffer, int(u_xSlices * u_ySlices * u_zSlices), int(26), clusterIndex, 0);
 
-    for (int i = 0; i < 101; ++i) {
-      if (i < numLights) {
-      Light light = UnpackLight(int(ExtractFloat(u_clusterbuffer, int(u_xSlices * u_ySlices * u_zSlices), int(101), clusterIndex, i+1)));
-      float lightDistance = distance(light.position, v_position);
-      vec3 L = (light.position - v_position) / lightDistance;
+    for (int i = 0; i < 100; ++i) {
+      int lightIndex = int(ExtractFloat(u_clusterbuffer, int(u_xSlices * u_ySlices * u_zSlices), int(26), clusterIndex, i+1));
+      if (lightIndex != 0) {
+        Light light = UnpackLight(lightIndex);
+        float lightDistance = distance(light.position, v_position);
+        vec3 L = (light.position - v_position) / lightDistance;
 
-      float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
+        float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
+        float lambertTerm = max(dot(L, normal), 0.0);
 
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
-    }}
+        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+        //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      }
+    }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
-    gl_FragColor = vec4(float(clusterIndex) / (u_xSlices * u_ySlices * u_zSlices), 0.0, 0.0, 1.0);
+
+       gl_FragColor = vec4(fragColor, 1.0);
+       //gl_FragColor = vec4(0.0, 0.0, float(cz) / u_zSlices, 1.0);
+    
   }
   `;
 }

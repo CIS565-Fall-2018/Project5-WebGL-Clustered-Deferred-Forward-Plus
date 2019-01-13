@@ -44,6 +44,8 @@ export default class BaseRenderer {
 
           // now we loop through each light and see if it's within the cluster (using the view matrix)
           for (let j = 0; j < scene.lights.length; ++j) {
+
+            // get the light's position in camera space by *manually* multiplying the view matrix *sigh*
             let posCamX = viewMatrix[0] * scene.lights[j].position[0] +
                           viewMatrix[4] * scene.lights[j].position[1] +
                           viewMatrix[8] * scene.lights[j].position[2] +
@@ -57,14 +59,15 @@ export default class BaseRenderer {
                           viewMatrix[10] * scene.lights[j].position[2] +
                           viewMatrix[14] * 1;
 
-            // TODO: Improve this intersection testing
 
+            // TODO: Improve this intersection testing (atm doing simple distance from bottom left corner)
             let distance = Math.sqrt(Math.pow(camX - posCamX, 2) + Math.pow(camY - posCamY, 2) + Math.pow(camZ - posCamZ, 2));
 
-            if (distance < scene.lights[j].radius)
+            // If the sphere intersects the cluster 
+            if (distance < (scene.lights[j].radius * 5))
             {
               numLightsInCluster += 1;
-              this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, numLightsInCluster)] = j;
+              this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, Math.floor(numLightsInCluster/4)) + (numLightsInCluster % 4)] = j;
             }
           }
           
@@ -73,7 +76,7 @@ export default class BaseRenderer {
         }
       }
     }
-
+    //console.log(this._clusterTexture.buffer);
     this._clusterTexture.update();
   }
 }

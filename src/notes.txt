@@ -73,3 +73,9 @@ tiles it is in (which we've calculated and doesn't take up memory).
 
 OKAY now that that's out of the way time to figure out how to assign how many lights are in a cluster 
 and what their indices are.
+
+buffer index is 
+4 * index + 4 * component * elementCount
+
+element count is total num clusters
+so basically index is x and y is component?
