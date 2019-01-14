@@ -64,7 +64,7 @@ export default class BaseRenderer {
             let distance = Math.sqrt(Math.pow(camX - posCamX, 2) + Math.pow(camY - posCamY, 2) + Math.pow(camZ - posCamZ, 2));
 
             // If the sphere intersects the cluster 
-            if (distance < (scene.lights[j].radius * 5))
+            if (distance < (scene.lights[j].radius * 10))
             {
               numLightsInCluster += 1;
               this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, Math.floor(numLightsInCluster/4)) + (numLightsInCluster % 4)] = j;
