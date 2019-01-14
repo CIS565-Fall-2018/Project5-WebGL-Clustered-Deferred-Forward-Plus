@@ -2,9 +2,19 @@ export default function(params) {
   return `
   #version 100
   precision highp float;
+
+  uniform mat4 u_viewProjectionMatrix;
+  uniform float u_near;
+  uniform float u_far;
+  uniform float u_screenWidth;
+  uniform float u_screenHeight;
+  uniform float u_xSlices;
+  uniform float u_ySlices;
+  uniform float u_zSlices;
   
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
   uniform sampler2D u_lightbuffer;
+  uniform sampler2D u_clusterbuffer;
 
   varying vec2 v_uv;
 
@@ -60,22 +70,46 @@ export default function(params) {
 
   
   void main() {
-    // TODO: extract data from g buffers and do lighting
     vec3 normal = texture2D(u_gbuffers[0], v_uv).xyz; // normal
     vec3 albedo = texture2D(u_gbuffers[1], v_uv).rgb; // albedo
     vec3 v_position = texture2D(u_gbuffers[2], v_uv).xyz; // world space position
 
     vec3 fragColor = vec3(0.0);
 
-    for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
-      float lightDistance = distance(light.position, v_position);
-      vec3 L = (light.position - v_position) / lightDistance;
+    // okay so here we gotta transform the position to screen space
+    vec4 screenSpacePos = u_viewProjectionMatrix * vec4(v_position, 1.0);
+    float oldZ = screenSpacePos.z / (u_far - u_near);
+    screenSpacePos = screenSpacePos / screenSpacePos.w;
 
-      float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
-      float lambertTerm = max(dot(L, normal), 0.0);
+    // then figure out which cluster we're inside?
+    // so we need the screen height and width and we gotta know what z caps out at 
+    float clusterWidthX = u_screenWidth / u_xSlices;
+    float clusterHeightY = u_screenHeight / u_ySlices;
+    float clusterDepthZ = (u_far - u_near) / u_zSlices;
 
-      fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+    // now to get my cluster index 
+    int cx = int((((screenSpacePos.x + 1.0) / 2.0) * u_screenWidth) / clusterWidthX);
+    int cy = int((((screenSpacePos.y + 1.0) / 2.0) * u_screenHeight) / clusterHeightY);
+    int cz = int(oldZ * u_zSlices);
+    //int cz = int((((oldZ + 1.0) / 2.0) * (u_far - u_near)) / clusterDepthZ);
+    int clusterIndex = cx + cy * int(u_xSlices) + cz * int(u_xSlices) * int(u_ySlices);
+
+    // get the number of lights in the cluster
+    float numLights = ExtractFloat(u_clusterbuffer, int(u_xSlices * u_ySlices * u_zSlices), int(26), clusterIndex, 0);
+
+    for (int i = 0; i < 100; ++i) {
+      int lightIndex = int(ExtractFloat(u_clusterbuffer, int(u_xSlices * u_ySlices * u_zSlices), int(26), clusterIndex, i+1));
+      if (lightIndex != 0) {
+        Light light = UnpackLight(lightIndex);
+        float lightDistance = distance(light.position, v_position);
+        vec3 L = (light.position - v_position) / lightDistance;
+
+        float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
+        float lambertTerm = max(dot(L, normal), 0.0);
+
+        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+        //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+      }
     }
 
     const vec3 ambientLight = vec3(0.025);
