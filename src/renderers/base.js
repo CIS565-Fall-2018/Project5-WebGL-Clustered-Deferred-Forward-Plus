@@ -30,49 +30,78 @@ export default class BaseRenderer {
           // number of lights in the cluster starts out as 0
           let numLightsInCluster = 0;
 
-          // get the position of the cluster's bottom left corner in camera space
+          // get the position of the cluster's center in camera space
+          // as well as the height width and depth
           let fovRadians = camera.fov * (PI / 180.0); 
-          let camZ = (z / this._zSlices) * (camera.far - camera.near);
+          let frustumCenterZ = ((z + 0.5)  / this._zSlices) * (camera.far - camera.near);
           
-          let screenHeight = (camZ * Math.tan(fovRadians / 2));
+          let frustumDepth = (camera.far - camera.near) / this._zSlices; 
+          let screenHeight = (frustumCenterZ * Math.tan(fovRadians / 2));
           let screenWidth = screenHeight * camera.aspect;
-          let clusterHeight = screenHeight / this._ySlices;
-          let clusterWidth = screenWidth / this._xSlices;
+          let frustumHeight = screenHeight / this._ySlices;
+          let frustumWidth = screenWidth / this._xSlices;
 
-          let camY = y * clusterHeight;
-          let camX = x * clusterWidth;
+          let frustumCenterY = (y + 0.5) * frustumHeight;
+          let frustumCenterX = (x + 0.5) * frustumWidth;
 
+          let frustumDiagonalLength = Math.sqrt(Math.pow((frustumWidth / 2.0), 2) + 
+                                     Math.pow((frustumHeight / 2.0), 2) + 
+                                     Math.pow((frustumDepth / 2.0), 2));
+          
+          // let maxLightX = 0.0;
+          // let maxLightY = 0.0;
+          // let maxLightZ = 0.0;
           // now we loop through each light and see if it's within the cluster (using the view matrix)
           for (let j = 0; j < scene.lights.length; ++j) {
 
+            // TODO: Get the w for perspective divide***
             // get the light's position in camera space by *manually* multiplying the view matrix *sigh*
-            let posCamX = viewMatrix[0] * scene.lights[j].position[0] +
-                          viewMatrix[4] * scene.lights[j].position[1] +
-                          viewMatrix[8] * scene.lights[j].position[2] +
-                          viewMatrix[12] * 1;
-            let posCamY = viewMatrix[1] * scene.lights[j].position[0] +
-                          viewMatrix[5] * scene.lights[j].position[1] +
-                          viewMatrix[9] * scene.lights[j].position[2] +
-                          viewMatrix[13] * 1;
-            let posCamZ = viewMatrix[2] * scene.lights[j].position[0] +
-                          viewMatrix[6] * scene.lights[j].position[1] +
-                          viewMatrix[10] * scene.lights[j].position[2] +
-                          viewMatrix[14] * 1;
-
+            let lightCenterX = viewMatrix[0] * scene.lights[j].position[0] +
+                              viewMatrix[4] * scene.lights[j].position[1] +
+                              viewMatrix[8] * scene.lights[j].position[2] +
+                              viewMatrix[12] * 1;
+            let lightCenterY = viewMatrix[1] * scene.lights[j].position[0] +
+                              viewMatrix[5] * scene.lights[j].position[1] +
+                              viewMatrix[9] * scene.lights[j].position[2] +
+                              viewMatrix[13] * 1;
+            let lightCenterZ = viewMatrix[2] * scene.lights[j].position[0] +
+                              viewMatrix[6] * scene.lights[j].position[1] +
+                              viewMatrix[10] * scene.lights[j].position[2] +
+                              viewMatrix[14] * 1;
+            // let posCamW = viewMatrix[3] * scene.lights[j].position[0] +
+            //                viewMatrix[7] * scene.lights[j].position[1] +
+            //                viewMatrix[11] * scene.lights[j].position[2] +
+            //                viewMatrix[15] * 1;
+            
+            // maxLightX = Math.min(lightCenterX, maxLightX);
+            // maxLightY = Math.min(lightCenterY, maxLightY);
+            // maxLightZ = Math.min(lightCenterZ, maxLightZ);
+            // // perspective divide 
+            // posCamX /= posCamW;
+            // posCamY /= posCamW;
+            // posCamZ /= posCamW;
 
             // TODO: Improve this intersection testing (atm doing simple distance from bottom left corner)
-            let distance = Math.sqrt(Math.pow(camX - posCamX, 2) + Math.pow(camY - posCamY, 2) + Math.pow(camZ - posCamZ, 2));
+            let distance = Math.sqrt(Math.pow(frustumCenterX - lightCenterX, 2) + 
+                                    Math.pow(frustumCenterY - lightCenterY, 2) + 
+                                    Math.pow(frustumCenterZ - lightCenterZ, 2));
 
             // If the sphere intersects the cluster 
-            if (distance < (scene.lights[j].radius * 10) && numLightsInCluster < MAX_LIGHTS_PER_CLUSTER)
+            if (distance < (scene.lights[j].radius + frustumDiagonalLength * 1.5) && numLightsInCluster < MAX_LIGHTS_PER_CLUSTER)
             {
               numLightsInCluster += 1;
               this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, Math.floor(numLightsInCluster/4)) + (numLightsInCluster % 4)] = j;
-            }
+            } 
+            // else if (z == 2)
+            // {
+            //   console.log(frustumCenterZ + " " + frustumCenterY + " " + frustumCenterX + " " + frustumDiagonalLength + " " + scene.lights[j].radius + " " + distance);
+            // }
           }
           
           // Reset the light count to 0 for every cluster
           this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = numLightsInCluster;
+
+          
         }
       }
     }
