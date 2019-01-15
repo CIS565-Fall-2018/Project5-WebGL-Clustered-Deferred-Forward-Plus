@@ -72,9 +72,17 @@ export default function(params) {
 
   
   void main() {
-    vec3 normal = texture2D(u_gbuffers[0], v_uv).xyz; // normal
-    vec3 albedo = texture2D(u_gbuffers[1], v_uv).rgb; // albedo
-    vec3 v_position = texture2D(u_gbuffers[2], v_uv).xyz; // world space position
+    vec4 gb0 = texture2D(u_gbuffers[0], v_uv);
+    vec4 gb1 = texture2D(u_gbuffers[1], v_uv);
+    vec4 gb2 = texture2D(u_gbuffers[2], v_uv);
+
+    vec3 normal = gb0.xyz;
+    vec3 albedo = vec3(gb0.w, gb1.x, gb1.y);
+    vec3 v_position = vec3(gb1.z, gb1.w, gb2.x);
+
+    // vec3 normal = texture2D(u_gbuffers[0], v_uv).xyz; // normal
+    // vec3 albedo = texture2D(u_gbuffers[1], v_uv).rgb; // albedo
+    // vec3 v_position = texture2D(u_gbuffers[2], v_uv).xyz; // world space position
 
     vec3 fragColor = vec3(0.0);
 
