@@ -66,8 +66,7 @@ export default class BaseRenderer {
                               viewMatrix[14] * 1;
 
             let distance = Math.sqrt(Math.pow(frustumCenterX - lightCenterX, 2) + 
-                                    Math.pow(frustumCenterY - lightCenterY, 2) + 
-                                    Math.pow(frustumCenterZ - lightCenterZ, 2));
+                                    Math.pow(frustumCenterY - lightCenterY, 2));
 
             // If the sphere intersects the cluster 
             if (distance < (scene.lights[j].radius*10 + frustumDiagonalLength) && numLightsInCluster < MAX_LIGHTS_PER_CLUSTER)

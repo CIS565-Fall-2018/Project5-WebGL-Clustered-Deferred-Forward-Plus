@@ -124,7 +124,7 @@ export default function(params) {
         float lambertTerm = max(dot(L, normal), 0.0);
 
         fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity); 
-        ;;
+        
       }
     }
 
