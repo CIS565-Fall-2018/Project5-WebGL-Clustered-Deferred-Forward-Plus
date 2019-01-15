@@ -4,10 +4,7 @@ precision highp float;
 
 uniform sampler2D u_colmap;
 uniform sampler2D u_normap;
-uniform float u_near;
-uniform float u_far;
 
-varying vec4 v_proj;
 varying vec3 v_position;
 varying vec3 v_normal;
 varying vec2 v_uv;

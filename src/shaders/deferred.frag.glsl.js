@@ -11,6 +11,8 @@ export default function(params) {
   uniform float u_xSlices;
   uniform float u_ySlices;
   uniform float u_zSlices;
+  uniform vec3 u_cameraPos;
+
   
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
   uniform sampler2D u_lightbuffer;
@@ -107,8 +109,17 @@ export default function(params) {
         float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
         float lambertTerm = max(dot(L, normal), 0.0);
 
-        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
-        //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+        // Now perform Blinn-Phong shading to calculate specular value
+        // Reference:  https://learnopengl.com/Advanced-Lighting/Advanced-Lighting
+        vec3 lightDir = normalize(light.position - v_position);
+        vec3 viewDir = normalize(u_cameraPos - v_position);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+
+        float shininess = 4.0;
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+
+        //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity) * spec;
+        fragColor += albedo * light.color * vec3(lightIntensity) * spec;
       }
     }
 

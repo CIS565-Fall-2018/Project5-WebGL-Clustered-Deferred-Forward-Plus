@@ -21,7 +21,6 @@ export default class BaseRenderer {
 
     // okay so we know that the lights are in world space. Now the question is: 
     // how large are these slices (especially the z one). We can assume the 
-    //console.log(viewMatrix);
     for (let z = 0; z < this._zSlices; ++z) {
       for (let y = 0; y < this._ySlices; ++y) {
         for (let x = 0; x < this._xSlices; ++x) {
@@ -32,11 +31,11 @@ export default class BaseRenderer {
 
           // get the position of the cluster's center in camera space
           // as well as the height width and depth
-          let fovRadians = camera.fov * (PI / 180.0); 
+          let fovRadians = camera.fov * (Math.PI / 180.0); 
           let frustumCenterZ = ((z + 0.5)  / this._zSlices) * (camera.far - camera.near);
           
           let frustumDepth = (camera.far - camera.near) / this._zSlices; 
-          let screenHeight = (frustumCenterZ * Math.tan(fovRadians / 2));
+          let screenHeight = 2.0 * (frustumCenterZ * Math.tan(fovRadians / 2));
           let screenWidth = screenHeight * camera.aspect;
           let frustumHeight = screenHeight / this._ySlices;
           let frustumWidth = screenWidth / this._xSlices;
@@ -48,9 +47,6 @@ export default class BaseRenderer {
                                      Math.pow((frustumHeight / 2.0), 2) + 
                                      Math.pow((frustumDepth / 2.0), 2));
           
-          // let maxLightX = 0.0;
-          // let maxLightY = 0.0;
-          // let maxLightZ = 0.0;
           // now we loop through each light and see if it's within the cluster (using the view matrix)
           for (let j = 0; j < scene.lights.length; ++j) {
 
@@ -68,44 +64,24 @@ export default class BaseRenderer {
                               viewMatrix[6] * scene.lights[j].position[1] +
                               viewMatrix[10] * scene.lights[j].position[2] +
                               viewMatrix[14] * 1;
-            // let posCamW = viewMatrix[3] * scene.lights[j].position[0] +
-            //                viewMatrix[7] * scene.lights[j].position[1] +
-            //                viewMatrix[11] * scene.lights[j].position[2] +
-            //                viewMatrix[15] * 1;
-            
-            // maxLightX = Math.min(lightCenterX, maxLightX);
-            // maxLightY = Math.min(lightCenterY, maxLightY);
-            // maxLightZ = Math.min(lightCenterZ, maxLightZ);
-            // // perspective divide 
-            // posCamX /= posCamW;
-            // posCamY /= posCamW;
-            // posCamZ /= posCamW;
 
-            // TODO: Improve this intersection testing (atm doing simple distance from bottom left corner)
             let distance = Math.sqrt(Math.pow(frustumCenterX - lightCenterX, 2) + 
                                     Math.pow(frustumCenterY - lightCenterY, 2) + 
                                     Math.pow(frustumCenterZ - lightCenterZ, 2));
 
             // If the sphere intersects the cluster 
-            if (distance < (scene.lights[j].radius + frustumDiagonalLength * 1.5) && numLightsInCluster < MAX_LIGHTS_PER_CLUSTER)
+            if (distance < (scene.lights[j].radius*10 + frustumDiagonalLength) && numLightsInCluster < MAX_LIGHTS_PER_CLUSTER)
             {
               numLightsInCluster += 1;
               this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, Math.floor(numLightsInCluster/4)) + (numLightsInCluster % 4)] = j;
             } 
-            // else if (z == 2)
-            // {
-            //   console.log(frustumCenterZ + " " + frustumCenterY + " " + frustumCenterX + " " + frustumDiagonalLength + " " + scene.lights[j].radius + " " + distance);
-            // }
           }
           
           // Reset the light count to 0 for every cluster
-          this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = numLightsInCluster;
-
-          
+          this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = numLightsInCluster;        
         }
       }
     }
-    //console.log(this._clusterTexture.buffer);
     this._clusterTexture.update();
   }
 }

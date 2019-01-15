@@ -30,7 +30,7 @@ export default class ClusteredRenderer extends BaseRenderer {
       numGBuffers: NUM_GBUFFERS,
     }), {
       uniforms: ['u_viewProjectionMatrix', 'u_lightbuffer', 'u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]','u_clusterbuffer', 
-      'u_screenWidth', 'u_screenHeight', 'u_far', 'u_near', 'u_xSlices', 'u_ySlices', 'u_zSlices'],
+      'u_screenWidth', 'u_screenHeight', 'u_far', 'u_near', 'u_xSlices', 'u_ySlices', 'u_zSlices', 'u_cameraPos'],
       attribs: ['a_position'],
     });
 
@@ -173,6 +173,8 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.uniform1f(this._progShade.u_xSlices, this._xSlices);
     gl.uniform1f(this._progShade.u_ySlices, this._ySlices);
     gl.uniform1f(this._progShade.u_zSlices, this._zSlices);
+    gl.uniform3f(this._progShade.u_cameraPos, camera.position.x, camera.position.y, camera.position.z);
+
 
     // Bind g-buffers
     const firstGBufferBinding = 2; // You may have to change this if you use other texture slots

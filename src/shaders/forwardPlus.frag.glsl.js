@@ -123,8 +123,8 @@ export default function(params) {
         float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
         float lambertTerm = max(dot(L, normal), 0.0);
 
-        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
-        //fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity); 
+        ;;
       }
     }
 
@@ -132,8 +132,10 @@ export default function(params) {
     fragColor += albedo * ambientLight;
 
 
-       gl_FragColor = vec4(fragColor, 1.0);
-       //gl_FragColor = vec4(0.0, 0.0, float(cz) / u_zSlices, 1.0);
+       //gl_FragColor = vec4(fragColor, 1.0);
+       //vec4 clusters = vec4(float(cx) / u_xSlices, float(cy) / u_ySlices, float(cz) / u_zSlices, 1.0);
+       //gl_FragColor = mix(clusters, vec4(fragColor,1.0), 0.5);
+       gl_FragColor = vec4(fragColor.r, fragColor.g, fragColor.b, 1.0);
     
   }
   `;
