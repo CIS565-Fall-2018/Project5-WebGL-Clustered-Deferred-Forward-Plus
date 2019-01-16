@@ -9,7 +9,7 @@ import fsSource from '../shaders/deferred.frag.glsl.js';
 import TextureBuffer from './textureBuffer';
 import BaseRenderer from './base';
 
-export const NUM_GBUFFERS = 4;
+export const NUM_GBUFFERS = 3;
 
 export default class ClusteredRenderer extends BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -29,8 +29,9 @@ export default class ClusteredRenderer extends BaseRenderer {
       numLights: NUM_LIGHTS,
       numGBuffers: NUM_GBUFFERS,
     }), {
-      uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]'],
-      attribs: ['a_uv'],
+      uniforms: ['u_viewProjectionMatrix', 'u_lightbuffer', 'u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]','u_clusterbuffer', 
+      'u_screenWidth', 'u_screenHeight', 'u_far', 'u_near', 'u_xSlices', 'u_ySlices', 'u_zSlices', 'u_cameraPos'],
+      attribs: ['a_position'],
     });
 
     this._projectionMatrix = mat4.create();
@@ -81,7 +82,6 @@ export default class ClusteredRenderer extends BaseRenderer {
     // Tell the WEBGL_draw_buffers extension which FBO attachments are
     // being used. (This extension allows for multiple render targets.)
     WEBGL_draw_buffers.drawBuffersWEBGL(attachments);
-
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
@@ -102,7 +102,7 @@ export default class ClusteredRenderer extends BaseRenderer {
     if (canvas.width != this._width || canvas.height != this._height) {
       this.resize(canvas.width, canvas.height);
     }
-
+ 
     // Update the camera matrices
     camera.updateMatrixWorld();
     mat4.invert(this._viewMatrix, camera.matrixWorld.elements);
@@ -127,6 +127,9 @@ export default class ClusteredRenderer extends BaseRenderer {
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._progCopy);
     
+    // Update the clusters for the frame
+    this.updateClusters(camera, this._viewMatrix, scene);
+
     // Update the buffer used to populate the texture packed with light data
     for (let i = 0; i < NUM_LIGHTS; ++i) {
       this._lightTexture.buffer[this._lightTexture.bufferIndex(i, 0) + 0] = scene.lights[i].position[0];
@@ -141,9 +144,6 @@ export default class ClusteredRenderer extends BaseRenderer {
     // Update the light texture
     this._lightTexture.update();
 
-    // Update the clusters for the frame
-    this.updateClusters(camera, this._viewMatrix, scene);
-
     // Bind the default null framebuffer which is the screen
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -155,8 +155,29 @@ export default class ClusteredRenderer extends BaseRenderer {
 
     // TODO: Bind any other shader inputs
 
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
+    gl.uniform1i(this._progShade.u_lightbuffer, 0);
+
+    // Set the cluster texture as a uniform input to the shader
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this._clusterTexture.glTexture);
+    gl.uniform1i(this._progShade.u_clusterbuffer, 1);
+    
+    gl.uniformMatrix4fv(this._progShade.u_viewProjectionMatrix, false, this._viewProjectionMatrix);
+
+    gl.uniform1f(this._progShade.u_far, camera.far);
+    gl.uniform1f(this._progShade.u_near, camera.near);
+    gl.uniform1f(this._progShade.u_screenHeight, canvas.height);
+    gl.uniform1f(this._progShade.u_screenWidth, canvas.width);
+    gl.uniform1f(this._progShade.u_xSlices, this._xSlices);
+    gl.uniform1f(this._progShade.u_ySlices, this._ySlices);
+    gl.uniform1f(this._progShade.u_zSlices, this._zSlices);
+    gl.uniform3f(this._progShade.u_cameraPos, camera.position.x, camera.position.y, camera.position.z);
+
+
     // Bind g-buffers
-    const firstGBufferBinding = 0; // You may have to change this if you use other texture slots
+    const firstGBufferBinding = 2; // You may have to change this if you use other texture slots
     for (let i = 0; i < NUM_GBUFFERS; i++) {
       gl.activeTexture(gl[`TEXTURE${i + firstGBufferBinding}`]);
       gl.bindTexture(gl.TEXTURE_2D, this._gbuffers[i]);
