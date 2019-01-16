@@ -9,16 +9,16 @@ WebGL Clustered and Forward+ Shading
 
 ### Live Online
 
-[![](images/Clustered.png)](http://TODO.github.io/Project5B-WebGL-Deferred-Shading)
+[Click here to see the project in action!](http://liamdugan.github.io/Project5-WebGL-Clustered-Deferred-Forward-Plus)
 
-### Demo Video/GIF
-
-![](images/final.gif)
+![](images/Clustered.png)
 
 What are Forward+ and Clustered Rendering?
 =============
 
 Forward+ and Clustered are special rendering techniques used to optimize lighting calculations in scenes with many moving light sources.
+
+![](images/final.gif)
 
 Usually, the way light calculations are handled is to loop over all lights in the scene for each fragment 
 (i.e. pixel) and calculate the effect each and every light has on the pixel for every frame.
