@@ -9,8 +9,6 @@ WebGL Clustered and Forward+ Shading
 
 ## [Live Online](https://lanlou123.github.io/WebGL-Clustered-Deferred-Forward-Plus-Rendering/)
 
-（**NOTE :** need to change "devtool: 'source-map'" into "  devtool: 'cheap-source-map'" inside webpack.config.js to get npm run build working!!! ）
-
 note : I only wrote the shading selection dropdown menu for clustered rendering
 
 ## Click this gif for video link
@@ -30,7 +28,7 @@ blinn-phong|lambert|toon
 ### forward rendering
 forward shading is the most straight forward shading method, basically, it first loops through each geomery in the scene, then, inside one sigle loop for the geometry, it will do another loop of all the lights in the scene to apply light influence on the current geometry, it is esay to tell that once the number of lights is really huge, this method can suffer from terrible performance issue, which makes this rendering technique impossible to be applied to current day games as most of them possess large amount use of lighting.
 
-### forward plus rendering
+### forward plus(clustered) rendering
 a better solution towards the issue brought by forward rendering is to use clustered structure for lighting, in forward plus, we will have the simmilar first step:loop all the geometry, but different second step, this time, we will catergorize lights into different clusters, and inside the fragment shader for each geometry loop, we will not check every light anymore, instead, we only accumulate light influence from lights that inside the cluster the geometry point is in. as a result, we will have a big improvement on performance, especially when there are a lot of lights.
 
 ### clustered deferred rendering
