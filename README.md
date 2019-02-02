@@ -1,12 +1,6 @@
 WebGL Clustered and Forward+ Shading
 ======================
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
-
-* Lan Lou
-* Tested on: **Google Chrome 69.0.3497.100 (Official Build) (64-bit)** on
-  Windows 10, i7-6700HQ @ 2.60GHz 16GB, GTX 1070 8GB (Personal Laptop)
-
 ## [Live Online](https://lanlou123.github.io/WebGL-Clustered-Deferred-Forward-Plus-Rendering/)
 
 note : I only wrote the shading selection dropdown menu for clustered rendering
