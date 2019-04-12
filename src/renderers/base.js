@@ -1,19 +1,94 @@
 import TextureBuffer from './textureBuffer';
-import {NUM_LIGHTS} from '../scene'
-import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
+import {mat4, vec4, vec3, mat3, vec2, mat2} from 'gl-matrix';
+import {NUM_LIGHTS} from '../scene'; 
+import { get } from 'https';
+import { length } from 'gl-matrix/src/gl-matrix/vec3';
 
 
-export const MAX_LIGHTS_PER_CLUSTER = 5000;
+export const MAX_LIGHTS_PER_CLUSTER = 100;
 
-
-function getDistance(ratio, lightPos)
+function getDistance(ray, light_pos)
 {
-  let temp = Math.sqrt(1 + ratio * ratio);
+  let temp = Math.sqrt(1 + ray[0] * ray[0]);
   let a1 = 1 / temp;
-  let a2 = -ratio * a1;
-  let normal = vec2.create(a1, a2);
-  return vec2.dot(lightPos,normal);
+  let a2 = -ray[0] * a1;
+  let normal = vec2.fromValues(a1, a2);
+  return vec2.dot(normal, light_pos);
+
+  // let rotate_ray = vec2.fromValues(ray[1], -ray[0]);
+  // vec2.normalize(rotate_ray, rotate_ray);
+  // let dis = vec2.dot(light_pos, rotate_ray);
+  // return dis;
 }
+
+function findMinAndMax(_interval, _left, num_slices, y, light_pos, radius)
+{
+  let left = Math.atan(_left);
+  let interval = -2 * left / num_slices;
+
+  light_pos[1] *= -1;
+  let xmin = 0, xmax = num_slices;
+
+  while (xmin < xmax)
+  {
+    // console.log(xmin, xmax);
+    let temp_x = left + (xmin + 1) * interval;
+    if (getDistance(vec2.fromValues(Math.cos(Math.PI - temp_x), Math.sin(Math.PI - temp_x)), light_pos) > radius * 2)
+      ++xmin;
+    else
+      break;
+  }
+
+  while (xmin < xmax)
+  { 
+    let temp_x = left + (xmax - 1) * interval;
+    if (getDistance(vec2.fromValues(Math.cos(Math.PI - temp_x), Math.sin(Math.PI - temp_x)), light_pos) < -radius * 2)
+      --xmax;
+    else
+      break;
+  }
+  return vec2.fromValues(xmin, xmax);
+}
+
+function find_z_min_max(interval, left, num_slices, light_pos_z, radius)
+{
+  light_pos_z *= -1;
+  // zmin
+  let zmin, zmax;
+
+  for (zmin = 0; zmin < num_slices; ++zmin)
+  {
+    let temp_z = left + zmin * interval;
+    if (light_pos_z - temp_z < radius)
+    {
+      zmin = Math.max(0, zmin - 1);
+      break;
+    }
+
+    if (zmin == num_slices - 1)
+    {
+      let temp_z = left + num_slices * interval;
+      if (light_pos_z - temp_z < radius)
+      {
+        break;
+      }
+    }
+  }
+  
+
+  for (zmax = zmin + 1; zmax < num_slices; ++zmax)
+  {
+    let z = left + zmax * interval;
+    if (light_pos_z - z < -radius)
+    {
+      break;
+    }
+  }
+  if (zmin == num_slices) zmax = num_slices;
+  // console.log(zmin, zmax, num_slices);
+  return vec2.fromValues(zmin, zmax);
+}
+
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
     // Create a texture to store cluster data. Each cluster stores the number of lights followed by the light indices
@@ -37,107 +112,33 @@ export default class BaseRenderer {
       }
     }
 
-    var zInterval = (camera.far - camera.near) / this._zSlices;
-    var yzRatio = Math.tan(camera.fov / 2.0 * Math.PI / 180.0) * 2.0;
-    var xzRatio = yzRatio * camera.aspect;
-    var xInterval = xzRatio / this._xSlices;
-    var yInterval = yzRatio / this._ySlices;
-    var xStart = -xzRatio / 2.0;
-    var yStart = -yzRatio / 2.0;
+    let zInterval = (camera.far - camera.near) / this._zSlices;
+    let yzRatio = Math.tan(camera.fov / 2 / 180.0 * 3.14159) * 2;
+    let xzRatio = yzRatio * camera.aspect;
+    let xInterval = xzRatio / this._xSlices;
+    let yInterval = yzRatio / this._ySlices;
+    let x_left = -xzRatio / 2.0;
+    let y_left = -yzRatio / 2.0;
+    let z_left = camera.near;
 
-
-    for(let lightIndex = 0; lightIndex < NUM_LIGHTS; ++lightIndex)
+    // determine which clusters this light overlaps.
+    for (let i_light = 0; i_light < scene.lights.length; ++i_light)
     {
-      let lightPos = vec4.create(scene.lights[lightIndex].position[0],
-        scene.lights[lightIndex].position[1],
-        scene.lights[lightIndex].position[2],
-        1.0);
+      let temp_light = scene.lights[i_light];
+      let temp_pos = vec4.fromValues(temp_light.position[0], temp_light.position[1], temp_light.position[2], 1.0);
+      var temp_r = temp_light.radius;
+      // get the position of light in camera space.
 
-      vec4.transformMat4(lightPos, lightPos, viewMatrix);
-      lightPos[2] *= -1.0;
-      let lightRadius = scene.lights[lightIndex].radius;
-      let zmin;
-      let zmax;
-      let xmin;
-      let xmax;
-      let ymin;
-      let ymax;
-      let distance;
+      vec4.transformMat4(temp_pos, temp_pos, viewMatrix);
+      let xRange = findMinAndMax(xInterval, x_left, this._xSlices, 1, vec2.fromValues(temp_pos[0], temp_pos[2]), temp_r);
+      let yRange = findMinAndMax(yInterval, y_left, this._ySlices, 1, vec2.fromValues(temp_pos[1], temp_pos[2]), temp_r);
+      let zRange = find_z_min_max(zInterval, z_left, this._zSlices, temp_pos[2], temp_r);
+// function find_z_min_max(interval, left, num_slices, light_pos_z, radius)
+        // console.log("ilights:", i_light, " ", xRange[0], " ", xRange[1], " ", yRange[0], " ", yRange[1], " ", zRange[0], " ", zRange[1]);
 
-
-      // z min 
-      for(zmin = 0; zmin < this._zSlices; ++zmin)
-      {
-        distance = lightPos[2] - (camera.near + zmin * zInterval);
-        if(distance < lightRadius)
-        {
-          zmin = Math.max(0, zmin - 1);
-          break;
-        }
-      }
-
-
-      // z max
-      for(zmax = zmin + 1; zmax < this._zSlices; ++zmax)
-      {
-        distance = lightPos[2] - (camera.near + zmax * zInterval);
-        if(distance < -lightRadius)
-        {
-          break;
-        }
-      }
-
-
-      // x min 
-      for(xmin = 0; xmin < this._xSlices; ++xmin)
-      {
-        let lightPosxz = vec2.create(lightPosxz, lightPos[0], lightPos[2]);
-        distance = getDistance(xStart + xmin * xInterval, lightPosxz);
-        if(distance < lightRadius);
-        {
-          xmin = Math.max(0, xmin - 1);
-          break;
-        }
-      }
-    
-      // x max
-      for(xmax = xmin + 1; xmax < this._xSlices; ++xmax)
-      {
-        let lightPosxz = vec2.create(lightPosxz, lightPos[0], lightPos[2]);
-        distance = getDistance(xStart + xmax * xInterval, lightPosxz);
-        if(distance < -lightRadius)
-        {
-          break;
-        }
-      }
-
-      // y min
-      for(ymin = 0; ymin < this._ySlices; ++ymin)
-      {
-        let lightPosyz = vec2.create(lightPos[1], lightPos[2]);
-        distance = getDistance(yStart + ymin * yInterval, lightPosyz);
-        if(distance < lightRadius)
-        {
-          ymin = Math.max(0, ymin - 1);
-          break;
-        }
-      }
-
-      // y max
-      for(ymax = ymin + 1; ymax < this._ySlices; ++ymax)
-      {
-        let lightPosyz = vec2.create(lightPos[1], lightPos[2]);
-        distance = getDistance(yStart + ymax * yInterval, lightPosyz);
-        if(distance < -lightRadius)
-        {
-          break;
-        }        
-      }
-
-
-      for (let z = zmin; z < zmax; ++z){
-        for(let y = ymin; y < ymax; ++y){
-          for(let x = xmin; x < xmax; ++x){
+      for (let z = zRange[0]; z < zRange[1]; ++z){
+        for(let y = yRange[0]; y < yRange[1]; ++y){
+          for(let x = xRange[0]; x < xRange[1]; ++x){
             let i = x + y * this._xSlices + z * this._xSlices * this._ySlices;
             let lightCount = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)];
             lightCount++;
@@ -146,15 +147,13 @@ export default class BaseRenderer {
               this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, 0)] = lightCount;
               let row = Math.floor(lightCount / 4);
               let pixel = lightCount - row * 4;
-              this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, row) + pixel] = lightIndex;
+              this._clusterTexture.buffer[this._clusterTexture.bufferIndex(i, row) + pixel] = i_light;
               
             }
           }
         }
       }
     }
-
-
     this._clusterTexture.update();
   }
 }
