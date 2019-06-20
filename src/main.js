@@ -13,6 +13,8 @@ const params = {
   _renderer: null,
 };
 
+let frame = 0;
+
 setRenderer(params.renderer);
 
 function setRenderer(renderer) {
@@ -27,6 +29,9 @@ function setRenderer(renderer) {
       params._renderer = new ClusteredRenderer(15, 15, 15);
       break;
   }
+
+  startTime = Date.now();
+  frame = 0;
 }
 
 gui.add(params, 'renderer', [FORWARD, FORWARD_PLUS, CLUSTERED]).onChange(setRenderer);
@@ -39,8 +44,28 @@ cameraControls.target.set(0, 2, 0);
 gl.enable(gl.DEPTH_TEST);
 
 function render() {
+  frame++;
   scene.update();
   params._renderer.render(camera, scene);
+  endTime = Date.now();
 }
 
+let startTime = Date.now();
+let endTime = 0;
+
+
 makeRenderLoop(render)();
+
+document.addEventListener('keydown', function(event)
+{
+  if(event.keyCode == 84)
+  {
+    let ms = endTime - startTime;
+    let mspf = ms / frame;
+    let fps = frame / ms * 1000.0;
+    console.log("total time = " + ms);
+    console.log("frames = " + frame);
+    console.log("ms per frame = " + mspf);
+    console.log("average fps = " + fps);
+  }
+});
