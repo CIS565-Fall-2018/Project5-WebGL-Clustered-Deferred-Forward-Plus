@@ -11,6 +11,12 @@ export default function(params) {
 
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
+  
+  uniform mat4 u_viewMatrix;
+  uniform float u_screenwidth;
+  uniform float u_screenheight;
+  uniform float u_near;
+  uniform float u_far;
 
   varying vec3 v_position;
   varying vec3 v_normal;
@@ -78,11 +84,42 @@ export default function(params) {
     vec3 albedo = texture2D(u_colmap, v_uv).rgb;
     vec3 normap = texture2D(u_normap, v_uv).xyz;
     vec3 normal = applyNormalMap(v_normal, normap);
-
+    
+    int clusterXidx = int( gl_FragCoord.x / (float(u_screenwidth) / float(${params.xSlices})) );
+    int clusterYidx = int( gl_FragCoord.y / (float(u_screenheight) / float(${params.ySlices})) );
+    vec4 fragCamPos = u_viewMatrix * vec4(v_position,1.0);
+    int clusterZidx = int( (-fragCamPos.z-u_near) / (float(u_far-u_near) / float(${params.zSlices})) );
+    
+    int clusterIdx = clusterXidx + clusterYidx*${params.xSlices} + clusterZidx*${params.xSlices}*${params.ySlices};
+    int clusterCount = ${params.xSlices}*${params.ySlices}*${params.zSlices};
+    float U = float(clusterIdx+1) / float(clusterCount+1);
+    int clusterLightCount = int(texture2D(u_clusterbuffer, vec2(U,0)).r);
+    
+    int texelsPerCol = int(float(${params.maxLightsPerCluster}+1) * 0.25) + 1;
     vec3 fragColor = vec3(0.0);
 
+
+
     for (int i = 0; i < ${params.numLights}; ++i) {
-      Light light = UnpackLight(i);
+      if(i >= clusterLightCount) { break; } 
+      int texelIdx = int(float(i+1) * 0.25);
+      float V = float(texelIdx+1) / float(texelsPerCol+1);
+      vec4 texel = texture2D(u_clusterbuffer, vec2(U,V));
+      
+      int lightIdx;
+      int texelComponent = (i+1) - (texelIdx * 4);
+      
+       if (texelComponent == 0) {
+            lightIdx = int(texel[0]);
+        } else if (texelComponent == 1) {
+            lightIdx = int(texel[1]);
+        } else if (texelComponent == 2) {
+            lightIdx = int(texel[2]);
+        } else if (texelComponent == 3) {
+            lightIdx = int(texel[3]);
+        }
+        Light light = UnpackLight(lightIdx);
+
       float lightDistance = distance(light.position, v_position);
       vec3 L = (light.position - v_position) / lightDistance;
 
